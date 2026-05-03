@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;color: white;">
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <div class="group">laskjdfhb</div>
+        <script>
+            var htmlNode = document.documentElement;
+            console.log(htmlNode);
+
+            var bodyNode = document.head;
+            console.log(bodyNode);
+
+            var newParagraph = document.createElement('p');
+            newParagraph.innerText = "sdglhjkb";
+            document.body.appendChild(newParagraph);
+
+            var i = document.createElement('i');
+            i.appendChild(document.createTextNode('This text in tag i '));
+
+            var b = document.createElement('b');
+            b.appendChild(document.createTextNode('This text in tag b '));
+
+            var s = document.createElement('s');
+            s.appendChild(document.createTextNode('This text in tag s '));
+
+            var documentFragment = document.createDocumentFragment();
+            documentFragment.appendChild(i);
+            documentFragment.appendChild(b);
+            documentFragment.appendChild(s);
+
+            console.log(documentFragment);
+        </script>
+    </body>
+</html>

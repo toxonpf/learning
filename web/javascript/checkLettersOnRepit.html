@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var chekingWord = "aajfjshsdzjfgjasbngjasjzgbgasikjkfgbas";
+            var count = 0;
+            var a = 0;
+            while(a < chekingWord.length){
+                var i = 0;
+                var asd = chekingWord[a];
+                while( i < chekingWord.length){
+                    if(asd == chekingWord[i]){
+                        count++
+                    }
+                    i++;
+                }
+                a++;
+
+            }
+
+            if(count > chekingWord.length){
+                console.log("false");
+            }else{
+                console.log("true");
+            }
+            console.log(chekingWord.length)
+        </script>
+    </body>
+</html>

@@ -1,0 +1,83 @@
+
+
+body{
+	background-color:#293134;
+	color:white;
+	font-family:Calibri;
+	font-size:24px;
+	background-image:url('../img/textures/skybox-stalker.jpg');
+	background-size:cover;
+}
+
+
+#wrapper3d{
+	/* outline:1px solid orange; */
+    width:1000px;
+    height:600px;
+	perspective:2000px;
+    perspective-origin:center;
+	margin:200px auto;
+}
+
+
+#scene{
+	/* outline:1px solid red; */
+	width:1000px;
+	height:500px;
+	transform-style:preserve-3d;
+	transform:rotateX(0deg) rotateY(0deg);
+	animation:scene 30s linear infinite;
+}
+
+
+#ground{
+	/* outline:1px solid red; */
+	width:1000px;
+	height:500px;
+	transform-style:preserve-3d;
+	transform:rotateX(90deg) translateZ(-150px) translateY(-150px) rotateY(0deg);
+	background-image:url('../img/textures/pol.jpg');
+}
+
+
+#stena{
+	/* outline:1px solid green; */
+	width:inherit;
+	height:inherit;
+	transform:rotateX(90deg) rotateY(0deg) translateZ(250px) translateX(0px) translateY(250px);
+	background-image:url('../img/textures/stena.jpg');
+	position:absolute;
+}
+
+
+#meduza{
+	width:150px;
+	height:150px;
+	transform:rotateX(275deg) rotateY(0deg) translateZ(0px) translateX(425px) translateY(-125px);
+	background-image:url('../img/textures/meduza.png');
+	animation:meduza 3s linear infinite alternate-reverse;
+}
+
+
+
+
+@keyframes meduza{
+	0%{
+		transform:rotateX(275deg) rotateY(0deg) translateZ(0px) translateX(425px) translateY(-125px) skewX(-15deg);
+	}
+	
+	100%{
+		transform:rotateX(275deg) rotateY(0deg) translateZ(0px) translateX(425px) translateY(-165px) skewX(15deg);
+	}
+}
+
+
+@keyframes scene{
+	0%{
+		transform:rotateX(0deg) rotateY(0deg);
+	}
+	
+	100%{
+		transform:rotateX(-30deg) rotateY(90deg);
+	}
+}

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            function simpleNumber(count){
+                var comparisonCount = 0;
+                var comparisonResults = [];
+                while(comparisonCount < count){
+                    comparisonCount++
+                    if(count % comparisonCount == 0 && comparisonCount != 1 && comparisonCount != count || count == 1 || count == 2){
+                        comparisonResults.push(true);
+                    }else{
+                        comparisonResults.push(false);
+                    }
+                }
+
+                function hasTrue(array) {
+                    for(let i = 0; i < array.length; i++){
+                        if(array[i] === true) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                if(hasTrue(comparisonResults) === false){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            var count = 100;
+
+            for(var i = 1; i <= count; i++){
+                if(simpleNumber(i) == true){
+                    console.log(i);
+                }
+            }
+        </script>
+    </body>
+</html>
+

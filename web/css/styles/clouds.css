@@ -1,0 +1,175 @@
+body{
+	padding:0px;
+	margin:0px;
+	background: rgba(29,133,224,0.96);
+	background: -moz-linear-gradient(top, rgba(29,133,224,0.96) 0%, rgba(93,158,222,0.85) 100%);
+	background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(29,133,224,0.96)), color-stop(100%, rgba(93,158,222,0.85)));
+	background: -webkit-linear-gradient(top, rgba(29,133,224,0.96) 0%, rgba(93,158,222,0.85) 100%);
+	background: -o-linear-gradient(top, rgba(29,133,224,0.96) 0%, rgba(93,158,222,0.85) 100%);
+	background: -ms-linear-gradient(top, rgba(29,133,224,0.96) 0%, rgba(93,158,222,0.85) 100%);
+	background: linear-gradient(to bottom, rgba(29,133,224,0.96) 0%, rgba(93,158,222,0.85) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1d85e0', endColorstr='#5d9ede', GradientType=0 );
+}
+
+
+.cloud{
+	position:absolute;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:100%;
+}
+
+
+.cloud-small{
+	width:200px;
+	height:150px;
+}
+
+
+.cloud-medium{
+	width:300px;
+	height:200px;
+}
+
+
+.cloud-big{
+	width:400px;
+	height:300px;
+}
+
+
+.cloud-type-1{
+	background-image:url('../img/cloud1.png');
+}
+
+
+.cloud-type-2{
+	background-image:url('../img/cloud2.png');
+}
+
+#deadserver{
+    top:180px;
+	left:400px;
+    background-image:url('../img/deadserver.gif');
+    opacity: 0.5;
+}
+
+
+#c1{
+	top:60px;
+	left:60px;
+}
+
+
+#c2{
+	bottom:300px;
+	left:120px;
+}
+
+
+#c3{
+	top:180px;
+	left:400px;
+}
+
+
+#c4{
+	top:600;
+	right:800px;
+}
+
+
+#c5{
+	top:600;
+	right:800px;
+}
+
+
+#c6{
+	top:20px;
+	right:120px;
+}
+
+
+#c7{
+	top:120px;
+	right:300px;
+}
+
+
+#c8{
+	bottom:300px;
+	right:260px;
+}
+
+
+#c9{
+	bottom:60px;
+	right:60px;
+}
+
+
+#c10{
+	top:60px;
+	left:60px;
+}
+
+
+#c11{
+	top:200px;
+	left:150px;
+}
+
+
+#c12{
+	bottom:100px;
+	left:50px;
+}
+
+
+#c13{
+	top:100px;
+	left:500px;
+}
+
+
+#c14{
+	top:400px;
+	left:400px;
+}
+
+
+#c15{
+	top:200px;
+	left:700px;
+}
+
+
+.animate-1{
+	transition:transform 25s ease;
+}
+
+
+.animate-2{
+	transition:transform 17s ease;
+}
+
+
+.animate-3{
+	transition:transform 12s ease;
+}
+
+
+body:hover .animate-1{
+	transform:translateX(-1800px);
+}
+
+
+body:hover .animate-2{
+	transform:translateX(-1800px);
+}
+
+
+body:hover .animate-3{
+	transform:translateX(-1800px);
+}

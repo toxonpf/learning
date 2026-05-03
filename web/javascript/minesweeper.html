@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minesweeper Slider</title>
+    <link rel="stylesheet" href="styles/minesweeper.css">
+    <link rel="stylesheet" href="styles/animation/minesweeperAnimation.css">
+</head>
+<body>
+    <!-- <div id="slider">
+        <div class="slide" id="starterMenu">
+            <h1>Minesweeper</h1>
+            <a href="javascript:goToSettings()">Play</a>
+        </div>
+
+        <div class="slide" id="settingsMenu">
+            <form name="settings">
+                <h1>Settings</h1>
+                <input placeholder="Enter the rows" type="number" name="rows" id="inputRows">
+                <input placeholder="Enter the columns" type="number" name="columns" id="inputColumns">
+                <input placeholder="Enter the mine quantity" type="number" name="mines" id="inputMines">
+                <button type="button" onclick="goToSettings()">Start Game</button>
+            </form>
+        </div>
+
+        <div class="slide" id="loading">
+            <h1>Game Loading...</h1>
+        </div>
+
+        <div class="slide" id="game">
+            <h1>Game Loading...</h1>
+        </div>
+    </div>
+    <script>
+
+        function goToSettings() {
+            let slider = document.getElementById("slider");
+            slider.style.animation = "loadingAnimation forwards 1s"; // Переход на страницу настроек
+            setTimeout(() => {
+            slider = document.getElementById("slider");
+            slider.style.animation = "startGameAnimation forwards 1s"; // Через 3 секунды на третью страницу
+            }, 3000);
+            
+        }
+    </script> -->
+    <div >
+        <table border="3px" id="gameBlock">
+
+        </table>
+        <div id="flagsCount"></div>
+    </div>
+    <script>
+        let rows = 20;
+        let columns = 20;
+        let mines = 80;
+        // function genirateGame(rows, columns, mines){
+            let cletCod = "";
+            let columnsCod = "";
+            const gameBlock = document.getElementById('gameBlock');
+
+            for(var ri = 0; ri < rows; ri++){
+                for(var ci = 0; ci < columns; ci++){
+                    cletCod = '<td class="clet" id="clet-' + ri + '_' + ci + '"></td>';
+                    columnsCod += cletCod;
+                }
+                gameBlock.innerHTML += "<tr>"+ columnsCod +"</tr>";
+                columnsCod = "";
+            }
+
+            let allClets = [];
+            for(let riA = 0; riA < rows; riA++){
+                for(let ciA = 0; ciA < columns; ciA++){
+                    let cletID = document.getElementById('clet-' + riA + '_' + ciA);
+
+                    allClets.push(cletID);
+                }
+            }
+
+            let mineRow = 0;
+            let mineColumn = 0;
+            let minesList = [];
+            for (let mi = 0; mi < mines; mi++) {
+                while (true) {
+                    mineRow = Math.floor(Math.random() * rows);
+                    mineColumn = Math.floor(Math.random() * columns);
+                    let cellId = "clet-" + mineRow + "_" + mineColumn;
+
+                    if (!minesList.some(mine => mine.row === mineRow && mine.column === mineColumn)) {
+                        minesList.push({ row: mineRow, column: mineColumn });
+                        break;
+                    }
+                }
+            }
+
+            let clearClets = [];
+            let regCletsId = /clet-(\d+)_(\d+)/;
+            let mineSet = new Set(minesList.map(mine => `clet-${mine.row}_${mine.column}`));
+
+            for (let ci = 0; ci < allClets.length; ci++) {
+                let cellId = allClets[ci].id;
+                if (!mineSet.has(cellId)) {
+                    let activeClet = regCletsId.exec(cellId);
+
+                    clearClets.push({ row: parseInt(activeClet[1]), column: parseInt(activeClet[2]) });
+                }
+            }
+
+            function gameOver() {
+                mineSet.forEach((mineId) => {
+                    let mineRepainting = document.getElementById(mineId);
+
+                    mineRepainting.style.background = 'red';
+                });
+            }
+
+            let visited = new Set();
+            function freeCletPop(clickedClet){
+                if (!clickedClet || visited.has(clickedClet.id)) return;
+                visited.add(clickedClet.id);
+
+                let roudClets = {
+                    center: {row: 0, column: 0},
+                    leftTop: {row: 0, column: 0},
+                    top: {row: 0, column: 0},
+                    rightTop: {row: 0, column: 0},
+                    right: {row: 0, column: 0},
+                    rightBottom: {row: 0, column: 0},
+                    bottom: {row: 0, column: 0},
+                    leftBottom: {row: 0, column: 0},
+                    left: {row: 0, column: 0},
+                };
+
+                let clickedCletId = regCletsId.exec(clickedClet.id);
+                let phormedClicedClet = {row: parseInt(clickedCletId[1]), column: parseInt(clickedCletId[2])};
+
+                roudClets.center = phormedClicedClet;
+
+                roudClets.leftTop = { row: phormedClicedClet.row + 1, column: phormedClicedClet.column - 1 };
+                roudClets.top = { row: phormedClicedClet.row + 1, column: phormedClicedClet.column };
+                roudClets.rightTop = { row: phormedClicedClet.row + 1, column: phormedClicedClet.column + 1 };
+                roudClets.right = { row: phormedClicedClet.row, column: phormedClicedClet.column + 1 };
+                roudClets.rightBottom = { row: phormedClicedClet.row - 1, column: phormedClicedClet.column + 1 };
+                roudClets.bottom = { row: phormedClicedClet.row - 1, column: phormedClicedClet.column };
+                roudClets.leftBottom = { row: phormedClicedClet.row - 1, column: phormedClicedClet.column - 1 };
+                roudClets.left = { row: phormedClicedClet.row, column: phormedClicedClet.column - 1 };
+
+                let roundMines = 0;
+                for(let clet in roudClets) {
+                    for(let ir = 0; ir < minesList.length; ir++){
+                        if(roudClets[clet].row == minesList[ir].row && roudClets[clet].column == minesList[ir].column) {
+                            roundMines++;
+                        }
+                    }
+                }
+                
+                let openClets = document.getElementById('clet-' + roudClets.center.row + '_' + roudClets.center.column);
+
+                openClets.style.backgroundColor = "#333";
+                
+                if(roundMines !== 0){
+                    clickedClet.innerHTML = "<center>" + roundMines + "</center>"; 
+                }else{
+                    for(let zeroClet in roudClets){
+                        let neighborZeroClet = document.getElementById('clet-' + roudClets[zeroClet].row + '_' + roudClets[zeroClet].column);
+                        
+                        freeCletPop(neighborZeroClet);
+                    }
+                }
+            }
+
+            allClets.forEach((cletElement) => {
+                let cletIdString = cletElement.id; 
+
+                cletElement.addEventListener('click', () => {
+                    if (mineSet.has(cletIdString)) {  // Проверка на наличие мины в текущей ячейке
+                        gameOver();  // Вызов функции окончания игры
+                        console.log('game over');
+                        
+                    }else{
+                        freeCletPop(cletElement);
+                    }
+                });
+            });
+
+            const flagsCount = document.getElementById('flagsCount');
+            let countMines = mines;
+            flagsCount.innerText = "flags: " + countMines;
+            allClets.forEach((cletElement) => {
+                cletElement.addEventListener('mousedown', (event) => {
+                    if(event.button === 3){
+                        if(!visited.has(cletElement.id) && !cletElement.classList.contains('markered')){
+                            cletElement.innerHTML = "<center>🏳️</center>";
+                            cletElement.classList.add('markered');
+                            visited.add(cletElement.id);
+                            countMines--;
+                            flagsCount.innerText = "flags: " + countMines;
+                        }else if(cletElement.classList.contains('markered')){
+                            cletElement.innerHTML = "";
+                            cletElement.classList.remove('markered');
+                            visited.delete(cletElement.id);
+                            countMines++;
+                            flagsCount.innerText = "flags: " + countMines;
+                        }
+                    }
+                });
+            });
+
+
+        // }
+        // genirateGame(10, 10, 30);
+        
+        // 
+    </script>
+</body>
+
+</html>
+<script>
+    
+</script>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            body {
+                background-color: #333;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            const variable = 4;
+            let isConst = false;
+            var log = (preview) => {console.log(preview)};
+
+            try {
+                variable = 6;
+                isConst = false;
+                log(isConst);
+            } finally {
+                isConst = true;
+                log(isConst);
+            }
+        </script>
+    </body>
+</html>

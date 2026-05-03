@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles/index.css">
+    <script src="js/gsap/gsap.min.js"></script>
+    <script src="js/gsap/ScrollTrigger.min.js"></script>
+    <script src="js/gsap/ScrollSmoother.min.js"></script>
+    <script src="js/gsap/ScrollTrigger.min.js"></script>
+</head>
+
+<body>
+    <div id="smoohWrapper">
+        <div id="smoohContent">
+            <div class="child">
+                <div id="myButton">Нажми меня</div>
+            </div>
+            <div class="child">
+                <div data-speed="2" class="block"></div>
+                <div data-speed="1" class="block"></div>
+                <div data-speed="0.5" class="block"></div>
+            </div>
+            <div class="child">
+                <div data-lag="2" class="block"></div>
+                <div data-lag="1" id="sec" class="block"></div>
+                <div data-lag="0.5" class="block"></div>
+            </div>
+            <div class="child">
+                <div data-speed="2" data-lag="2" class="block"></div>
+                <div data-speed="1" data-lag="1" id="sec" class="block"></div>
+                <div data-speed="0.5" data-lag="0.5" class="block"></div>
+            </div>
+            <div class="child">
+                <div class="block anim"></div>
+                <div id="thrd" class="block anim"><div>卐</div></div>
+                <div  class="block anim"></div>
+            </div>
+            <div class="child">
+                <div class="block anim imgBlock"><img src="https://picsum.photos/200/500" alt=""></div>
+                <div class="block anim imgBlock"><img src="https://picsum.photos/200/500" alt=""></div>
+                <div class="block anim imgBlock"><img src="https://picsum.photos/200/500" alt=""></div>
+            </div>
+            <div class="child">
+                <div class="block "></div>
+                <div id="forth" class="block "><div>卐</div></div>
+                <div  class="block "></div>
+            </div>
+            <div class="child">
+                <div class="block anim"></div>
+                <div class="block anim"></div>
+                <div  class="block anim"></div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

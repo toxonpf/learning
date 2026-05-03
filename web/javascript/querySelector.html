@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Кнопка и Кружок</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #333;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .recordButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .recordButton:hover {
+            background-color: #0056b3;
+        }
+
+        .circle {
+            margin: 20px auto;
+            width: 100px;
+            height: 100px;
+            background-color: grey;
+            border-radius: 50%;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        @keyframes identifier {
+            0%, 100%{
+                background-color: red;
+            }
+
+            50% {
+                background-color: grey;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <button class="recordButton">Начать запись</button>
+        <div id="btn" class="circle"></div>
+    </div>
+
+    <script>
+        const recordButtons = document.querySelectorAll('.recordButton');
+        const circles = document.querySelectorAll('.circle');
+
+        recordButtons.forEach(recordBtn => {
+            recordBtn.addEventListener('click', function(element){
+                console.log(element.target);
+                
+                circles.forEach(cirl => {
+                    if(!cirl.style.animation){
+                        cirl.style.animation = '1.5s identifier infinite ease-in';
+                        recordButtons.forEach(el => {
+                            el.innerText = 'остановить запись';
+                        });
+                    }else{
+                        cirl.style.animation = '';
+                        recordButtons.forEach(el => {
+                            el.innerText = 'Начать запись';
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

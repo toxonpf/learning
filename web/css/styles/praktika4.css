@@ -1,0 +1,32 @@
+body{
+    background-color: #e4e4e4;
+    color: black;
+    margin: 0px;
+    padding: 0px;
+    font-family: sans-serif;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+}
+
+#wraper{
+    width: 70%;
+    margin: auto;
+    padding: 20px 0px;
+    background-image: url(../img/background.png);
+}
+
+#navbarTop{
+    display: flex;
+    justify-content: center;
+}
+
+#navbarTopNumber{
+    font-size: 30px;
+}
+
+#navbarTopPlate{
+    
+}

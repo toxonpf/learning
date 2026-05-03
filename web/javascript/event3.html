@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        p {
+            color: aliceblue;
+            transition: all 0.2s;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body style="background-color: #282828;">
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <p>text</p>
+    <script>
+        let letter = [
+            '#FFCC00',
+            '#B85D43',
+            '#C9A0DC',
+            '#6686ff',
+            '#7DF9FF',
+            '#2e7500',
+            '#ddd55a',
+            '#ff9500',
+            '#00ffb1',
+            '#ff00c3'
+        ];
+
+        document.querySelectorAll("p").forEach(el => {
+            el.onmouseover = () => {
+                el.style.color = letter[Math.floor(Math.random() * 10)];
+            }
+        });
+    </script>
+</body>
+
+</html>

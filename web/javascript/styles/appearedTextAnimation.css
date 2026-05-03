@@ -1,0 +1,49 @@
+body{
+    font-size: 50px;
+}
+
+#backdropTitle{
+    color: #fff;
+    display: inline-block;
+    overflow: hidden;
+}
+
+#shadowBlock{
+    width: 100%;
+    height: inherit;background-color: #fff;
+    position: relative;
+    bottom: 58px;
+    background-color: #333;
+    color: #333;
+    animation: 1.65s shadowBlock forwards;
+}
+
+@keyframes shadowBlock{
+    0%{
+        left: 0px;
+    }
+    15%{
+        left: 0px;
+    }
+    100%{
+        left: 570px;
+    }
+}
+
+#animated-text {
+    color: #fff;
+}
+
+.letter {
+    opacity: 0;                 /* Начальное состояние */
+    animation: fadeIn 0.3s forwards; /* Анимация появления */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            let redDiv = document.createElement('div');
+            redDiv.style.border = "3px solid red";
+            redDiv.style.display = 'inline-block';
+            redDiv.style.padding = '10px';
+            document.body.appendChild(redDiv);
+
+            let greenDiv = document.createElement('div');
+            greenDiv.style.border = "3px solid green";
+            greenDiv.style.display = 'inline-block';
+            greenDiv.style.padding = '10px';
+            redDiv.appendChild(greenDiv);
+
+            let lightBlueDiv = document.createElement('div');
+            lightBlueDiv.style.border = "3px solid #00ffff";
+            lightBlueDiv.style.display = 'inline-block';
+            lightBlueDiv.style.padding = '10px';
+            greenDiv.appendChild(lightBlueDiv);
+            
+            let purpleDiv = document.createElement('div');
+            purpleDiv.style.border = "3px solid purple";
+            purpleDiv.style.display = 'inline-block';
+            purpleDiv.style.padding = '10px';
+            purpleDiv.style.height = '100px';
+            purpleDiv.style.width = '50px';
+            purpleDiv.style.float = 'left';
+            purpleDiv.style.color = '#00ffff';
+            purpleDiv.innerText = "Some text 1";
+            lightBlueDiv.appendChild(purpleDiv);
+
+            let pinkDiv = document.createElement('div');
+            pinkDiv.style.border = "3px solid pink";
+            pinkDiv.style.display = 'inline-block';
+            pinkDiv.style.padding = '10px';
+            pinkDiv.style.height = '100px';
+            pinkDiv.style.width = '100px';
+            pinkDiv.style.marginLeft = '20px';
+            pinkDiv.style.color = 'purple';
+            pinkDiv.innerText = "Some text 2";
+            lightBlueDiv.appendChild(pinkDiv);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            var newWin = window.open("about:blank", "hello", "width=200,height=200");
+            var sec = 5;
+            setInterval(function(){
+                if(newWin && newWin.closed){
+                    newWin = window.open("about:blank", "hello", "width=200,height=200");
+                    var countdown = setInterval(function(){
+                        sec--;
+                        newWin.document.write(sec);
+                    }, 1000);
+                    sec = 5;
+                }else if(newWin && !newWin.closed){
+                    clearInterval(countdown);
+                    newWin.close();
+                    sec = 5;
+                }
+                sec = 5;
+            }, 5000);
+        </script>
+    </body>
+</html>

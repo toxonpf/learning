@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="stylesheet" href="styles/backdropTitle.css">
+    </head>
+    <body style="background-color: #333;">
+        <div id="backdropText">
+            <div class="strouce"></div>
+        </div>
+        <script>
+            const backdropText = document.getElementById("backdropText");
+            const strouce = document.getElementsByClassName("strouce")[0];
+            let screenWidth = (window.innerWidth) ;
+            let screenHeight = (window.innerHeight) ;
+            let i = 0;
+
+            backdropText.style.height = (screenHeight - 5) + "px";
+
+            function widthIteration(){
+                screenWidth = window.innerWidth;
+                blocks = "";
+                for(let w = 0; w < i; w++){
+                    blocks += "<span>" + "404 error four|zero|four " + "</span>";
+                }
+                return blocks;
+            }
+            
+            function heightIteration(){
+                screenHeight = window.innerHeight;
+                i = 0;
+                i = (screenHeight / 90);
+                i = Math.ceil(i);
+                backdropText.innerHTML = "";
+                for(let h = 0; h <= i; h++){
+                    backdropText.innerHTML += "<div class='strouce'>" + widthIteration(); + "</div>";
+                }
+            }
+            heightIteration();
+
+            window.addEventListener('resize', () =>{
+                heightIteration();
+                backdropText.style.height = (screenHeight - 5) + "px";
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Практическая работа</title>
+		<style type="text/css">
+			body {
+			  margin: 10px auto;
+			  width: 470px;
+			}
+
+
+			h3 {
+			  margin: 0;
+			  padding: 0 0 .3em;
+			}
+
+
+			p {
+			  margin: 0;
+			  padding: 0 0 .5em;
+			}
+
+
+			.pane {
+			  background: #edf5e1;
+			  padding: 10px 20px 10px;
+			  position: relative;
+			  border-top: solid 2px #c4df9b;
+              transition: all 1s;
+			}
+
+
+			.pane .delete {
+			  position: absolute;
+			  top: 10px;
+			  right: 10px;
+			  cursor: pointer;
+			}
+
+            @keyframes disappear {
+                0% {
+                    opacity: 1;
+                }
+
+                100% {
+                    opacity: 0;
+                }
+                
+            }
+		</style>
+	</head>
+	
+	<body>
+		<div class="pane">
+		  <h3>Sample heading</h3>
+		  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi malesuada, ante at feugiat tincidunt, enim massa
+			gravida metus, commodo lacinia massa diam vel eros. Proin eget urna. Nunc fringilla neque vitae odio. Vivamus vitae
+			ligula.</p>
+		  <img src="https://md5.kz/uploads/teachUploads/btn-delete.gif" alt="delete" class="delete"/>
+		</div>
+		<div class="pane">
+		  <h3>Sample heading</h3>
+		  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi malesuada, ante at feugiat tincidunt, enim massa
+			gravida metus, commodo lacinia massa diam vel eros. Proin eget urna. Nunc fringilla neque vitae odio. Vivamus vitae
+			ligula.</p>
+		  <img src="https://md5.kz/uploads/teachUploads/btn-delete.gif" alt="delete" class="delete"/>
+		</div>
+		<div class="pane">
+		  <h3>Sample heading</h3>
+		  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi malesuada, ante at feugiat tincidunt, enim massa
+			gravida metus, commodo lacinia massa diam vel eros. Proin eget urna. Nunc fringilla neque vitae odio. Vivamus vitae
+			ligula.</p>
+		  <img src="https://md5.kz/uploads/teachUploads/btn-delete.gif" alt="delete" class="delete"/>
+		</div>
+		<div class="pane">
+		  <h3>Sample heading</h3>
+		  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi malesuada, ante at feugiat tincidunt, enim massa
+			gravida metus, commodo lacinia massa diam vel eros. Proin eget urna. Nunc fringilla neque vitae odio. Vivamus vitae
+			ligula.</p>
+		  <img src="https://md5.kz/uploads/teachUploads/btn-delete.gif" alt="delete" class="delete"/>
+		</div>
+		<div class="pane">
+		  <h3>Sample heading</h3>
+		  <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi malesuada, ante at feugiat tincidunt, enim massa
+			gravida metus, commodo lacinia massa diam vel eros. Proin eget urna. Nunc fringilla neque vitae odio. Vivamus vitae
+			ligula.</p>
+		  <img src="https://md5.kz/uploads/teachUploads/btn-delete.gif" alt="delete" class="delete"/>
+		</div>
+        <script>
+            const deleteButtons = document.querySelectorAll('.delete');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function(event){
+                    const parent = button.parentElement;
+                    parent.style.animation = 'disappear 1s forwards';
+                    parent.style.height = (parent.offsetHeight - 22.5) + 'px';
+                    setTimeout(() => {
+                        parent.remove();
+                    }, 1000);
+                });
+            });
+        </script>
+	</body>
+</html>

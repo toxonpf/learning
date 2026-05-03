@@ -1,0 +1,38 @@
+body{
+	background-color:#293134;
+	color:white;
+	font-family:Calibri;
+	font-size:24px;
+	perspective:2000px;
+	perspective-origin:center;
+}
+
+
+#block1{
+	border:5px solid red;
+	width:300px;
+	height:200px;
+	transform-style:preserve-3d;
+	transform:translateX(800px) translateY(400px) translateZ(500px) rotateX(30deg) rotateY(0deg);
+	backface-visibility:hidden;
+	transition:all 1s ease;
+}
+
+
+#block1:hover{
+		transform:translateX(800px) translateY(400px) translateZ(500px) rotateX(90deg) rotateY(9deg);
+}
+
+
+#block2{
+	border:3px solid green;
+	width:100px;
+	height:75px;
+	transform:rotateX(0deg) rotateY(0deg) translateZ(100px) skewX(0deg);
+	transition:all 1s ease;
+}
+
+
+#block2:hover{
+	transform:rotateX(0deg) rotateY(0deg) translateZ(100px) skewX(-50deg) skewY(70deg);
+}

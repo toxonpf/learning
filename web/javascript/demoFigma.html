@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #333;
+            color: white;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        input {
+            margin: 2.5px 0px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            padding: 3px;
+        }
+
+        select {
+            margin: 2.5px 0px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            padding: 3px;
+        }
+
+        #editBlock {
+            position: absolute;
+            background-color: #335;
+            border: 2px solid white;
+            padding: 5px;
+            right: 10px;
+            top: 10px;
+            z-index: 1000;
+            user-select: none;
+            font-size: 16px;
+        }
+
+        button {
+            font-family: Arial, sans-serif;
+            padding: 10px 20px;
+            background-color: #444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editBlock">
+        <form name="editBlock">
+            <p>
+                <label for="text">fill</label>
+                <br>
+                <input type="color" name="backgroundColor">
+                <br>
+                <input placeholder="radius" type="number" min="1" max="100" name="borderRadius">
+            </p>
+            <p>
+                <label for="text">border</label>
+                <br>
+                <input type="color" name="borderColor">
+                <br>
+                <input placeholder="borderWidth" type="number" min="1" max="100" name="borderWidth">
+                <br>
+                <select name="borderStyle">
+                    <option value="solid">solid</option>
+                    <option value="dotted">dotted</option>
+                    <option value="dashed">dashed</option>
+                    <option value="double">double</option>
+                    <option value="groove">groove</option>
+                    <option value="ridge">ridge</option>
+                </select>
+            </p>
+        </form>
+        <p>
+            <button id="deleteBTN">delete</button>
+        </p>
+    </div>
+    <script>
+        var deleteBTN = document.querySelector("#deleteBTN");
+        let delIsOn = false;
+        deleteBTN.addEventListener("click", function () {
+            if (delIsOn == false) {
+                deleteBTN.innerHTML = "click";
+                delIsOn = true;
+            } else {
+                deleteBTN.innerHTML = "delete";
+                delIsOn = false;
+            }
+        });
+
+        var backgroundColor = document.forms[0]['backgroundColor'].value;
+        var borderRadius = document.forms[0]['borderRadius'].value;
+        var borderColor = document.forms[0]['borderColor'].value;
+        var borderWidth = document.forms[0]['borderWidth'].value;
+        var borderStyle = document.forms[0]['borderStyle'].value;
+        window.addEventListener("input", function () {
+            backgroundColor = document.forms[0]['backgroundColor'].value;
+            borderRadius = document.forms[0]['borderRadius'].value;
+            borderColor = document.forms[0]['borderColor'].value;
+            borderWidth = document.forms[0]['borderWidth'].value;
+            borderStyle = document.forms[0]['borderStyle'].value;
+        });
+
+
+        document.body.addEventListener("mousedown", (mousedown) => {
+            var element = document.createElement("div");
+            if (!delIsOn) {
+                element.style.position = "fixed";
+                element.style.backgroundColor = backgroundColor;
+                element.style.borderRadius = borderRadius + "px";
+                element.style.border = borderWidth + "px " + borderStyle + " " + borderColor;
+                element.style.top = mousedown.pageY + "px";
+                element.style.left = mousedown.pageX + "px";
+                element.className = "ADDBlock";
+                document.body.appendChild(element);
+
+                function mousemoveEvent(mousemove) {
+                    if (mousedown.pageX < mousemove.pageX) {
+                        element.style.width = mousemove.pageX - mousedown.pageX + "px";
+
+                    } else {
+                        element.style.width = mousedown.pageX - mousemove.pageX + "px";
+                        element.style.left = mousemove.pageX + "px";
+                    }
+
+                    if (mousedown.pageY < mousemove.pageY) {
+                        element.style.height = mousemove.pageY - mousedown.pageY + "px";
+                    } else {
+                        element.style.height = mousedown.pageY - mousemove.pageY + "px";
+                        element.style.top = mousemove.pageY + "px";
+                    }
+                };
+
+                document.body.addEventListener("mousemove", mousemoveEvent);
+                document.body.addEventListener("mouseup", function (mouseup) {
+                    document.body.removeEventListener("mousemove", mousemoveEvent);
+                });
+            } else {
+                document.addEventListener("click", function (event) {
+                    if (delIsOn && event.target.className == "ADDBlock") {
+                        event.target.remove();
+                    }
+                });
+            }
+        });
+
+        var editBlock = document.querySelector("#editBlock");
+        editBlock.addEventListener("mousedown", (event) => {
+            event.stopPropagation();
+        });
+    </script>
+</body>
+
+</html>

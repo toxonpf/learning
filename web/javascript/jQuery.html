@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Практическая работа в jQuery</title>
+    <style type="text/css">
+        body {
+            padding: 15px;
+            background-color: #333;
+        }
+
+        .box {
+            outline: 3px solid black;
+            width: 250px;
+            height: 250px;
+            float: left;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .blue {
+            background-color: blue;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+</head>
+
+<body>
+    <button>Изменить цвет фона каждого второго элемента на синий</button>
+    <br />
+    <br />
+    <br />
+    <div>
+        <div class="box red">This is red box</div>
+        <div class="box red changeable">This is red box</div>
+        <div class="box red">This is red box</div>
+        <div class="box red changeable">This is red box</div>
+        <div class="box red">This is red box</div>
+        <div class="box red changeable">This is red box</div>
+    </div>
+
+    <script>
+        $("button").click(function () {
+            $(".changeable").toggleClass("blue");
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+        body {
+            transition: all 0.5s;
+        }
+
+        #saveMassageRel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        #saveMassageBlock {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        @keyframes saveBlockAdd {
+            0% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes saveBlockClose {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="saveMassageRel">
+        <div id="saveMassageBlock">color saved</div>
+    </div>
+    <script>
+        if (localStorage.getItem("color")) {
+            document.body.style.backgroundColor = localStorage.getItem("color");
+        } else {
+            document.body.style.backgroundColor = "#333";
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if (event.code == "Digit1" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#ff9191";
+            } else if (event.code == "Digit2" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#91ff91";
+            } else if (event.code == "Digit3" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#9191ff";
+            } else if (event.code == "Digit4" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#ff91ff";
+            } else if (event.code == "Digit5" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#91ffff";
+            } else if (event.code == "Digit6" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#ffff91";
+            } else if (event.code == "Digit7" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#bf91ff";
+            } else if (event.code == "Digit8" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#91ffe0";
+            } else if (event.code == "Digit9" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#ff91bf";
+            } else if (event.code == "Digit0" && (event.ctrlKey || event.metaKey)) {
+                document.body.style.backgroundColor = "#333";
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.code == "KeyS" && (event.ctrlKey || event.metaKey)) {
+                localStorage.setItem("color", document.body.style.backgroundColor);
+
+                event.preventDefault();
+                document.getElementById("saveMassageBlock").style.display = "block";
+                document.getElementById("saveMassageBlock").style.animation =
+                    "saveBlockAdd 1s forwards";
+                setTimeout(() => {
+                    document.getElementById("saveMassageBlock").style.animation =
+                        "saveBlockClose 1s forwards";
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,289 @@
+
+@{
+	box-sizing:border-box;
+}
+
+body{
+
+    background-color: #333;
+
+}
+
+
+
+#world{
+
+    perspective:1000px;
+
+    perspective-origin:center;
+
+    margin:200px auto;
+
+    animation:animbox 30s linear infinite reverse;
+
+    transform-style:preserve-3d;
+
+
+}
+
+
+
+.cube{
+
+    outline: 1px solid red;
+
+    transform-style:preserve-3d;
+
+    transform:rotateX(0deg);
+
+    display: inline-block;
+
+    margin-left: 383px;
+
+
+
+}
+
+
+
+.side{
+
+    width:383px;
+
+    height:383px;
+
+    position:absolute;
+
+    color:rgba(0,0,0,0);
+
+    font-size:64px;
+
+    line-height:300px;
+
+    text-align:center;
+
+    background-size:100% 100%;
+
+    background-repeat:no-repeat;
+
+    background-position:center;
+
+}
+
+
+
+#front1{
+
+    transform:translateZ(191.5px);
+
+    background:url('../img/textures/earth-green.png');
+
+}
+
+
+
+#back1{
+
+    transform:translateZ(-191.5px);
+
+    background:url('../img/textures/earth-green.png');
+
+}
+
+
+
+
+
+#right1{
+
+    transform:rotateY(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/earth-green.png');
+
+}
+
+
+
+
+
+#left1{
+
+    transform:rotateY(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/earth-green.png');
+
+}
+
+
+
+
+
+#top1{
+
+    transform:rotateX(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/green.png');
+
+}
+
+
+
+
+
+#bottom1{
+
+    transform:rotateX(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/earth.png');
+
+}
+
+
+
+#front2{
+
+    transform:translateZ(191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+#back2{
+
+    transform:translateZ(-191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+
+
+#right2{
+
+    transform:rotateY(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+
+
+#left2{
+
+    transform:rotateY(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+
+
+#top2{
+
+    transform:rotateX(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+
+
+#bottom2{
+
+    transform:rotateX(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/tree.png');
+
+}
+
+
+
+#front3{
+
+    transform:translateZ(191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+
+
+#back3{
+
+    transform:translateZ(-191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+
+
+
+
+#right3{
+
+    transform:rotateY(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+
+
+
+
+#left3{
+
+    transform:rotateY(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+
+
+
+
+#top3{
+
+    transform:rotateX(-90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+
+
+
+
+#bottom3{
+
+    transform:rotateX(90deg) translateZ(-191.5px);
+
+    background:url('../img/textures/glass.png');
+
+}
+
+@keyframes animbox{
+    0%{
+        transform:rotateX(0deg) rotateY(0deg);
+    }
+    
+    50%{
+        transform:rotateX(-360deg) rotateY(-360deg) translateZ(-500px);
+    }
+    
+    100%{
+        transform:rotateX(360deg) rotateY(360deg) translateZ(500px);
+    }
+}

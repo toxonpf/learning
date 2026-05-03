@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            @font-face {
+                font-family: main;
+                src: url(fonts/SourceCodePro.ttf);
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center; 
+                height: 100vh;
+                background-color: #333333;
+                gap: 20px;
+            }
+
+            #button {
+                font-family: main;
+                padding: 10px 20px;
+                background-color: #4c91af;
+                color: white;
+                border: none;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 30px;
+            }
+
+            #clear {
+                font-family: main;
+                padding: 10px 20px;
+                background-color: #4c91af;
+                color: white;
+                border: none;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <button id="button">print visits</button>
+        <button id="clear">clear</button>
+        <script>
+            const button = document.getElementById('button');
+            const clear = document.getElementById('clear');
+            let letterWin = null;
+            var adress = window.location.href;
+
+            let loadTime = new Date().toLocaleString();
+            if(!localStorage.getItem('loadTimes')) localStorage.setItem('loadTimes', JSON.stringify(['FL']));
+            let loadsLetter = JSON.parse(localStorage.getItem('loadTimes'));
+            loadsLetter.push(loadTime);
+            localStorage.setItem('loadTimes', JSON.stringify(loadsLetter));
+            console.log(localStorage.getItem('loadTimes'));
+            
+
+            button.addEventListener('click', () => {
+                if(!letterWin || letterWin.closed) {
+                    letterWin = window.open("about:blank", "hello", "width=700,height=700");
+                    letterWin.document.body.style.backgroundColor = '#222';
+                    letterWin.document.body.style.color = 'white';
+                    letterWin.document.body.style.fontFamily = 'main';
+
+                    const tableBlock = document.createElement('table');
+                    tableBlock.setAttribute('border', '2');
+                    letterWin.document.body.appendChild(tableBlock);
+                    tableBlock.innerHTML = "<tr><th>№</th><th>adress</th><th>Time</th><th>Date</th></tr>";
+                    for(let i = 0; i < loadsLetter.length; i++) {
+                        tableBlock.innerHTML += "<tr><td>" + i + "</td><td>" + adress + "</td><td>" + loadsLetter[i].split(',')[1] + "</td><td>" + loadsLetter[i].split(' ')[0] + "</td></tr>";
+                    }
+                } else { 
+                    letterWin.focus();
+                }
+            });
+            window.addEventListener('beforeunload', () => {
+                letterWin.close();
+            });
+
+            clear.addEventListener('click', () => {
+                localStorage.clear();
+                loadsLetter = [];
+                letterWin.document.body.innerHTML = '';
+                letterWin.focus();
+            });
+        </script>
+    </body>
+</html>

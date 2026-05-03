@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>document</title>
+    <style>
+        body {
+            background-color: #333;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            font-style: 11px;
+        }
+
+
+        #canv {
+            background-color: #444;
+        }
+
+
+        #dateBlock {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            font-size: 20px;
+        }
+
+
+        #date {
+            margin-top: 30px;
+        }
+
+
+        #time {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canv">Обновите браузер</canvas>
+    <input type="color" id="colorFill" />
+    <input value="5" type="number" id="bolthElem" />
+    <script>
+        const canvas = document.querySelector('#canv');
+        canvas.width = 1000;
+        canvas.height = 700;
+        const ctx = canvas.getContext('2d');
+
+        const colorFill = document.querySelector('#colorFill');
+        const bolthElem = document.querySelector('#bolthElem');
+        var bolth = bolthElem.value;
+
+
+        window.addEventListener('change', function () {
+            ctx.fillStyle = colorFill.value;
+            bolth = bolthElem.value;
+        });
+
+
+        canvas.addEventListener('mousemove', (event) => {
+            if (event.buttons > 0) {
+                ctx.fillRect(event.offsetX - (bolth / 2), event.offsetY - (bolth / 2), bolth, bolth);
+            }
+        });
+    </script>
+
+
+    <!-- <script>
+        const canvas = document.querySelector('#canv');
+        const ctx = canvas.getContext('2d');
+
+
+        canvas.width = window.innerWidth;
+        var w = canvas.width;
+        canvas.height = window.innerHeight;
+        var h = canvas.height;
+        var text = 'toxon ';
+        var font = '11';
+        letters = text.split('');
+        var textColor = '#f00'
+
+
+
+
+        setInterval(() => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, w, h);
+            var wPositions = w / font;
+            var wPos = Math.floor(Math.random() * wPositions) * font;
+
+
+            for (let i = 0; i < h / font; i++) {
+                setTimeout(() => {
+                    ctx.font = font + 'px Arial';
+                    ctx.fillStyle = textColor;
+                    ctx.fillText(letters[Math.floor(Math.random() * letters.length)], wPos, i * font);
+                }, i * 100);
+            }
+        }, 50)
+    </script>
+    <script>
+        let ci = 0;
+        window.addEventListener('click', (event) => {
+            if (ci == 0) {
+                textColor = '#f00';
+                ci = 1;
+            } else if (ci == 1) {
+                textColor = '#0f0';
+                ci = 2;
+            } else if (ci == 2) {
+                textColor = '#00f';
+                ci = 0;
+            }
+        });
+    </script> -->
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var i = 1;
+            function changeTitile(title1, title2){
+                if(i == 1){
+                    i = 2;
+                    document.title = title2;
+                }else{
+                    i = 1;
+                    document.title = title1;
+                }
+            }
+            
+            setInterval(function(){
+                changeTitile("lol", "foo");
+            }, 2000);
+        </script>
+        
+    </body>
+</html>

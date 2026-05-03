@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var user = {
+                name : "rick",
+                secName : "estley",
+                city : "london",
+                adress : "st. pushkina / h. kalatushkina",
+                color : "red"
+            }
+
+            var user1 = {
+                name: "john",
+                secName: "doe",
+                city: "new york",
+                adress: "5th avenue / b. 10",
+                color: "blue"
+            };
+
+            var user2 = {
+                name: "jane",
+                secName: "smith",
+                city: "paris",
+                adress: "rue de rivoli / apt. 42",
+                color: "green"
+            };
+
+            var userA3 = {
+                name: "michael",
+                secName: "johnson",
+                city: "sydney",
+                adress: "george street / b. 15",
+                color: "yellow"
+            };
+
+            var userA1 = [
+                "rick", 
+                "estley", 
+                "london", 
+                "st. pushkina / h. kalatushkina", 
+                "red"
+            ];
+
+            var userA2 = [
+                "john", 
+                "doe", 
+                "new york", 
+                "5th avenue / b. 10", 
+                "blue"
+            ];
+
+            var userA3 = [
+                "jane", 
+                "smith", 
+                "paris", 
+                "rue de rivoli / apt. 42", 
+                "green"
+            ];
+
+            var array = [
+                1,
+                2,
+                3,
+                4,
+                [
+                    5,
+                    6,
+                    [7,8,9],
+                    [
+                        10,
+                        11,
+                        [12,13,14,15]
+                    ],
+                    16,
+                    17,
+                    [18,19,20,21],
+                    22,
+                    23
+                ],
+                24,
+                [
+                    25,
+                    26,
+                    27,
+                    [28,29,30]
+                ]
+            ]
+
+            function f1(obj){
+                let i = 0;
+                for(i in obj){
+                    console.log(obj[i]);
+                }
+            }
+            // f1(user);
+
+
+            function f2(){
+                for(let i = 0; i <= arguments.length; i++){
+                    if(typeof(arguments[i]) == "object"){
+                        if(arguments[i].length){
+                            console.log("\n ARRAY ARRAY");
+                            arguments[i].forEach(element => {
+                                console.log(element + "\n");
+                            });
+                        }else{
+                            console.log("\n OBJECT OBJECT");
+                            let u = 0;
+                            for(u in arguments[i]){
+                                console.log(arguments[i][u]);
+                            }
+                        }
+                    }
+                }
+            }
+            // f2(user1, userA3, user2, userA1);
+
+            function f3(arr){
+                arr.forEach(element => {
+                    if(typeof(element) == "object"){
+                        f3(element);
+                    }else{
+                        console.log(element);
+                    }
+                });
+            }
+            f3(array);
+        </script>
+    </body>
+</html>

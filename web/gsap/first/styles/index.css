@@ -1,0 +1,18 @@
+body{
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.block{
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    margin: 10px;
+}
+
+#block{
+    transform: skew(10deg, 10deg);
+}

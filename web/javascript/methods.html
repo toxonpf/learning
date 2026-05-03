@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var obj = {
+                name : "rick",
+                secName : "estley",
+                adress : "str. pushkin",
+                country : "london",
+                number : "88005553535",
+                fvrtColor : "red",
+                fulName : function(){
+                    return this.name + " " + this.secName;
+                },
+                living : function(){
+                    return  this.country + " " + this.adress;
+                }
+            }
+
+            var obj2 = {
+                name : "lina",
+                secName : "kurmangazy",
+                adress : "str. abaya",
+                country : "kazahstan",
+                number : "+77055555676",
+                fvrtColor : "blue",
+                fulName : function(){
+                    return this.name + " " + this.secName;
+                },
+                living : function(){
+                    return  this.country + " " + this.adress;
+                }
+            }
+
+            function innerfFulName(){
+                console.log(this.name + " " + this.secName)
+            }
+
+            innerfFulName.call(obj);
+        </script>
+    </body>
+</html>

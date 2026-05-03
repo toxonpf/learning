@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>document</title>
+    <style>
+        body {
+            background-color: #333;
+            padding: 15px;
+            font-size: 21px;
+            color: orange;
+        }
+
+        .button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #ffcc00;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+        .burger {
+            height: 0px;
+            background-color: #333;
+            list-style-type: none;
+            width: 200px;
+            overflow: hidden;
+        }
+
+        @keyframes open {
+            from {
+                height: 0px;
+            }
+
+            to {
+                height: fit-content;
+            }
+        }
+
+        @keyframes close {
+            from {
+                height: fit-content;
+            }
+
+            to {
+                height: 0px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <ul>
+        <li>
+            <div onclick="openBurger('firstBurger')" class="button">
+                Title of expanded Element
+            </div>
+            <ul id="firstBurger" class="burger">
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>
+                    <div onclick="openBurger('thirdBurger')" class="button">
+                        Title of expanded Element
+                    </div>
+                    <ul id="thirdBurger" class="burger">
+                        <li>in Expanded</li>
+                        <li>in Expanded</li>
+                        <li>in Expanded</li>
+                        <li>in Expanded</li>
+                        <li>in Expanded</li>
+                        <li>in Expanded</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>No Expanded Element</li>
+        <li>No Expanded Element</li>
+        <li>
+            <div onclick="openBurger('secondBurger')" class="button">
+                Title of expanded Element
+            </div>
+            <ul id="secondBurger" class="burger">
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+                <li>in Expanded</li>
+            </ul>
+        </li>
+        <li>No Expanded Element</li>
+    </ul>
+    <script>
+        let i = 0;
+        function openBurger(burgerId) {
+            i++
+            let burgerIdELEM = document.getElementById(burgerId);
+            if (i % 2) {
+                burgerIdELEM.style.animation = ".3s forwards open";
+            } else {
+                burgerIdELEM.style.animation = ".3s forwards close";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,255 @@
+@font-face {
+    font-family: "header";
+    src: url(../fonts/Bitter.ttf);
+}
+
+@font-face {
+    font-family: "lorem";
+    src: url(../fonts/SpaceMono.ttf);
+}
+
+body {
+    background-color: black;
+    margin: 0px;
+    padding: 0px;
+    color: white;
+}
+
+a{
+    text-decoration: none;
+    color: white;
+    color: #000;
+    letter-spacing: 2.5px;
+    word-spacing: 3px;
+    font-size: 18px;
+    font-family: 'lorem';
+}
+
+#topBackgroundImgBlock {
+    text-align: end;
+    display: flex;
+    justify-content: space-between;
+}
+
+#topHeader {
+    width: 639px;
+    text-align: start;
+    font-family: 'header';
+    margin-top: 213px;
+    margin-left: 64px;
+}
+
+#topHeaderLorem {
+    letter-spacing: 2.5px;
+    word-spacing: 3px;
+    font-size: 22px;
+    font-family: 'lorem';
+}
+
+#topHeaderLoremMEDIA {
+    letter-spacing: 2px;
+    word-spacing: 3px;
+    font-size: 22px;
+    font-family: 'lorem';
+}
+
+#topHeaderButton{
+    width: 215px;
+    background-color: #fff;
+    border: 1px solid black;
+    border-radius: 55px;
+    display: inline-block;
+    text-align: center;
+    margin-top: 24px;
+    box-shadow: 0px 0px 0px 0px #ccc;
+    transition: 0.3s;
+}
+
+#topHeaderButton:hover{
+    box-shadow: -5px -5px 0px 0px #ccc;
+    margin: 29px 0px 0px 5px;
+}
+
+#topHeaderButton div{
+    padding: 20px 10px;
+}
+
+#topHeaderButtonMEDIA{
+    width: 215px;
+    background-color: #fff;
+    border: 1px solid black;
+    border-radius: 55px;
+    display: inline-block;
+    text-align: center;
+    margin-top: 24px;
+    box-shadow: 0px 0px 0px 0px #ccc;
+    transition: 0.3s;
+}
+
+#topHeaderButtonMEDIA:hover{
+    box-shadow: -5px -5px 0px 0px #ccc;
+    margin: 29px 0px 0px 5px;
+}
+
+#topHeaderButtonMEDIA div{
+    padding: 20px 10px;
+}
+
+#topBackgroundImgInscriptions{
+    text-align: end;
+    font-family: "header";
+    margin-right: 20px;
+}
+
+#topBackgroundImgInscriptionsCHILD1{
+    position: absolute;
+    right: 435px;
+    top: 500px;
+    font-size: 40px;
+    text-align: center;
+}
+
+#topBackgroundImgInscriptionsCHILD2{
+    position: absolute;
+    right: 70px;
+    top: 94px;
+    font-size: 40px;
+    text-align: center;
+}
+
+#topHeaderMEDIA{
+    display: none;
+    text-align: start;
+}
+
+#MEDIAPROBLEM{
+    font-size: 60px;
+}
+
+#topBackgroundImgInscriptions img{
+    margin-top: -190px;
+}
+
+#cardsBlock{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 64px;
+}
+
+.borderCardBlock{
+    padding: 1.5px;
+    background: linear-gradient(to right bottom, #999, #111);
+    border-radius: 20px;
+}
+
+.CardBlock{
+    padding: 24px;
+    
+    width: 262px;
+    background: linear-gradient(to bottom, #555, #000);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    font-family: 'lorem';
+}
+
+@media (max-width:1402px) {
+    #topHeaderCHILDMEDIA{
+        font-size: 60px !important;
+    }
+
+    #topHeaderLorem{
+        font-size: 18px;
+    }
+}
+
+@media (max-width:1207px) {
+    #topHeaderCHILDMEDIA{
+        font-size: 50px !important;
+    }
+
+    #topHeaderLorem{
+        font-size: 13px;
+    }
+}
+
+@media (max-width:1207px) {
+    #topBackgroundImgInscriptions img{
+        margin-right: -200px;
+    }
+}
+
+@media (max-width:960px) {
+    #topBackgroundImgInscriptionsCHILD1{
+        right: 250px;
+    }
+
+    #topHeader{
+        margin-top: 100px;
+    }
+
+    #topBackgroundImgInscriptions img{
+        margin-right: -300px;
+    }
+
+    #topBackgroundImgInscriptionsCHILD1{
+        right: 150px;
+    }
+}
+
+@media (max-width:860px) {
+    #topHeader{
+        display: none;
+    }
+
+    #topBackgroundImgInscriptionsCHILD1{
+        display: none !important;
+    }
+
+    #topBackgroundImgInscriptionsCHILD2{
+        display: none !important;
+    }
+
+    #topBackgroundImgBlock {
+        display: block;
+    }
+    
+    #topBackgroundImgInscriptions img{
+        margin: 0px;
+        margin-top: -100px;
+        filter: blur(30px);
+    }
+
+    #topHeaderMEDIA{
+        display:block;
+        margin: 0px 20px;
+        position: absolute;
+        top: 300px;
+    }
+
+    #topBackgroundImgInscriptions{
+        text-align: center;
+    }
+}
+
+@media (max-width:552px) {
+    #MEDIAPROBLEM{
+        font-size: 50px;
+    }
+
+    #topHeaderButtonMEDIA div{
+        padding: 15px 10px;
+    }
+}
+
+@media (max-width:472px) {
+    #MEDIAPROBLEM{
+        font-size: 40px;
+    }
+
+    #topHeaderLoremMEDIA{
+        font-size: 16px;
+    }
+}

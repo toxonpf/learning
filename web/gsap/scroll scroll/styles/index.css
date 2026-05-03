@@ -1,0 +1,65 @@
+body {
+    color: #fff;
+    background-color: #333;
+
+    margin: 0;
+    padding: 0;
+
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+}
+
+#myButton {
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 40px;
+    display: inline-block;
+}
+
+#myButton:hover {
+    background: #0056b3;
+}
+
+.child{
+    height: 100vh;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+}
+
+.block {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+}
+
+.anim{
+    background-color: blue;
+}
+
+#thrd{
+    height: 100%;
+
+    color: white;
+    background-color: transparent;
+
+    font-size: 100px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.imgBlock{
+    overflow: hidden;
+
+    & img {
+        position: absolute;
+    }
+}

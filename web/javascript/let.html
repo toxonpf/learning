@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body style="background-color: #333; color: aliceblue;">
+    <color background="#111" font="#4f1">sdfg</color>
+    <color background="#f5a" font="#06a">sdfg</color>
+    <color background="#cc9" font="#d20">sdfg</color>
+    <script>
+        const colorTags = document.getElementsByTagName('color');
+        if(colorTags.length){
+            for(let i = 0; i < colorTags.length; i++){
+                let tag = colorTags[i];
+
+                if(tag.hasAttribute('font')){
+                    let tagAttributeColor = tag.getAttribute('font');
+                    tag.style.color = tagAttributeColor;
+                }
+
+                if(tag.hasAttribute('background')){
+                    let tagAttributeColor = tag.getAttribute('background');
+                    tag.style.background = tagAttributeColor;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

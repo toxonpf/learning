@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            var chekingWord = "asdfghjk";
+            var checkoutArray = [];
+            for(var i = 0; i <= chekingWord.length - 1; i++){
+                checkoutArray.push(chekingWord[i]);
+            }
+
+            var resultsOfCompare = [];
+            checkoutArray.forEach(chekingLTR => {
+                checkoutArray.forEach(checkedLTR => {
+                    if(chekingLTR == checkedLTR){
+                        resultsOfCompare.push(false);
+                    }else{
+                        resultsOfCompare.push(true);
+                    }
+                });
+            });
+
+            var culcRepeat = 0;
+            resultsOfCompare.forEach(element => {
+                if(element == false){
+                    culcRepeat++
+                }
+            });
+
+            if(culcRepeat > chekingWord.length){
+                console.log(false);
+            }else{
+                console.log(true);
+            }
+        </script>
+    </body>
+</html>

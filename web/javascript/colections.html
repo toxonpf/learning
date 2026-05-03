@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body>
+        <a href="https://www.google.com" target="_blank">Google</a><br>
+        <a href="https://www.wikipedia.org" target="_blank">Wikipedia</a><br>
+        <a href="https://www.youtube.com" target="_blank">YouTube</a><br>
+        <a href="https://www.github.com" target="_blank">GitHub</a><br>
+        <a href="https://www.stackoverflow.com" target="_blank">Stack Overflow</a><br>
+        <a href="https://www.reddit.com" target="_blank">Reddit</a><br>
+        <a href="https://www.linkedin.com" target="_blank">LinkedIn</a><br>
+        <script>
+            var links = document.links;
+            var listLenght = links.length;
+            for(var i = 0; i <= listLenght; i++){
+                if(i % 2){
+                    links[i].style.color = "red";
+                }
+            }
+        </script>
+    </body>
+</html>

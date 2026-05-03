@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            function User(){
+                this.login;
+                this.mail;
+                this.age;
+                this.status = "user";
+            }
+
+            var user = new User();
+            
+            user.__proto__.name = "Rick";
+            console.log(user.name);
+        </script>
+    </body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            .element{
+                color: aliceblue;
+                font-family: system-ui;
+            }
+            .opacity{
+                opacity: 0.3;
+                font-family: system-ui;
+            }
+        </style>
+    </head>
+    <body style="background-color: #333;">
+        <div id="rel"></div>
+        <script>
+            var generatedHtmlElements = [];
+            var addingElement = document.createElement('div');
+            const rel = document.getElementById('rel');
+            for (let i = 1; i <= 100; i++) {
+                addingElement.setAttribute('class', 'element');
+                addingElement.innerText = 'element ' + i;
+                
+                generatedHtmlElements.push(addingElement);
+                rel.appendChild(addingElement);
+
+                addingElement = document.createElement('div');
+            }
+
+            let random = 0;
+            let randomElementsNomner = [];
+            for(let i = 0; i < 10; i++){
+                random = Math.floor(Math.random() * 100);
+                randomElementsNomner.push(random);
+
+                let elementIdValue = 'random ' + random;
+                let randomElement = rel.children[random - 1];
+                let idValue = 'random' + random;
+                if(randomElement.hasAttribute('id')){
+                    i--;
+                }else{
+                    randomElement.setAttribute('id', idValue);
+                }
+                
+            }
+
+            for(let i = 0; i < 100; i++){
+                let elementWithId = rel.children[i];
+                
+                if(elementWithId.hasAttribute('id')){
+                    elementWithId.setAttribute('class', 'opacity');
+                }
+            }
+        </script>
+    </body>
+</html>

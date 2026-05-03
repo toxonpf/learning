@@ -1,0 +1,44 @@
+body{
+    padding: 0px;
+    margin: 0px;
+}
+
+#main{
+    width: 100vw;
+    height: 100vh;
+    animation-name: main;
+    background-size: cover;
+    animation-duration: 30s;
+    animation-iteration-count: infinite; 
+}
+
+
+@keyframes main{
+    0%{
+        background-image: url(../img/165088-retrovejv-stil_retro-retrofuturizm-synthwave-atmosfera-550x310.jpg);
+    }
+    10%{
+        background-image: url(../img/d.webp);
+    }
+    20%{
+        background-image: url(../img/g.jpg);
+    }
+    30%{
+        background-image: url(../img/h.jpg);
+    }
+    40%{
+        background-image: url("../img/j.jpg");
+    }
+    50%{
+        background-image: url("../img/n.jpg");
+    }
+    60%{
+        background-image: url("../img/r.jpg");
+    }
+    70%{
+        background-image: url("../img/v.jpg");
+    }
+    70%{
+        background-image: url("../img/x.jpg");
+    }
+}

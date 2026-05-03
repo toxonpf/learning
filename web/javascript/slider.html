@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Тема урока: Работа с узлами DOM дерева в JavaScript</title>
+    <style>
+        /* Общие стили для страницы */
+        body {
+            background-color: #333;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 25px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #ffcc00;
+        }
+
+        /* Слайдер */
+        #slider {
+            width: 720px;
+            height: 405px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #slider:hover {
+            transform: scale(1.03);
+            opacity: 0.9;
+        }
+
+        /* Форма регистрации */
+        form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #ffcc00;
+            outline: none;
+            box-shadow: 0 0 5px #ffcc00;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #ffcc00;
+            color: #333;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #ffb700;
+        }
+
+        button:active {
+            background-color: #ffa500;
+        }
+
+        /* Ссылки */
+        a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #imgForm{
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Тема урока: Работа с узлами DOM дерева в JavaScript</h1>
+    <a href="javascript:changeSlide()">
+        <div id="slider"></div>
+    </a>
+    <form action="" name="register">
+        <input type="text" name="login" placeholder="Введите логин" />
+        <input type="password" name="password" placeholder="Введите пароль" />
+        <button type="button" onclick="check()">Регистрация</button>
+    </form>
+    <br>
+    <br>
+    <form id="imgForm" action="" name="imgPart">
+        <input type="text" name="urlImg" placeholder="Введите ссылку на картинку">
+        <button type="button" onclick="addImg()">добавить ссылку</button>
+    </form>
+    <script>
+        console.log('Hello World');
+
+        var slider = document.getElementById('slider');
+        var slides = [
+            'https://images2.alphacoders.com/474/474206.jpg',
+            'https://preview.redd.it/qunxfupt8p271.png?auto=webp&s=08e0a6f44da046f30f16748504dcd9e7b77b3bab',
+            'https://wallpaper.dog/large/17108593.jpg',
+            'https://free4kwallpapers.com/uploads/originals/2015/06/02/dota-2.jpg'
+        ];
+        var imgIndex = 0;
+        setUrlImage(slides[imgIndex])
+
+        function changeSlide() {
+            if (imgIndex == (slides.length - 2)) {
+                imgIndex = 0;
+            } else {
+                imgIndex++;
+            }
+            setUrlImage(slides[imgIndex]);
+        }
+
+        function setUrlImage(url) {
+            slider.style.backgroundImage = 'url(' + url + ')';
+        }
+
+        setInterval(changeSlide, 3000);
+
+        var loginInput = document.forms.register.elements.login;
+        var passwordInput = document.forms.register.elements.password;
+        var reg1 = /[^\w]|[_-]/;
+        var reg2 = /[A-Z]/;
+        var borderStyle = '1px solid red';
+        var isRegged = false;
+
+        function check() {
+            setDefaultBorders();
+            var loginValue = loginInput.value;
+            var passwordValue = passwordInput.value;
+
+            var checkLogin = false;
+            var checkPassword = false;
+
+            if (loginValue.length >= 4) checkLogin = true;
+
+            if (passwordValue.length >= 8 && reg1.test(passwordValue) && reg2.test(passwordValue)) checkPassword = true;
+
+            if (checkLogin && checkPassword){
+                alert('Успешная регистрация');
+                isRegged = true;
+            } 
+            else {
+                if (!checkLogin) loginInput.style.border = borderStyle;
+                if (!checkPassword) passwordInput.style.border = borderStyle;
+            }
+
+            if(isRegged == true){
+                const imgForm = document.getElementById('imgForm');
+                imgForm.style.display = "block";
+            }
+        }
+
+        function setDefaultBorders() {
+            loginInput.style.border = '';
+            passwordInput.style.border = '';
+        }
+        
+        let urlImgblock = document.forms.imgPart.elements.urlImg;
+        function addImg(){
+            slides.push(urlImgblock.value);
+            console.log(urlImgblock.value);
+            
+        }
+    </script>
+</body>
+
+</html>

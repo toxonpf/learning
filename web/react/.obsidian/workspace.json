@@ -1,0 +1,230 @@
+{
+  "main": {
+    "id": "8ac95a3b18b6d97d",
+    "type": "split",
+    "children": [
+      {
+        "id": "c1ea57f05cd38f7e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "36fe445ed31c634a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "01_jsx_basics/homework.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "homework"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e0b0930b7c171d65",
+    "type": "split",
+    "children": [
+      {
+        "id": "3aab531c58abc569",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d96093e2b0d83c52",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Файловый менеджер"
+            }
+          },
+          {
+            "id": "f3c9ae16e2c82bf9",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Поиск"
+            }
+          },
+          {
+            "id": "85e76b4d707dbc07",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Закладки"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "2e6976784cf17d65",
+    "type": "split",
+    "children": [
+      {
+        "id": "fc38fd019c18ffdf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "255776c1e1e900e3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Обратные ссылки для README"
+            }
+          },
+          {
+            "id": "cfa8945494596f97",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Исходящие ссылки из README"
+            }
+          },
+          {
+            "id": "0663ccb7d3521264",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Теги"
+            }
+          },
+          {
+            "id": "70b66ca45e3d0642",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Все свойства"
+            }
+          },
+          {
+            "id": "d40998a03041130d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "README.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Структура README"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "bases:Создать новую базу": false
+    }
+  },
+  "active": "36fe445ed31c634a",
+  "lastOpenFiles": [
+    "01_jsx_basics/README.md",
+    "00_setup/README.md",
+    "README.md",
+    "00_setup/cheatsheet.md",
+    "00_setup/homework.md.tmp.15776.1777791592228",
+    "00_setup/README.md.tmp.15776.1777791574132",
+    "sandbox/tsconfig.json.tmp.15776.1777791530152",
+    "sandbox/package-lock.json",
+    "sandbox/node_modules/caniuse-lite/README.md",
+    "sandbox/node_modules/caniuse-lite/package.json",
+    "sandbox/node_modules/@types/react/ts5.0/jsx-runtime.d.ts",
+    "sandbox/node_modules/@types/react/ts5.0/jsx-dev-runtime.d.ts",
+    "sandbox/node_modules/@types/react/ts5.0/index.d.ts",
+    "sandbox/node_modules/@types/react/ts5.0/experimental.d.ts",
+    "sandbox/node_modules/@types/react/ts5.0/global.d.ts",
+    "sandbox/node_modules/@types/react/README.md",
+    "sandbox/node_modules/typescript/SECURITY.md",
+    "sandbox/node_modules/typescript/README.md",
+    "sandbox/node_modules/@esbuild/linux-x64/README.md",
+    "sandbox/node_modules/@vitejs/plugin-react/README.md",
+    "sandbox/node_modules/@types/react-dom/README.md",
+    "sandbox/node_modules/react-dom/README.md",
+    "sandbox/node_modules/@remix-run/router/README.md",
+    "sandbox/node_modules/@remix-run/router/LICENSE.md",
+    "sandbox/node_modules/@remix-run/router/CHANGELOG.md",
+    "sandbox/node_modules/rollup/README.md",
+    "sandbox/node_modules/rollup/LICENSE.md",
+    "sandbox/node_modules/vite/README.md",
+    "sandbox/node_modules/@babel/plugin-transform-react-jsx-source/README.md",
+    "sandbox/node_modules/@babel/helper-plugin-utils/README.md",
+    "sandbox/node_modules/vite/LICENSE.md",
+    "sandbox/node_modules/@babel/plugin-transform-react-jsx-self/README.md",
+    "sandbox/node_modules/@rollup/rollup-linux-x64-gnu/README.md",
+    "sandbox/node_modules/@types/prop-types/README.md",
+    "sandbox/node_modules/react-router-dom/README.md",
+    "sandbox/node_modules/react-router-dom/LICENSE.md",
+    "src/assets/vite.svg",
+    "src/assets/react.svg",
+    "src/assets/hero.png",
+    "public/icons.svg",
+    "public/favicon.svg"
+  ]
+}

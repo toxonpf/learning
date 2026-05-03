@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var userData = [
+                "Иван Иванов",           // Имя
+                "ivanov@example.com",    // Электронная почта
+                "+79261234567",          // Телефон
+                "Россия",                // Страна
+                "Москва",                // Город
+                "Мужской",               // Пол
+                30,                      // Возраст
+                "Инженер",               // Профессия
+                "Google",                // Компания
+                "ivivanov",              // Логин
+                "password123",           // Пароль
+                "1985-12-15",            // Дата рождения
+                "Красный",               // Любимый цвет
+                "Футбол",                // Любимый вид спорта
+                3,                       // Количество детей
+                "Вегетарианец",          // Диетические предпочтения
+                180,                     // Рост в сантиметрах
+                75,                      // Вес в килограммах
+                "Английский"             // Язык общения
+            ];
+
+            var user = {
+                name: "Анна Смирнова",              // Имя
+                email: "asmirnova@example.com",     // Электронная почта
+                phone: "+79123456789",              // Телефон
+                country: "Беларусь",                // Страна
+                city: "Минск",                      // Город
+                gender: "Женский",                  // Пол
+                age: 28,                            // Возраст
+                profession: "Дизайнер",             // Профессия
+                company: "Apple",                   // Компания
+                username: "asmirnova",              // Логин
+                password: "qwerty321",              // Пароль
+                birthDate: "1995-05-20",            // Дата рождения
+                favoriteColor: "Синий",             // Любимый цвет
+                favoriteSport: "Теннис",            // Любимый вид спорта
+                numberOfChildren: 1,                // Количество детей
+                dietaryPreference: "Всеядная",      // Диетические предпочтения
+                height: 165,                        // Рост в сантиметрах
+                weight: 60,                         // Вес в килограммах
+                language: "Русский"                 // Язык общения
+            };
+
+            function loger(){
+                for(let i = 0; i < arguments.length; i++){
+                    if(typeof arguments[i] == 'object' && arguments[i].pop){
+                        console.log('ARRAY');
+                        arguments[i].forEach(element => {
+                            console.log("   " + element);
+                        });
+                    }else if(typeof arguments[i] == 'object' && !arguments[i].pop){
+                        console.log('OBJECT');
+                        for(let u in arguments[i]){
+                            console.log('   ' + arguments[i][u]);
+                        }
+                    }else{
+                        console.log(arguments[i]);
+                    }
+                }
+            }
+            loger(userData, user, 1, 'lol', false);
+
+            console.log(Math.tanh(1));
+            console.log(Math.sqrt(2));
+        </script>
+    </body>
+</html>

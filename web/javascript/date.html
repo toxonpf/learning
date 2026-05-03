@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+    </head>
+    <body style="background-color: #333;">
+        <script>
+            var inputDate = "Year: 2022, Month: september, Day: 18";
+            var regExp = /Year: (\d+), Month: (\w+), Day: (\d+)/i;
+            
+            var formedDate = (regExp.exec(inputDate));
+
+            function getMonthNumber(month){
+                if (/^january$/i.test(month)) return 0;
+                if (/^february$/i.test(month)) return 1;
+                if (/^march$/i.test(month)) return 2;
+                if (/^april$/i.test(month)) return 3;
+                if (/^may$/i.test(month)) return 4;
+                if (/^june$/i.test(month)) return 5;
+                if (/^july$/i.test(month)) return 6;
+                if (/^august$/i.test(month)) return 7;
+                if (/^september$/i.test(month)) return 8;
+                if (/^october$/i.test(month)) return 9;
+                if (/^november$/i.test(month)) return 10;
+                if (/^december$/i.test(month)) return 11;
+
+                return false;
+            }
+
+            function chekDayNomber(day){
+                if(1 <= day <= 31 && getMonthNumber() == 0,2,4,6,7,9,11){
+                    return true;
+                }else if(1 <= day <= 30 && getMonthNumber() == 3,5,8,11){
+                    return true;
+                }else if(day == 28,29 && getMonthNumber() == 1){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+            if(getMonthNumber(formedDate[2]) && chekDayNomber(formedDate[3])){
+                var outputDate = new Date(Number(formedDate[1]), getMonthNumber(formedDate[2]), chekDayNomber(formedDate[3]));
+                console.log(outputDate);
+            }else{
+                console.log("not right phormed of date");
+            }
+        </script>
+    </body>
+</html>

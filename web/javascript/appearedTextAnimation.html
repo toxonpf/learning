@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="stylesheet" href="styles/backdropTitle.css">
+    </head>
+    <body style="background-color: #333;">
+        <div id="backdropTitle">
+            <span>Lorem ipsum dolor sit amet.</span>
+            <div id="shadowBlock">r</div>
+        </div>
+        <div id="animated-text"></div>
+        <script>
+            const text = "Lorem ipsum dolor sit amet.";  // Текст для анимации
+            const container = document.getElementById("animated-text");
+            
+            let index = 0;
+
+            function typeLetter() {
+                if (index < text.length) {
+                    // Создаем новый элемент span для каждой буквы
+                    const letterSpan = document.createElement('span');
+                    letterSpan.textContent = text[index];
+                    letterSpan.classList.add('letter'); // Добавляем CSS-класс
+                    container.appendChild(letterSpan);
+                    index++;
+                    setTimeout(typeLetter, 50); // Пауза перед добавлением следующей буквы
+                }
+            }
+            typeLetter();  // Запускаем функцию
+        </script>
+    </body>
+</html>

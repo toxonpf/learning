@@ -1,0 +1,23 @@
+body{
+    background-color: #333;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.rel{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.block{
+    width: 100px;
+    height: 100px;
+    background-color: red;
+}
