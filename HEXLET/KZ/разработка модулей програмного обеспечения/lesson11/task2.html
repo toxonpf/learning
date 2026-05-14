@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ЛР-11 Задание 2 — setInterval Часы</title>
+</head>
+<body>
+  <p id="clock"></p>
+  <button id="stop">Остановить часы</button>
+
+  <script>
+    const clock = document.getElementById("clock");
+    const stopBtn = document.getElementById("stop");
+
+    const timer = setInterval(() => {
+      clock.textContent = new Date().toLocaleTimeString();
+    }, 1000);
+
+    stopBtn.addEventListener("click", () => {
+      clearInterval(timer);
+    });
+  </script>
+</body>
+</html>

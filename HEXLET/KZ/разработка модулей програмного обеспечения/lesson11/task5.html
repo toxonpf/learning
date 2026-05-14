@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ЛР-11 Задание 5 — Анимация шарика</title>
+  <style>
+    #ball {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: crimson;
+      position: absolute;
+      top: 100px;
+      left: 0;
+    }
+    #controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+    button {
+      margin-right: 8px;
+      padding: 6px 14px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="startBtn">Старт</button>
+    <button id="stopBtn">Стоп</button>
+  </div>
+  <div id="ball"></div>
+
+  <script>
+    const ball = document.getElementById("ball");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+
+    let pos = 0;
+    let timerId = null;
+    const step = 5;
+
+    function animate() {
+      timerId = setInterval(() => {
+        pos += step;
+        if (pos > window.innerWidth - 60) {
+          pos = window.innerWidth - 60;
+          clearInterval(timerId);
+          timerId = null;
+        }
+        ball.style.left = pos + "px";
+      }, 20);
+    }
+
+    startBtn.addEventListener("click", () => {
+      if (timerId !== null) return;
+      if (pos >= window.innerWidth - 60) pos = 0;
+      animate();
+    });
+
+    stopBtn.addEventListener("click", () => {
+      clearInterval(timerId);
+      timerId = null;
+    });
+  </script>
+</body>
+</html>

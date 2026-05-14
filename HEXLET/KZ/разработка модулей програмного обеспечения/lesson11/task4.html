@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ЛР-11 Задание 4 — Рекурсивный setTimeout</title>
+</head>
+<body>
+  <p>Откройте консоль браузера. В отличие от setInterval, новый вызов
+  начинается строго после завершения текущего — дрейфа нет.</p>
+
+  <script>
+    function tick() {
+      console.log("start", new Date().toLocaleTimeString());
+
+      const end = Date.now() + 2000;
+      while (Date.now() < end) {}
+
+      console.log("end  ", new Date().toLocaleTimeString());
+
+      setTimeout(tick, 1000);
+    }
+
+    setTimeout(tick, 1000);
+  </script>
+</body>
+</html>

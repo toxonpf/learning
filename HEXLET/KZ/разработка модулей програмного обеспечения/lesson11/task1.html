@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ЛР-11 Задание 1 — setTimeout</title>
+</head>
+<body>
+  <button id="btn">Показать сообщение</button>
+  <p id="output"></p>
+
+  <script>
+    const btn = document.getElementById("btn");
+    const output = document.getElementById("output");
+
+    btn.addEventListener("click", () => {
+      setTimeout(() => {
+        output.textContent = "Привет, мир!";
+      }, 2000);
+    });
+  </script>
+</body>
+</html>

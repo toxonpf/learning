@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>ЛР-11 Задание 3 — Дрейф интервалов</title>
+</head>
+<body>
+  <p>Откройте консоль браузера и наблюдайте смещение времени.</p>
+
+  <script>
+    // Интервал 1000 мс, но тяжёлая работа ~2 сек блокирует поток.
+    // Следующий вызов setInterval не может запуститься вовремя —
+    // колбэки накапливаются в очереди и выполняются подряд после разблокировки.
+    setInterval(() => {
+      console.log("start", new Date().toLocaleTimeString());
+
+      const end = Date.now() + 2000;
+      while (Date.now() < end) {}
+
+      console.log("end  ", new Date().toLocaleTimeString());
+    }, 1000);
+  </script>
+</body>
+</html>
