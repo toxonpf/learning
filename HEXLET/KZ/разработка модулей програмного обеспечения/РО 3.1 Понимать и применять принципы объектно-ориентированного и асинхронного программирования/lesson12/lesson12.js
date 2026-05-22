@@ -22,3 +22,4 @@ loadData()
     .then(processed => console.log("Обработано:", processed))
     .catch(error => console.error("Ошибка:", error.message))
     .finally(() => console.log("Операция завершена"));
+ 
