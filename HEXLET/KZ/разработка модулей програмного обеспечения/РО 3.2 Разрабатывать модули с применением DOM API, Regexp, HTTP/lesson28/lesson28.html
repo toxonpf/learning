@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Manipulation Lab</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #b02a37; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #d39e00; }
+
+        .item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+            border-radius: 3px;
+        }
+
+        .highlight { background: #fff3cd !important; }
+
+        input, textarea {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 200px;
+        }
+
+        .hidden { display: none; }
+
+        .notification {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Лабораторная работа: Манипуляции с DOM</h1>
+
+        <!-- Секция 1: Список заметок -->
+        <div class="section" id="notes-section">
+            <h2>Заметки</h2>
+            <div>
+                <input type="text" id="note-input" placeholder="Введите заметку">
+                <button class="btn" id="add-note-btn">Добавить заметку</button>
+            </div>
+            <ul id="notes-list">
+                <li class="item">Первая заметка</li>
+                <li class="item">Вторая заметка</li>
+            </ul>
+        </div>
+
+        <!-- Секция 2: Галерея изображений -->
+        <div class="section" id="gallery-section">
+            <h2>Галерея</h2>
+            <div>
+                <input type="text" id="image-title" placeholder="Название изображения">
+                <input type="text" id="image-url" placeholder="URL изображения" value="https://via.placeholder.com/150">
+                <button class="btn" id="add-image-btn">Добавить изображение</button>
+            </div>
+            <div class="gallery" id="image-gallery">
+                <div class="card">
+                    <h4>Пример 1</h4>
+                    <img src="https://3zvzd.blob.core.windows.net/mimimi/4e8e844d6c804815adcbc518b334161c.jpg"
+                        alt="Пример" style="width: 100%;">
+                    <button class="btn btn-danger">Удалить</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 3: Комментарии -->
+        <div class="section" id="comments-section">
+            <h2>Комментарии</h2>
+            <div>
+                <input type="text" id="author-input" placeholder="Ваше имя">
+                <textarea id="comment-text" placeholder="Текст комментария" rows="3" cols="50"></textarea>
+                <button class="btn" id="add-comment-btn">Добавить комментарий</button>
+            </div>
+            <div id="comments-container">
+                <div class="item">
+                    <strong>Иван:</strong> Отличная работа!
+                    <button class="btn btn-warning">Переместить вверх</button>
+                    <button class="btn btn-success">Дублировать</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция 4: Уведомления -->
+        <div class="section" id="notifications-section">
+            <h2>Уведомления</h2>
+            <button class="btn" id="create-notification">Создать уведомление</button>
+            <div id="notifications-container"></div>
+        </div>
+
+        <!-- Секция 5: Меню навигации -->
+        <div class="section" id="menu-section">
+            <h2>Динамическое меню</h2>
+            <div>
+                <input type="text" id="menu-item-text" placeholder="Название пункта меню">
+                <input type="text" id="menu-item-link" placeholder="Ссылка" value="#">
+                <button class="btn" id="add-menu-item">Добавить пункт</button>
+            </div>
+            <nav id="dynamic-menu">
+                <a href="#" class="btn">Главная</a>
+                <a href="#" class="btn">О нас</a>
+            </nav>
+        </div>
+
+        <!-- Секция 6: Рабочая область -->
+        <div class="section" id="workspace">
+            <h2>Рабочая область</h2>
+            <div id="work-area" style="min-height: 100px; border: 2px dashed #ccc; padding: 20px;">
+                <p>Здесь будут появляться элементы</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="lesson28.js"></script>
+</body>
+
+</html>
