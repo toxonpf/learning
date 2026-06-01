@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЛР-19: Cookies</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #b02a37; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #1e7e34; }
+
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        .cookie-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .cookie-table th, .cookie-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .cookie-table th { background: #f0f0f0; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Лабораторная работа № 19: Cookie</h1>
+
+        <!-- Задание 2: Работа с куки через JS -->
+        <div class="section">
+            <h2>Задание 2. Установка и извлечение куки (document.cookie + RegExp)</h2>
+            <div>
+                <input type="text" id="cookie-name" placeholder="Имя куки" value="user">
+                <input type="text" id="cookie-value" placeholder="Значение куки" value="guest_user">
+                <button class="btn btn-success" id="set-cookie-btn">Установить куки</button>
+                <button class="btn" id="get-cookie-btn">Читать куки</button>
+                <button class="btn btn-danger" id="del-cookie-btn">Удалить куки</button>
+            </div>
+            <h3>Все куки (document.cookie):</h3>
+            <pre id="all-cookies">—</pre>
+            <h3>Найденное значение (RegExp):</h3>
+            <pre id="found-cookie">—</pre>
+        </div>
+
+        <!-- Задание 5: JS-запрос к API с отображением кук -->
+        <div class="section">
+            <h2>Задание 5. Fetch-запрос с выводом заголовков</h2>
+            <div>
+                <button class="btn" id="fetch-joke-btn">Получить шутку (jokeapi.dev)</button>
+                <button class="btn" id="fetch-dog-btn">Получить собаку (dog.ceo)</button>
+            </div>
+            <h3>Ответ API:</h3>
+            <pre id="api-result">Нажмите кнопку для запроса...</pre>
+            <h3>Куки после запроса (document.cookie):</h3>
+            <pre id="cookies-after">—</pre>
+            <h3>Счётчик запросов (сохраняется в куки):</h3>
+            <pre id="request-counter">—</pre>
+        </div>
+    </div>
+
+    <script src="lesson19.js"></script>
+</body>
+
+</html>

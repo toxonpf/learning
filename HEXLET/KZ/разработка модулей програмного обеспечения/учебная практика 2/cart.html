@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TOXON shop — Корзина</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="header"></header>
+
+  <main>
+    <h2>Корзина</h2>
+    <div id="cart-items"></div>
+    <div class="cart-total-section">
+      <p>Итого: <span id="cart-total">0 $</span></p>
+      <button id="btn-checkout" class="btn-primary">Оформить заказ</button>
+      <button onclick="window.location.href='index.html'" class="btn-secondary">В каталог</button>
+    </div>
+  </main>
+
+  <script src="js/models.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>
