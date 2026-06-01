@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЛР-20: Перенаправления, HTTPS и HTTP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #0056b3; }
+
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th { background: #f0f0f0; }
+
+        .code-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Лабораторная работа № 20: Перенаправления, HTTPS и современные версии HTTP</h1>
+
+        <!-- Задание 1: Перенаправления -->
+        <div class="section">
+            <h2>1. Перенаправления (3xx)</h2>
+            <div class="info-box">
+                Браузер автоматически следует по перенаправлениям. Ниже — результаты из DevTools и curl.
+            </div>
+
+            <h3>Результаты наблюдений в DevTools → Network:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>Код ответа</th>
+                        <th>Значение</th>
+                        <th>Location (куда редиректит)</th>
+                        <th>Конечный URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>http://hexlet.io</td>
+                        <td><span class="code-badge">301</span></td>
+                        <td>Moved Permanently</td>
+                        <td>https://hexlet.io/</td>
+                        <td>https://hexlet.io/</td>
+                    </tr>
+                    <tr>
+                        <td>http://github.com</td>
+                        <td><span class="code-badge">301</span></td>
+                        <td>Moved Permanently</td>
+                        <td>https://github.com/</td>
+                        <td>https://github.com/</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Результаты curl -I:</h3>
+            <pre id="curl-results">curl -I http://yandex.kz/
+HTTP/1.1 301 Moved Permanently
+Location: https://yandex.kz/
+...
+
+curl -I http://youtube.com
+HTTP/1.1 301 Moved Permanently
+Location: https://www.youtube.com/
+...
+
+Пояснение: оба сервера возвращают 301 (постоянное перенаправление),
+указывая в заголовке Location новый HTTPS-адрес.
+Браузер автоматически делает новый запрос по этому адресу.</pre>
+
+            <button class="btn" id="btn-fetch-redirect">Проверить через fetch (hexlet.io)</button>
+            <pre id="redirect-result">Нажмите кнопку...</pre>
+        </div>
+
+        <!-- Задание 2: HTTPS и сертификаты -->
+        <div class="section">
+            <h2>2. HTTPS и сертификаты</h2>
+            <h3>DevTools → Security — hexlet.io:</h3>
+            <table>
+                <tr><th>Параметр</th><th>Значение</th></tr>
+                <tr><td>Кем выдан</td><td>Let's Encrypt (R10 / R11)</td></tr>
+                <tr><td>Для домена</td><td>hexlet.io, *.hexlet.io</td></tr>
+                <tr><td>Срок действия</td><td>~90 дней (автообновление)</td></tr>
+            </table>
+
+            <h3>Ненадёжные сайты (badssl.com):</h3>
+            <table>
+                <tr><th>Сайт</th><th>Проблема</th><th>Причина недоверия</th></tr>
+                <tr>
+                    <td>self-signed.badssl.com</td>
+                    <td>Самоподписанный сертификат</td>
+                    <td>Сертификат не выдан доверенным CA — браузер не может проверить подлинность сервера</td>
+                </tr>
+                <tr>
+                    <td>expired.badssl.com</td>
+                    <td>Сертификат просрочен</td>
+                    <td>Срок действия сертификата истёк — соединение может быть небезопасным</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Задание 3: HTTP/1.1 vs HTTP/2 vs HTTP/3 -->
+        <div class="section">
+            <h2>3. HTTP/1.1 vs HTTP/2 vs HTTP/3</h2>
+            <div class="info-box">
+                DevTools → Network → включить колонку Protocol.
+            </div>
+            <table>
+                <tr><th>Версия</th><th>Обозначение</th><th>Особенности</th></tr>
+                <tr><td>HTTP/1.1</td><td>http/1.1</td><td>Одно соединение — один запрос, keep-alive</td></tr>
+                <tr><td>HTTP/2</td><td>h2</td><td>Мультиплексирование, сжатие заголовков, одно TCP-соединение</td></tr>
+                <tr><td>HTTP/3</td><td>h3</td><td>Основан на QUIC/UDP, меньше задержек</td></tr>
+            </table>
+            <h3>Результат для https://flibusta.su/:</h3>
+            <pre id="protocol-result">Открыть в браузере и посмотреть в DevTools → Network → Protocol</pre>
+            <button class="btn" id="btn-check-protocol">Проверить fetch-запросом</button>
+            <pre id="fetch-protocol">Нажмите кнопку...</pre>
+        </div>
+    </div>
+
+    <script src="lesson20.js"></script>
+</body>
+
+</html>

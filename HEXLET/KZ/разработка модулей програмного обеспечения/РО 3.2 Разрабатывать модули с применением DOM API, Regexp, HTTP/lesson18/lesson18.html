@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЛР-18: Тело запроса</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn:hover { background: #0056b3; }
+
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .status.ok { color: #28a745; }
+        .status.err { color: #dc3545; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Лабораторная работа № 18: Тело запроса</h1>
+
+        <!-- Задание 1 -->
+        <div class="section">
+            <h2>1. GET с query string (Reqres — страница 2)</h2>
+            <button class="btn" id="btn1">Выполнить запрос</button>
+            <div class="status" id="status1"></div>
+            <pre id="result1">Нажмите кнопку для выполнения...</pre>
+        </div>
+
+        <!-- Задание 2 -->
+        <div class="section">
+            <h2>2. GET с параметрами (погода в Берлине — Open Meteo)</h2>
+            <button class="btn" id="btn2">Выполнить запрос</button>
+            <div class="status" id="status2"></div>
+            <pre id="result2">Нажмите кнопку для выполнения...</pre>
+        </div>
+
+        <!-- Задание 3 -->
+        <div class="section">
+            <h2>3. POST с x-www-form-urlencoded (httpbin)</h2>
+            <button class="btn" id="btn3">Выполнить запрос</button>
+            <div class="status" id="status3"></div>
+            <pre id="result3">Нажмите кнопку для выполнения...</pre>
+        </div>
+
+        <!-- Задание 4 -->
+        <div class="section">
+            <h2>4. POST с JSON (JSONPlaceholder)</h2>
+            <button class="btn" id="btn4">Выполнить запрос</button>
+            <div class="status" id="status4"></div>
+            <pre id="result4">Нажмите кнопку для выполнения...</pre>
+        </div>
+
+        <!-- Задание 5 -->
+        <div class="section">
+            <h2>5. GET — случайная собака (Dog API)</h2>
+            <button class="btn" id="btn5">Выполнить запрос</button>
+            <div class="status" id="status5"></div>
+            <pre id="result5">Нажмите кнопку для выполнения...</pre>
+            <img id="dog-img" src="" alt="" style="max-width:200px; display:none; margin-top:10px; border-radius:8px;">
+        </div>
+
+        <!-- Задание 6 -->
+        <div class="section">
+            <h2>6. POST с multipart/form-data (httpbin)</h2>
+            <input type="file" id="file-input" style="margin: 5px;">
+            <button class="btn" id="btn6">Загрузить файл</button>
+            <div class="status" id="status6"></div>
+            <pre id="result6">Выберите файл и нажмите кнопку...</pre>
+        </div>
+    </div>
+
+    <script src="lesson18.js"></script>
+</body>
+
+</html>

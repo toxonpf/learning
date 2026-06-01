@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Laboratory</title>
+    <style>
+        body {
+            background: #333;
+            color: #fff;
+            font-family: sans-serif;
+        }
+
+        .highlight {
+            background-color: yellow;
+        }
+
+        .active {
+            color: green;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: red;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1 id="main-title">Заголовок страницы</h1>
+
+        <div class="content-block">
+            <p class="text-item">Первый параграф</p>
+            <p class="text-item active">Второй параграф</p>
+            <p class="text-item">Третий параграф</p>
+        </div>
+
+        <ul class="menu">
+            <li data-category="home" data-priority="high">Главная</li>
+            <li data-category="about" data-priority="medium">О нас</li>
+            <li data-category="services" data-priority="high">Услуги</li>
+            <li data-category="contact" data-priority="low">Контакты</li>
+        </ul>
+
+        <div class="buttons">
+            <button class="btn primary" data-action="save">Сохранить</button>
+            <button class="btn secondary" data-action="cancel">Отмена</button>
+            <button class="btn danger" data-action="delete">Удалить</button>
+        </div>
+
+        <form id="user-form">
+            <input type="text" name="username" placeholder="Имя пользователя">
+            <input type="email" name="email" placeholder="Email">
+            <input type="password" name="password" placeholder="Пароль">
+        </form>
+
+        <div class="products">
+            <div class="product-card" data-id="101" data-price="1500">
+                <h3>Товар 1</h3>
+                <span class="price">15000 тг.</span>
+            </div>
+            <div class="product-card" data-id="102" data-price="2300">
+                <h3>Товар 2</h3>
+                <span class="price">23000 тг.</span>
+            </div>
+            <div class="product-card" data-id="103" data-price="890">
+                <h3>Товар 3</h3>
+                <span class="price">8900 тг.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Здесь будет ваш JavaScript код -->
+    <script src="lesson27.js"></script>
+</body>
+
+</html>
