@@ -1,26 +1,38 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TOXON shop — Главная</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOXON shop — Главная</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-  <header id="header"></header>
+    <header id="header"></header>
 
-  <main>
-    <h2>Каталог товаров</h2>
-    <div class="search-container">
-      <input type="text" id="search-input" placeholder="Поиск товаров...">
-    </div>
-    <div id="category-filter" class="category-filter"></div>
-    <div id="catalog" class="catalog"></div>
-  </main>
+    <main>
+        <h2>Каталог товаров</h2>
+        <div class="search-sort-row">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Поиск товаров...">
+            </div>
+            <select id="sort-select" class="sort-select">
+                <option value="">По умолчанию</option>
+                <option value="price-asc">Цена ↑</option>
+                <option value="price-desc">Цена ↓</option>
+                <option value="name-asc">Название А-Я</option>
+                <option value="name-desc">Название Я-А</option>
+            </select>
+        </div>
+        <div id="category-filter" class="category-filter"></div>
+        <div id="catalog" class="catalog"></div>
+    </main>
 
-  <script src="js/models.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/common.js"></script>
-  <script src="js/catalog.js"></script>
+    <script src="js/models.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/catalog.js"></script>
 </body>
+
 </html>

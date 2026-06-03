@@ -37,6 +37,7 @@ function renderHeader() {
                 </a>
                 ${user
                     ? `<span class="user-greeting">Привет, ${user.name}</span>
+                       <a href="profile.html" class="nav-profile">Профиль</a>
                        <button id="logout-btn" class="btn-logout">Выйти</button>`
                     : `<a href="auth.html">Вход / Регистрация</a>`}
             </nav>
