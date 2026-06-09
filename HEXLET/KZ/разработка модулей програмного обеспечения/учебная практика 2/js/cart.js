@@ -33,11 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Корзина пуста!");
             return;
         }
-        alert("Заказ оформлен! Спасибо за покупку.");
-        cart.clear();
-        saveCart(cart);
-        updateCartCount();
-        renderCart();
+        window.location.href = "checkout.html";
     });
 });
 
