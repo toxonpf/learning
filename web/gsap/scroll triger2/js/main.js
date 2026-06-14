@@ -8,3 +8,4 @@ gsap.utils.toArray('.screenBlock').forEach(el => {
         markers: true,
     });
 });
+

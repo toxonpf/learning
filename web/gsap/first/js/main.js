@@ -6,18 +6,14 @@ for (let i = 0; i < 78; i++) {
     const tl = gsap.timeline({ paused: true });
 
     tl.to(block, {
-        scale: 0.1,
+        scale: 0.5,
         yoyo: true,
-        repeat: -1
+        repeat: -1,
     });
 
     block.addEventListener("mouseenter", () => tl.play());
     block.addEventListener("mouseleave", () => tl.reverse());
 }
-
-
-
-
 
 // let tl = gsap.timeline({paused: true});
 
@@ -29,5 +25,3 @@ for (let i = 0; i < 78; i++) {
 
 // // insert 1 second after the end of the timeline (a gap)
 // tl.to(".orange", { x: 600, duration: 1 });
-
-
