@@ -4,3 +4,19 @@ main > *{
     border-radius: 5px;
     background-color: #ffffff11;
 }
+
+.card{
+    color: #000;
+    background-color: #666;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.picture{
+    width: 100px;
+    height: 100px;
+    background-color: #ffffff22;
+    border-radius: 5px;
+}
