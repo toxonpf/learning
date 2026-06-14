@@ -1,11 +1,11 @@
 import './App.css'
 
 function App() {
-    const names = ["kirik", "roman", "pid"];
+    const names: string[] = ["kirik", "roman", "pid"]
     return (
         <>
             <ul>
-                {names.map(i => <li>{i}</li>)}
+                {names.map((name, i) => <li key={i}>{name}</li>)}
             </ul>
         </>
     )
