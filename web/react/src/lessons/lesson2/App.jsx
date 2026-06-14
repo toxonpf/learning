@@ -1,6 +1,6 @@
 import "./App.css";
 
-function Task1(props: any) {
+function Task1(props) {
     return (
         <div>
             <h3>Task1</h3>
@@ -10,7 +10,7 @@ function Task1(props: any) {
     );
 }
 
-function Task2(props: any) {
+function Task2(props) {
     return (
         <div>
             <h3>Task2</h3>
@@ -21,11 +21,11 @@ function Task2(props: any) {
     )
 };
 
-function Task3(props: any) {
+function Task3(props) {
     <div>
         <h3>Task3</h3>
         <ul>
-            {props.users.map((i: string) => <li>{i}</li>)}
+            {props.users.map((i) => <li>{i}</li>)}
         </ul>
     </div>
 }

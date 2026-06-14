@@ -1,7 +1,7 @@
 import './App.css'
 
 function App() {
-    const names : string[] = ["kirik", "roman", "pid"];
+    const names = ["kirik", "roman", "pid"];
     return (
         <>
             <ul>
