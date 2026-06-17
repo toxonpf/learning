@@ -1,0 +1,20 @@
+main > * {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #ffffff11;
+}
+
+.Task1 span {
+  display: inline-block;
+  padding: 0px 5px;
+}
+
+.modal {
+    padding: 20px;
+    border-radius: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
