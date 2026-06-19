@@ -36,7 +36,7 @@ function Task3() {
     return (
         <div>
             <button onClick={() => { toggleModal() }}>modal</button>
-            <div className={style.modal} style={{display: state}}>
+            <div className={style.modal} style={{ display: state }}>
                 im modal
             </div>
         </div>
