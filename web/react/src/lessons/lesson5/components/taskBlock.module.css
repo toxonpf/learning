@@ -1,0 +1,52 @@
+input[type="checkbox"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #666;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+input[type="checkbox"]::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: 1.5px solid #ccc;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+input[type="checkbox"]:checked {
+    border-color: #888;
+}
+
+input[type="checkbox"]:checked::after {
+    display: block;
+}
+
+input[type="checkbox"]:hover {
+    border-color: #aaa;
+}
+
+input[type="checkbox"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #555;
+}
+
+.taskBlock {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.taskLabel {
+
+}

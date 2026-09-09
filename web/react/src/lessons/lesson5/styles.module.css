@@ -1,0 +1,58 @@
+form {
+    padding: 10px;
+    width: 500px;
+    color: #aaa;
+    background-color: #444;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    border-radius: 10px;
+}
+
+input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    color: #aaa;
+    background-color: #333;
+    border: 1px solid #777;
+    border-radius: 5px;
+    padding: 5px 10px;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+    transition: background-color 0.2s;
+    font-family: 'Courier New', Courier, monospace;
+
+    &:focus {
+        border-color: transparent;
+        background-color: #2a2a2a;
+        outline: 1px solid #555;
+        outline-offset: -1px;
+    }
+}
+
+button{
+    margin: 5px 5px 0px 0px;
+    padding: 5px 10px;
+    display: inline-block;
+    border: 1px solid #777;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #3a3a3a;
+    color: #aaa;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.active {
+    background-color: #555;
+}
+
+.addingTasksBlock{
+    margin: 10px 0px;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+
+    & * {
+        height: 100%;
+    }
+}
+
