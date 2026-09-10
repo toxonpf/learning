@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Личный кабинет — SHOP.</title>
+  <meta name="description" content="Ваш личный кабинет." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <style>
+    .profile-layout { display: grid; grid-template-columns: 280px 1fr; gap: 32px; align-items: start; }
+    .profile-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px; }
+    .profile-nav { display: flex; flex-direction: column; gap: 4px; margin-top: 24px; }
+    .profile-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); transition: all var(--transition); cursor: pointer; }
+    .profile-nav-item:hover { background: var(--bg-glass); color: var(--text-primary); }
+    .profile-nav-item.active { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--border-accent); }
+    .order-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; transition: border-color var(--transition); }
+    .order-item:hover { border-color: var(--border-hover); }
+    .order-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); gap: 12px; flex-wrap: wrap; }
+    .order-id { font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+    .order-products { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+    .order-product-row { display: flex; align-items: center; gap: 12px; font-size: 0.875rem; }
+    .order-product-img { width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; background: var(--bg-elevated); }
+    .order-footer { padding: 14px 20px; background: var(--bg-elevated); display: flex; align-items: center; justify-content: space-between; font-size: 0.875rem; }
+    .reviews-manage-list { display: flex; flex-direction: column; gap: 12px; }
+    .review-manage-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+    @media (max-width: 800px) { .profile-layout { grid-template-columns: 1fr; } }
+  </style>
+  <script type="module" crossorigin src="./assets/profile-C6QaEOiO.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/navbar-BMNCdbui.js">
+  <link rel="modulepreload" crossorigin href="./assets/preload-helper-tKe0viCo.js">
+  <link rel="stylesheet" crossorigin href="./assets/navbar-CA-44msS.css">
+</head>
+<body>
+
+<div id="page-loader" class="page-loader"><div class="spinner"></div></div>
+
+<main class="page-main">
+  <div class="container">
+
+    <!-- Auth guard -->
+    <div id="profile-auth-guard" style="display:none">
+      <div class="empty-state">
+        <span class="empty-state-icon">🔐</span>
+        <h3>Войдите в аккаунт</h3>
+        <p>Личный кабинет доступен только авторизованным пользователям.</p>
+        <button class="btn btn-primary mt-16" id="profile-login-btn">Войти</button>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div id="profile-content" style="display:none">
+      <div class="profile-layout">
+
+        <!-- Sidebar -->
+        <aside>
+          <div class="profile-card">
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;">
+              <div class="avatar avatar-lg" id="profile-avatar"></div>
+              <div>
+                <div style="font-weight:700;font-size:1.05rem;" id="profile-name-display"></div>
+                <div style="font-size:0.8rem;color:var(--text-muted);" id="profile-email-display"></div>
+              </div>
+            </div>
+            <nav class="profile-nav">
+              <button class="profile-nav-item active" data-tab="orders">📦 Мои заказы</button>
+              <button class="profile-nav-item" data-tab="reviews">⭐ Мои отзывы</button>
+              <button class="profile-nav-item" data-tab="settings">⚙️ Настройки</button>
+            </nav>
+          </div>
+        </aside>
+
+        <!-- Content -->
+        <div>
+          <!-- Orders tab -->
+          <div id="tab-orders" class="tab-panel active">
+            <h2 class="section-title mb-8">История заказов</h2>
+            <p class="section-subtitle">Все ваши заказы с актуальными статусами</p>
+            <div id="orders-list" style="display:flex;flex-direction:column;gap:16px;">
+              <div class="loader"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+          <!-- Reviews tab -->
+          <div id="tab-reviews" class="tab-panel">
+            <h2 class="section-title mb-8">Мои отзывы</h2>
+            <p class="section-subtitle">Оставленные вами отзывы на товары</p>
+            <div class="reviews-manage-list" id="my-reviews-list">
+              <div class="loader"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+          <!-- Settings tab -->
+          <div id="tab-settings" class="tab-panel">
+            <h2 class="section-title mb-8">Настройки профиля</h2>
+            <p class="section-subtitle">Редактируйте личные данные</p>
+            <div class="profile-card" style="max-width:480px;">
+              <form id="profile-form" novalidate>
+                <div class="form-group mb-16">
+                  <label class="form-label" for="profile-name-input">Имя</label>
+                  <input class="form-input" type="text" id="profile-name-input" />
+                </div>
+                <div class="form-group mb-16">
+                  <label class="form-label" for="profile-phone-input">Телефон</label>
+                  <input class="form-input" type="tel" id="profile-phone-input" placeholder="+7 (999) 000-00-00" />
+                </div>
+                <div class="form-group mb-24">
+                  <label class="form-label">Email</label>
+                  <input class="form-input" type="email" id="profile-email-input" disabled style="opacity:0.5" />
+                  <span class="form-error" style="color:var(--text-muted);">Email нельзя изменить</span>
+                </div>
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>© 2024 SHOP.</span>
+  </div>
+</footer>
+
+</body>
+</html>

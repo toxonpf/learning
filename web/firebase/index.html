@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHOP. — Интернет-магазин</title>
+  <meta name="description" content="Современный интернет-магазин с широким ассортиментом товаров." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="./src/styles/main.css" />
+</head>
+<body>
+
+<div id="page-loader" class="page-loader">
+  <div class="spinner"></div>
+</div>
+
+<main class="page-main">
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title">Найдите то,<br>что вы <span class="accent">искали</span></h1>
+      <p class="hero-subtitle">Тысячи товаров с быстрой доставкой. Лучшие цены, проверенные продавцы.</p>
+    </section>
+
+    <!-- Filters -->
+    <div class="filters-bar" id="filters-bar">
+      <button class="filter-chip active" data-category="">Все</button>
+      <button class="filter-chip" data-category="electronics">Электроника</button>
+      <button class="filter-chip" data-category="clothing">Одежда</button>
+      <button class="filter-chip" data-category="home">Дом и сад</button>
+      <button class="filter-chip" data-category="sports">Спорт</button>
+      <button class="filter-chip" data-category="books">Книги</button>
+      <select class="sort-select" id="sort-select" title="Сортировка">
+        <option value="createdAt_desc">Новинки</option>
+        <option value="price_asc">Цена ↑</option>
+        <option value="price_desc">Цена ↓</option>
+        <option value="rating_desc">Рейтинг</option>
+      </select>
+    </div>
+
+    <!-- Catalog -->
+    <div id="catalog-grid" class="catalog-grid"></div>
+
+    <!-- Load more -->
+    <div class="load-more-wrapper">
+      <button class="btn btn-secondary btn-lg" id="load-more-btn" style="display:none">
+        Показать ещё
+      </button>
+      <div id="catalog-loader" class="loader" style="display:none">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>© 2024 SHOP. Все права защищены.</span>
+    <span>Разработано с ❤️ на Firebase</span>
+  </div>
+</footer>
+
+<script type="module" src="./src/pages/catalog.js"></script>
+</body>
+</html>

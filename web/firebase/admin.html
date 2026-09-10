@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Админ-панель — SHOP.</title>
+  <meta name="description" content="Управление магазином." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="./src/styles/main.css" />
+  <style>
+    .admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; align-items: start; }
+    .admin-sidebar { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 20px; position: sticky; top: calc(var(--navbar-height) + 24px); }
+    .admin-nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500; color: var(--text-secondary); transition: all var(--transition); cursor: pointer; width: 100%; text-align: left; border: 1px solid transparent; }
+    .admin-nav-item:hover { background: var(--bg-glass); color: var(--text-primary); }
+    .admin-nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: var(--border-accent); }
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+    .product-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-wide { max-width: 640px; }
+    .user-row { display: flex; align-items: center; gap: 16px; padding: 14px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); transition: border-color var(--transition); }
+    .user-row:hover { border-color: var(--border-hover); }
+    .users-list { display: flex; flex-direction: column; gap: 10px; }
+    @media (max-width: 800px) { .admin-layout { grid-template-columns: 1fr; } .admin-sidebar { position:static; } .product-form-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div id="page-loader" class="page-loader"><div class="spinner"></div></div>
+
+<main class="page-main">
+  <div class="container">
+
+    <!-- Auth/role guard -->
+    <div id="admin-guard" style="display:none">
+      <div class="empty-state">
+        <span class="empty-state-icon">🔒</span>
+        <h3>Доступ запрещён</h3>
+        <p>Эта страница доступна только администраторам.</p>
+        <a href="./index.html" class="btn btn-secondary mt-16">На главную</a>
+      </div>
+    </div>
+
+    <!-- Admin content -->
+    <div id="admin-content" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+        <div>
+          <h1 class="section-title" style="font-size:1.8rem;">Панель администратора</h1>
+          <p class="section-subtitle">Управление магазином</p>
+        </div>
+        <span class="badge badge-accent">Admin</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid mb-24" id="admin-stats">
+        <div class="stat-card"><div class="stat-value" id="stat-products">—</div><div class="stat-label">Товаров</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-orders">—</div><div class="stat-label">Заказов</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-users">—</div><div class="stat-label">Пользователей</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-revenue">—</div><div class="stat-label">Выручка</div></div>
+      </div>
+
+      <div class="admin-layout">
+        <!-- Sidebar nav -->
+        <aside class="admin-sidebar">
+          <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:12px;padding:0 4px;">Управление</div>
+          <nav style="display:flex;flex-direction:column;gap:4px;">
+            <button class="admin-nav-item active" data-panel="products">📦 Товары</button>
+            <button class="admin-nav-item" data-panel="orders">🛍 Заказы</button>
+            <button class="admin-nav-item" data-panel="users">👥 Пользователи</button>
+            <button class="admin-nav-item" data-panel="reviews">⭐ Модерация</button>
+          </nav>
+        </aside>
+
+        <!-- Panels -->
+        <div>
+
+          <!-- PRODUCTS panel -->
+          <div id="panel-products" class="admin-panel active">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+              <h2 class="section-title">Товары</h2>
+              <button class="btn btn-primary" id="add-product-btn">+ Добавить товар</button>
+            </div>
+            <div class="table-wrapper">
+              <table id="products-table">
+                <thead>
+                  <tr>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Цена</th>
+                    <th>Остаток</th>
+                    <th>Рейтинг</th>
+                    <th>Действия</th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
+            <div class="load-more-wrapper">
+              <button class="btn btn-secondary" id="products-load-more" style="display:none">Показать ещё</button>
+            </div>
+          </div>
+
+          <!-- ORDERS panel -->
+          <div id="panel-orders" class="admin-panel">
+            <h2 class="section-title mb-24">Все заказы</h2>
+            <div class="table-wrapper">
+              <table id="orders-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Покупатель</th>
+                    <th>Сумма</th>
+                    <th>Дата</th>
+                    <th>Статус</th>
+                    <th>Действие</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-tbody"></tbody>
+              </table>
+            </div>
+            <div class="load-more-wrapper">
+              <button class="btn btn-secondary" id="orders-load-more" style="display:none">Показать ещё</button>
+            </div>
+          </div>
+
+          <!-- USERS panel -->
+          <div id="panel-users" class="admin-panel">
+            <h2 class="section-title mb-24">Пользователи</h2>
+            <div class="users-list" id="users-list">
+              <div class="loader"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+          <!-- REVIEWS / moderation panel -->
+          <div id="panel-reviews" class="admin-panel">
+            <h2 class="section-title mb-8">Модерация отзывов</h2>
+            <p class="section-subtitle">Все отзывы пользователей</p>
+            <div style="display:flex;flex-direction:column;gap:12px;" id="mod-reviews-list">
+              <div class="loader"><div class="spinner"></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Product form modal -->
+<div id="product-modal-overlay" class="modal-overlay">
+  <div class="modal modal-wide" role="dialog" aria-labelledby="product-modal-title">
+    <button class="modal-close" id="product-modal-close">✕</button>
+    <h2 class="modal-title" id="product-modal-title">Добавить товар</h2>
+    <form id="product-form" novalidate style="margin-top:20px;">
+      <input type="hidden" id="product-form-id" />
+      <div class="product-form-grid">
+        <div class="form-group">
+          <label class="form-label" for="pf-name">Название</label>
+          <input class="form-input" type="text" id="pf-name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pf-category">Категория</label>
+          <select class="form-input" id="pf-category" style="-webkit-appearance:auto;appearance:auto;">
+            <option value="electronics">Электроника</option>
+            <option value="clothing">Одежда</option>
+            <option value="home">Дом и сад</option>
+            <option value="sports">Спорт</option>
+            <option value="books">Книги</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pf-price">Цена (₽)</label>
+          <input class="form-input" type="number" id="pf-price" min="0" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pf-stock">Остаток (шт)</label>
+          <input class="form-input" type="number" id="pf-stock" min="0" required />
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label" for="pf-desc">Описание</label>
+          <textarea class="form-input" id="pf-desc" rows="3"></textarea>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label" for="pf-image">URL изображения</label>
+          <input class="form-input" type="url" id="pf-image" placeholder="https://..." />
+        </div>
+      </div>
+      <p id="product-form-error" class="form-error mt-8" style="display:none"></p>
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button type="submit" class="btn btn-primary" id="product-form-submit">Сохранить</button>
+        <button type="button" class="btn btn-ghost" id="product-modal-cancel">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>© 2024 SHOP.</span>
+  </div>
+</footer>
+
+<script type="module" src="./src/pages/admin.js"></script>
+</body>
+</html>
