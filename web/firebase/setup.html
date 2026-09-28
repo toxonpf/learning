@@ -48,6 +48,10 @@
     <button class="btn btn-secondary btn-full" id="seed-btn">🌱 Заполнить 22 тестовых товара</button>
     <a href="./index.html" class="btn btn-ghost btn-full">На главную</a>
   </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:28px 0;" />
+  <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:12px;">🔧 Инструменты (не требуют аккаунта):</p>
+  <button class="btn btn-secondary btn-full" id="fix-tokens-btn">🔍 Обновить токены поиска у всех товаров</button>
 </div>
 
 <script type="module">
@@ -164,6 +168,42 @@ document.getElementById('seed-btn')?.addEventListener('click', async () => {
     log(`Ошибка: ${err.message}`, 'err');
     btn.disabled = false;
     btn.textContent = '🌱 Повторить';
+  }
+});
+document.getElementById('fix-tokens-btn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('fix-tokens-btn');
+  btn.disabled = true;
+  btn.textContent = 'Обновляем...';
+  logBox.innerHTML = '';
+  log('Загружаем список товаров...', 'info');
+
+  try {
+    const { collection: col, getDocs: gd, doc: docFn, updateDoc } = await import('firebase/firestore');
+    const { generateNameTokens } = await import('./src/utils/tokens.js');
+    const snap = await gd(col(db, 'products'));
+
+    if (snap.empty) {
+      log('Товаров в базе нет. Сначала загрузите товары.', 'warn');
+      btn.disabled = false;
+      btn.textContent = '🔍 Обновить токены поиска у всех товаров';
+      return;
+    }
+
+    log(`Найдено ${snap.size} товаров. Обновляем токены...`, 'info');
+    let i = 0;
+    for (const d of snap.docs) {
+      const name = d.data().name;
+      const nameTokens = generateNameTokens(name);
+      await updateDoc(docFn(db, 'products', d.id), { nameTokens });
+      i++;
+      log(`${i}/${snap.size} — ${name} (${nameTokens.length} токенов)`, 'ok');
+    }
+    log('✅ Все токены обновлены! Поиск теперь работает.', 'ok');
+    btn.textContent = '✓ Токены обновлены';
+  } catch (err) {
+    log(`Ошибка: ${err.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = '🔍 Обновить токены поиска у всех товаров';
   }
 });
 </script>

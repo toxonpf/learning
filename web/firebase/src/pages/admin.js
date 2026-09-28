@@ -8,6 +8,7 @@ import { db } from '../firebase.js';
 import { initNavbar } from '../components/navbar.js';
 import { initAuthModal, onAuthChange } from './auth.js';
 import { showToast } from '../components/toast.js';
+import { generateNameTokens } from '../utils/tokens.js';
 
 const PAGE_SIZE = 15;
 
@@ -139,8 +140,8 @@ async function saveProduct(e) {
     return;
   }
 
-  // Generate search tokens
-  const nameTokens = name.toLowerCase().split(/\s+/).filter(Boolean);
+  // Generate search tokens with prefix support
+  const nameTokens = generateNameTokens(name);
 
   const payload = { name, nameTokens, category, price, stock, description, imageUrl, updatedAt: serverTimestamp() };
 

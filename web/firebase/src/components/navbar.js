@@ -18,7 +18,7 @@ export function initNavbar(searchCallback = null) {
         <a href="./index.html" class="navbar-nav-link">Каталог</a>
         <a href="./profile.html" class="navbar-nav-link">Профиль</a>
       </div>
-      ${searchCallback !== null ? `
+      ${searchCallback !== null ?`
       <div class="navbar-search">
         <input type="text" id="nav-search-input" placeholder="Поиск товаров..." autocomplete="off" />
         <span class="navbar-search-icon">🔍</span>

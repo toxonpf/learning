@@ -27,13 +27,16 @@ function buildQuery(afterDoc = null) {
   const constraints = [];
 
   if (searchQuery) {
+    // Search mode: only filter by nameTokens, no orderBy to avoid composite index requirement
     constraints.push(where('nameTokens', 'array-contains', searchQuery));
-  } else if (currentCategory) {
-    constraints.push(where('category', '==', currentCategory));
+  } else {
+    if (currentCategory) {
+      constraints.push(where('category', '==', currentCategory));
+    }
+    const [sortField, sortDir] = currentSort.split('_');
+    constraints.push(orderBy(sortField, sortDir));
   }
 
-  const [sortField, sortDir] = currentSort.split('_');
-  constraints.push(orderBy(sortField, sortDir));
   constraints.push(limit(PAGE_SIZE));
   if (afterDoc) constraints.push(startAfter(afterDoc));
 
@@ -181,6 +184,7 @@ function setupRealtime() {
 document.addEventListener('DOMContentLoaded', () => {
   initAuthModal();
   initNavbar((q) => {
+    if (q.length === 1) return; // minimum 2 chars
     searchQuery = q;
     loadProducts(true);
   });

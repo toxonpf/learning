@@ -5,6 +5,7 @@
 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase.js';
+import { generateNameTokens } from './utils/tokens.js';
 
 const PRODUCTS = [
   // Electronics
@@ -45,7 +46,7 @@ export async function seedProducts(onProgress = null) {
   const total = PRODUCTS.length;
   let count = 0;
   for (const product of PRODUCTS) {
-    const nameTokens = product.name.toLowerCase().split(/\s+/).filter(Boolean);
+    const nameTokens = generateNameTokens(product.name);
     await addDoc(collection(db, 'products'), {
       ...product,
       nameTokens,
