@@ -138,6 +138,20 @@ async function loadProducts(reset = false) {
   } catch (err) {
     console.error(err);
     showToast('Ошибка загрузки товаров', 'error');
+    if (reset) {
+      const match = err.message && err.message.match(/https:\/\/console\.firebase\.google\.com[^\s]+/);
+      const indexUrl = match ? match[0] : null;
+
+      grid().innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <span class="empty-state-icon">⚠️</span>
+          <h3>Требуется индекс Firestore</h3>
+          <p style="font-size:0.875rem;color:var(--text-secondary);max-width:480px;margin:10px auto;line-height:1.5;">
+            Для фильтрации по этой категории требуется составной индекс. Нажмите кнопку ниже, чтобы создать его в консоли Firebase:
+          </p>
+          ${indexUrl ? `<a href="${indexUrl}" target="_blank" class="btn btn-primary mt-12" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">🔗 Создать индекс в 1 клик</a>` : ''}
+        </div>`;
+    }
   } finally {
     isLoading = false;
     catalogLoader().style.display = 'none';

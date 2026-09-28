@@ -160,25 +160,28 @@ async function checkout(uid) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  const loaderEl = document.getElementById('cart-loader');
+  const guardEl = document.getElementById('cart-auth-guard');
+  if (!loaderEl && !guardEl) return; // Only run cart page logic on cart.html
+
   initAuthModal();
   initNavbar();
 
-  const loaderEl = document.getElementById('cart-loader');
   const pageLoader = document.getElementById('page-loader');
 
   onAuthChange((user) => {
     if (pageLoader) pageLoader.classList.add('hidden');
 
     if (!user) {
-      loaderEl.style.display = 'none';
-      document.getElementById('cart-auth-guard').style.display = 'block';
-      document.getElementById('cart-content').style.display = 'none';
-      document.getElementById('cart-empty').style.display = 'none';
+      if (loaderEl) loaderEl.style.display = 'none';
+      if (guardEl) guardEl.style.display = 'block';
+      document.getElementById('cart-content')?.style.setProperty('display', 'none');
+      document.getElementById('cart-empty')?.style.setProperty('display', 'none');
       document.getElementById('cart-login-btn')?.addEventListener('click', () => openAuthModal('login'));
       return;
     }
 
-    document.getElementById('cart-auth-guard').style.display = 'none';
+    if (guardEl) guardEl.style.display = 'none';
     if (cartUnsub) cartUnsub();
     renderCart(user.uid);
   });
