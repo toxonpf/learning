@@ -47,8 +47,7 @@ async function makeCopy() {
             'utf-8'
         );
     } catch (err) { console.log(err) }
-}
-makeCopy()
+} makeCopy();
 
 // Задание 5:
 async function checkFiles() {

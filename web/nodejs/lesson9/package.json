@@ -1,0 +1,16 @@
+{
+  "name": "lesson9-transaction-monitor",
+  "version": "1.0.0",
+  "description": "Система мониторинга банковских транзакций",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon --watch '*.js' --watch '.env' index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
