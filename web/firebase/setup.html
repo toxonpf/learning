@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup — SHOP.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="./src/styles/main.css" />
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .setup-box { width: 100%; max-width: 480px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 36px; }
+    .log-box { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 16px; font-family: monospace; font-size: 0.8rem; line-height: 1.8; max-height: 260px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px; }
+    .log-ok { color: #22c55e; }
+    .log-err { color: #ef4444; }
+    .log-info { color: #3b82f6; }
+    .log-warn { color: #fbbf24; }
+  </style>
+</head>
+<body>
+<div class="setup-box">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;margin-bottom:4px;">Настройка магазина</h1>
+  <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:28px;">Создание аккаунта администратора</p>
+
+  <form id="setup-form" novalidate>
+    <div class="form-group mb-16">
+      <label class="form-label" for="s-email">Email</label>
+      <input class="form-input" type="email" id="s-email" placeholder="admin@example.com" required />
+    </div>
+    <div class="form-group mb-16">
+      <label class="form-label" for="s-password">Пароль (минимум 6 символов)</label>
+      <input class="form-input" type="password" id="s-password" placeholder="••••••••" required minlength="6" />
+    </div>
+    <div class="form-group mb-24">
+      <label class="form-label" for="s-name">Имя</label>
+      <input class="form-input" type="text" id="s-name" placeholder="Администратор" required />
+    </div>
+    <button type="submit" class="btn btn-primary btn-full btn-lg" id="setup-btn">
+      Создать аккаунт администратора
+    </button>
+  </form>
+
+  <div class="log-box" id="log-box">
+    <div class="log-info">ℹ Введите данные и нажмите кнопку</div>
+  </div>
+
+  <div id="success-actions" style="display:none;margin-top:20px;display:none;flex-direction:column;gap:10px;">
+    <a href="./admin.html" class="btn btn-primary btn-full">Перейти в Админ-панель →</a>
+    <button class="btn btn-secondary btn-full" id="seed-btn">🌱 Заполнить 22 тестовых товара</button>
+    <a href="./index.html" class="btn btn-ghost btn-full">На главную</a>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:28px 0;" />
+  <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:12px;">🔧 Инструменты (не требуют аккаунта):</p>
+  <button class="btn btn-secondary btn-full" id="fix-tokens-btn">🔍 Обновить токены поиска у всех товаров</button>
+</div>
+
+<script type="module">
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from './src/firebase.js';
+import { seedProducts } from './src/seed.js';
+
+const logBox = document.getElementById('log-box');
+
+function log(msg, type = 'info') {
+  const icons = { ok: '✅', err: '❌', info: 'ℹ', warn: '⚠' };
+  const line = document.createElement('div');
+  line.className = `log-${type}`;
+  line.textContent = `${icons[type] || '·'} ${msg}`;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+document.getElementById('setup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Создаём...';
+  logBox.innerHTML = '';
+
+  const email = document.getElementById('s-email').value.trim();
+  const password = document.getElementById('s-password').value;
+  const name = document.getElementById('s-name').value.trim() || 'Admin';
+
+  log('Подключение к Firebase...', 'info');
+
+  let user = null;
+
+  // Try register first, fallback to login
+  try {
+    log('Регистрация нового пользователя...', 'info');
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    user = cred.user;
+    log('Пользователь создан в Authentication', 'ok');
+  } catch (err) {
+    if (err.code === 'auth/email-already-in-use') {
+      log('Email уже используется, пробуем войти...', 'warn');
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        user = cred.user;
+        log('Вход выполнен успешно', 'ok');
+      } catch (loginErr) {
+        log(`Ошибка входа: ${loginErr.code} — ${loginErr.message}`, 'err');
+        btn.disabled = false;
+        btn.textContent = 'Повторить';
+        return;
+      }
+    } else {
+      log(`Ошибка регистрации: ${err.code}`, 'err');
+      log(`Сообщение: ${err.message}`, 'err');
+
+      if (err.code === 'auth/operation-not-allowed') {
+        log('👉 Решение: включите Email/Password в Firebase Console → Authentication → Sign-in method', 'warn');
+      } else if (err.code === 'auth/weak-password') {
+        log('👉 Решение: используйте пароль минимум 6 символов', 'warn');
+      } else if (err.code === 'auth/invalid-email') {
+        log('👉 Решение: введите корректный email', 'warn');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Повторить';
+      return;
+    }
+  }
+
+  // Update display name
+  try {
+    await updateProfile(user, { displayName: name });
+    log('Имя профиля установлено', 'ok');
+  } catch (err) {
+    log(`Предупреждение: не удалось установить имя (${err.code})`, 'warn');
+  }
+
+  // Create/update Firestore user doc with admin role
+  try {
+    const userRef = doc(db, 'users', user.uid);
+    const existing = await getDoc(userRef);
+    await setDoc(userRef, {
+      uid: user.uid,
+      displayName: name,
+      email: email,
+      phone: '',
+      role: 'admin',
+      createdAt: existing.exists() ? existing.data().createdAt : serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    log('Документ пользователя создан с ролью admin ✓', 'ok');
+  } catch (err) {
+    log(`Ошибка создания документа: ${err.code} — ${err.message}`, 'err');
+    log('Попробуйте вручную в Firestore Console изменить role на admin', 'warn');
+  }
+
+  log('Готово! Теперь у вас есть доступ к админ-панели.', 'ok');
+  document.getElementById('success-actions').style.display = 'flex';
+  btn.textContent = '✓ Готово';
+});
+
+document.getElementById('seed-btn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('seed-btn');
+  btn.disabled = true;
+  btn.textContent = 'Загружаем товары...';
+  log('Начинаем загрузку 22 тестовых товаров...', 'info');
+  try {
+    await seedProducts((name, i, total) => log(`${i}/${total} — ${name}`, 'ok'));
+    log('Все товары загружены!', 'ok');
+    btn.textContent = '✓ Товары загружены';
+  } catch (err) {
+    log(`Ошибка: ${err.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = '🌱 Повторить';
+  }
+});
+document.getElementById('fix-tokens-btn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('fix-tokens-btn');
+  btn.disabled = true;
+  btn.textContent = 'Обновляем...';
+  logBox.innerHTML = '';
+  log('Загружаем список товаров...', 'info');
+
+  try {
+    const { collection: col, getDocs: gd, doc: docFn, updateDoc } = await import('firebase/firestore');
+    const { generateNameTokens } = await import('./src/utils/tokens.js');
+    const snap = await gd(col(db, 'products'));
+
+    if (snap.empty) {
+      log('Товаров в базе нет. Сначала загрузите товары.', 'warn');
+      btn.disabled = false;
+      btn.textContent = '🔍 Обновить токены поиска у всех товаров';
+      return;
+    }
+
+    log(`Найдено ${snap.size} товаров. Обновляем токены...`, 'info');
+    let i = 0;
+    for (const d of snap.docs) {
+      const name = d.data().name;
+      const nameTokens = generateNameTokens(name);
+      await updateDoc(docFn(db, 'products', d.id), { nameTokens });
+      i++;
+      log(`${i}/${snap.size} — ${name} (${nameTokens.length} токенов)`, 'ok');
+    }
+    log('✅ Все токены обновлены! Поиск теперь работает.', 'ok');
+    btn.textContent = '✓ Токены обновлены';
+  } catch (err) {
+    log(`Ошибка: ${err.message}`, 'err');
+    btn.disabled = false;
+    btn.textContent = '🔍 Обновить токены поиска у всех товаров';
+  }
+});
+</script>
+</body>
+</html>

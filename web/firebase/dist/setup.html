@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup — SHOP.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .setup-box { width: 100%; max-width: 480px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 36px; }
+    .log-box { background: var(--bg-elevated); border-radius: var(--radius-md); padding: 16px; font-family: monospace; font-size: 0.8rem; line-height: 1.8; max-height: 260px; overflow-y: auto; border: 1px solid var(--border); margin-top: 20px; }
+    .log-ok { color: #22c55e; }
+    .log-err { color: #ef4444; }
+    .log-info { color: #3b82f6; }
+    .log-warn { color: #fbbf24; }
+  </style>
+  <script type="module" crossorigin src="./assets/setup-DGl7mqu7.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/firebase-D4IcALkh.js">
+  <link rel="stylesheet" crossorigin href="./assets/firebase-Baxkqz5J.css">
+</head>
+<body>
+<div class="setup-box">
+  <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:700;margin-bottom:4px;">Настройка магазина</h1>
+  <p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:28px;">Создание аккаунта администратора</p>
+
+  <form id="setup-form" novalidate>
+    <div class="form-group mb-16">
+      <label class="form-label" for="s-email">Email</label>
+      <input class="form-input" type="email" id="s-email" placeholder="admin@example.com" required />
+    </div>
+    <div class="form-group mb-16">
+      <label class="form-label" for="s-password">Пароль (минимум 6 символов)</label>
+      <input class="form-input" type="password" id="s-password" placeholder="••••••••" required minlength="6" />
+    </div>
+    <div class="form-group mb-24">
+      <label class="form-label" for="s-name">Имя</label>
+      <input class="form-input" type="text" id="s-name" placeholder="Администратор" required />
+    </div>
+    <button type="submit" class="btn btn-primary btn-full btn-lg" id="setup-btn">
+      Создать аккаунт администратора
+    </button>
+  </form>
+
+  <div class="log-box" id="log-box">
+    <div class="log-info">ℹ Введите данные и нажмите кнопку</div>
+  </div>
+
+  <div id="success-actions" style="display:none;margin-top:20px;display:none;flex-direction:column;gap:10px;">
+    <a href="./admin.html" class="btn btn-primary btn-full">Перейти в Админ-панель →</a>
+    <button class="btn btn-secondary btn-full" id="seed-btn">🌱 Заполнить 22 тестовых товара</button>
+    <a href="./index.html" class="btn btn-ghost btn-full">На главную</a>
+  </div>
+</div>
+
+</body>
+</html>

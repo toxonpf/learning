@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Корзина — SHOP.</title>
+  <meta name="description" content="Ваша корзина покупок." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <style>
+    .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; padding-bottom: 60px; }
+    .cart-item { display: grid; grid-template-columns: 80px 1fr auto; gap: 20px; align-items: center; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); transition: all var(--transition); }
+    .cart-item:hover { border-color: var(--border-hover); }
+    .cart-item-img { width: 80px; height: 80px; border-radius: var(--radius-md); object-fit: cover; background: var(--bg-elevated); }
+    .cart-item-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; }
+    .cart-item-price { font-size: 0.875rem; color: var(--text-secondary); }
+    .cart-item-controls { display: flex; align-items: center; gap: 10px; }
+    .qty-btn-sm { width: 30px; height: 30px; border-radius: var(--radius-sm); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-primary); font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all var(--transition); }
+    .qty-btn-sm:hover { border-color: var(--border-hover); }
+    .cart-items-list { display: flex; flex-direction: column; gap: 12px; }
+    .order-summary { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 28px; position: sticky; top: calc(var(--navbar-height) + 24px); }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-total { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
+    .checkout-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    @media (max-width: 800px) { .cart-layout { grid-template-columns: 1fr; } .order-summary { position:static; } }
+    @media (max-width: 500px) { .cart-item { grid-template-columns: 60px 1fr; } .cart-item-controls { grid-column: 1/-1; } }
+  </style>
+  <script type="module" crossorigin src="./assets/firebase-D4IcALkh.js"></script>
+  <script type="module" crossorigin src="./assets/preload-helper-DNg48SyG.js"></script>
+  <script type="module" crossorigin src="./assets/navbar-6rDgd_GQ.js"></script>
+  <script type="module" crossorigin src="./assets/cart-w4DGmxVJ.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/firebase-Baxkqz5J.css">
+</head>
+<body>
+
+<div id="page-loader" class="page-loader"><div class="spinner"></div></div>
+
+<main class="page-main">
+  <div class="container">
+    <h1 class="section-title mb-24" style="font-size:2rem;">Корзина</h1>
+
+    <!-- Auth guard -->
+    <div id="cart-auth-guard" style="display:none">
+      <div class="empty-state">
+        <span class="empty-state-icon">🔐</span>
+        <h3>Войдите в аккаунт</h3>
+        <p>Войдите, чтобы увидеть свою корзину.</p>
+        <button class="btn btn-primary mt-16" id="cart-login-btn">Войти</button>
+      </div>
+    </div>
+
+    <!-- Empty cart -->
+    <div id="cart-empty" style="display:none">
+      <div class="empty-state">
+        <span class="empty-state-icon">🛒</span>
+        <h3>Корзина пуста</h3>
+        <p>Добавьте товары из каталога, чтобы оформить заказ.</p>
+        <a href="./index.html" class="btn btn-primary mt-16">Перейти в каталог</a>
+      </div>
+    </div>
+
+    <!-- Cart content -->
+    <div id="cart-content" style="display:none">
+      <div class="cart-layout">
+        <!-- Items -->
+        <div>
+          <div class="d-flex align-center gap-16 mb-24" style="justify-content:space-between;">
+            <span id="cart-items-count" style="font-size:0.875rem;color:var(--text-secondary)"></span>
+            <button class="btn btn-danger btn-sm" id="clear-cart-btn">🗑 Очистить корзину</button>
+          </div>
+          <div class="cart-items-list" id="cart-items-list"></div>
+        </div>
+
+        <!-- Summary -->
+        <aside class="order-summary">
+          <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">Итого</h2>
+          <div class="summary-row"><span>Товары (<span id="sum-count">0</span>)</span><span id="sum-subtotal">0 ₽</span></div>
+          <div class="summary-row"><span>Доставка</span><span style="color:var(--accent);">Бесплатно</span></div>
+          <div class="summary-row" style="margin-top:8px;">
+            <span class="fw-700">К оплате</span>
+            <span class="summary-total" id="sum-total">0 ₽</span>
+          </div>
+
+          <div class="checkout-form">
+            <div class="form-group">
+              <label class="form-label" for="checkout-address">Адрес доставки</label>
+              <input class="form-input" type="text" id="checkout-address" placeholder="г. Москва, ул. Примерная, 1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="checkout-phone">Телефон</label>
+              <input class="form-input" type="tel" id="checkout-phone" placeholder="+7 (999) 000-00-00" />
+            </div>
+            <button class="btn btn-primary btn-full btn-lg mt-8" id="checkout-btn">
+              Оформить заказ
+            </button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="cart-loader" class="loader"><div class="spinner"></div></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <span>© 2024 SHOP.</span>
+  </div>
+</footer>
+
+</body>
+</html>
