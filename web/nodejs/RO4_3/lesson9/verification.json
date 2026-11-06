@@ -1,0 +1,466 @@
+{
+  "checkedAt": "2026-11-05T08:38:34.613Z",
+  "runtime": "v26.12.1",
+  "checks": [
+    "Реальный PostgreSQL",
+    "HTTP endpoints",
+    "CRUD сохраняется в PostgreSQL",
+    "UNIQUE и FOREIGN KEY; категории перенесены без потери товаров",
+    "Связи 1:1, 1:N, M:N; CHECK(quantity > 0); составной ключ",
+    "include/select, relation filter some, историческая сумма заказа",
+    "Миграции description/slug применены; повторный seed без дублей",
+    "Атомарный заказ COMMIT/ROLLBACK; цена из БД; валидация позиций",
+    "Prisma Studio открыт в Chromium; таблица products содержит Keyboard"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        },
+        {
+          "id": 2,
+          "name": "Mouse",
+          "price": 8000,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        },
+        {
+          "id": 3,
+          "name": "Monitor",
+          "price": 85000,
+          "description": null,
+          "categoryId": 3,
+          "inStock": false,
+          "category": {
+            "id": 3,
+            "name": "Monitors"
+          }
+        },
+        {
+          "id": 4,
+          "name": "Laptop",
+          "price": 420000,
+          "description": null,
+          "categoryId": 2,
+          "inStock": true,
+          "category": {
+            "id": 2,
+            "name": "Computers"
+          }
+        },
+        {
+          "id": 5,
+          "name": "Webcam",
+          "price": 22000,
+          "description": null,
+          "categoryId": 1,
+          "inStock": false,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "name": "Keyboard",
+        "price": 15000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true,
+        "category": {
+          "id": 1,
+          "name": "Accessories"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999999",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "message": "Invalid id"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?category=Accessories&inStock=true&minPrice=10000&maxPrice=50000",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=abc",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must be a non-negative integer"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?inStock=maybe",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "inStock must be true or false"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=500&maxPrice=100",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must not exceed maxPrice"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "message": "Access denied"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "price must be a positive integer"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 65000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 42000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": false
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 42000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/6",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 409,
+      "response": {
+        "message": "Related record missing or still in use"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-05T13:38:30.624Z",
+        "user": {
+          "id": 1,
+          "name": "Anna",
+          "email": "anna@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 2,
+            "quantity": 2,
+            "price": 8000,
+            "product": {
+              "id": 2,
+              "name": "Mouse"
+            }
+          },
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 15000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ],
+        "total": 31000
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders?productId=1",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "userId": 1,
+          "status": "new",
+          "createdAt": "2026-11-05T13:38:30.624Z",
+          "user": {
+            "id": 1,
+            "name": "Anna",
+            "email": "anna@example.com"
+          },
+          "items": [
+            {
+              "orderId": 1,
+              "productId": 2,
+              "quantity": 2,
+              "price": 8000,
+              "product": {
+                "id": 2,
+                "name": "Mouse"
+              }
+            },
+            {
+              "orderId": 1,
+              "productId": 1,
+              "quantity": 1,
+              "price": 15000,
+              "product": {
+                "id": 1,
+                "name": "Keyboard"
+              }
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "userId": 2,
+          "status": "new",
+          "createdAt": "2026-11-05T13:38:30.624Z",
+          "user": {
+            "id": 2,
+            "name": "Ivan",
+            "email": "ivan@example.com"
+          },
+          "items": [
+            {
+              "orderId": 2,
+              "productId": 1,
+              "quantity": 1,
+              "price": 15000,
+              "product": {
+                "id": 1,
+                "name": "Keyboard"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/999999",
+      "status": 404,
+      "response": {
+        "message": "Order not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 8,
+        "name": "Test SSD",
+        "price": 65000,
+        "description": "Учебный SSD",
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/8",
+      "status": 200,
+      "response": {
+        "id": 8,
+        "name": "Test SSD",
+        "price": 65000,
+        "description": "Учебный SSD",
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 201,
+      "response": {
+        "id": 3,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-05T08:38:34.600Z",
+        "user": {
+          "id": 1,
+          "name": "Anna",
+          "email": "anna@example.com"
+        },
+        "items": [
+          {
+            "orderId": 3,
+            "productId": 1,
+            "quantity": 2,
+            "price": 15000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          },
+          {
+            "orderId": 3,
+            "productId": 2,
+            "quantity": 1,
+            "price": 8000,
+            "product": {
+              "id": 2,
+              "name": "Mouse"
+            }
+          }
+        ],
+        "total": 38000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 409,
+      "response": {
+        "message": "Product 999999 is unavailable"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "message": "userId and non-empty items (max 100) required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "message": "Invalid or duplicate order item"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "message": "Invalid or duplicate order item"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 404,
+      "response": {
+        "message": "User not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/unknown",
+      "status": 404,
+      "response": {
+        "message": "Route GET /api/unknown not found"
+      }
+    }
+  ]
+}

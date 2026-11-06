@@ -1,0 +1,5 @@
+argon2.hash: 70.601ms
+Different hashes: true
+Correct: true
+argon2.verify: 66.572ms
+Wrong: false

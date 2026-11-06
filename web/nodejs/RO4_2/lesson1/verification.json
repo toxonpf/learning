@@ -1,0 +1,93 @@
+{
+  "checkedAt": "2026-11-05T08:44:47.906Z",
+  "runtime": "v26.12.1",
+  "checks": [
+    "Обязательные endpoints",
+    "HTTP-статусы и содержимое ответов"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200,
+      "response": "Internet Shop API"
+    },
+    {
+      "method": "GET",
+      "path": "/about",
+      "status": 200,
+      "response": "Учебный REST API магазина компьютерной техники"
+    },
+    {
+      "method": "GET",
+      "path": "/api/status",
+      "status": 200,
+      "response": {
+        "status": "ok",
+        "message": "Server is running"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/shop",
+      "status": 200,
+      "response": {
+        "name": "Kirill Tech Store",
+        "description": "Учебный интернет-магазин",
+        "currency": "KZT"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 2,
+          "name": "Mouse",
+          "price": 8000,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 3,
+          "name": "Monitor",
+          "price": 85000,
+          "category": "Monitors",
+          "inStock": false
+        },
+        {
+          "id": 4,
+          "name": "Laptop",
+          "price": 420000,
+          "category": "Computers",
+          "inStock": true
+        },
+        {
+          "id": 5,
+          "name": "Webcam",
+          "price": 22000,
+          "category": "Accessories",
+          "inStock": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/categories",
+      "status": 200,
+      "response": [
+        "Computers",
+        "Accessories",
+        "Monitors"
+      ]
+    }
+  ]
+}

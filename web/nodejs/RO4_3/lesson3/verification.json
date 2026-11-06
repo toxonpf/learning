@@ -1,0 +1,217 @@
+{
+  "checkedAt": "2026-11-05T08:38:15.353Z",
+  "runtime": "v26.12.1",
+  "checks": [
+    "Реальный PostgreSQL",
+    "HTTP endpoints",
+    "CRUD сохраняется в PostgreSQL",
+    "UNIQUE и FOREIGN KEY; категории перенесены без потери товаров"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "categoryId": 1,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 2,
+          "name": "Mouse",
+          "price": 8000,
+          "categoryId": 1,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 3,
+          "name": "Monitor",
+          "price": 85000,
+          "categoryId": 3,
+          "category": "Monitors",
+          "inStock": false
+        },
+        {
+          "id": 4,
+          "name": "Laptop",
+          "price": 420000,
+          "categoryId": 2,
+          "category": "Computers",
+          "inStock": true
+        },
+        {
+          "id": 5,
+          "name": "Webcam",
+          "price": 22000,
+          "categoryId": 1,
+          "category": "Accessories",
+          "inStock": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "name": "Keyboard",
+        "price": 15000,
+        "categoryId": 1,
+        "category": "Accessories",
+        "inStock": true
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999999",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "message": "Invalid id"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?category=Accessories&inStock=true&minPrice=10000&maxPrice=50000",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "categoryId": 1,
+          "category": "Accessories",
+          "inStock": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=abc",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must be a non-negative integer"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?inStock=maybe",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "inStock must be true or false"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=500&maxPrice=100",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must not exceed maxPrice"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "message": "Access denied"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "price must be a positive integer"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 65000,
+        "categoryId": 1,
+        "category": "Accessories",
+        "inStock": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 42000,
+        "categoryId": 1,
+        "category": "Accessories",
+        "inStock": false
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "id": 6,
+        "name": "Test SSD",
+        "price": 42000,
+        "category_id": 1,
+        "inStock": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/6",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 409,
+      "response": {
+        "message": "Related record missing or still in use"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/unknown",
+      "status": 404,
+      "response": {
+        "message": "Route GET /api/unknown not found"
+      }
+    }
+  ]
+}

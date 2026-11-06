@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:3000
+
+### Состояние
+GET {{baseUrl}}/api/status
+
+### Каталог
+GET {{baseUrl}}/api/products
+
+### Один товар
+GET {{baseUrl}}/api/products/1
+
+### Совместная фильтрация
+GET {{baseUrl}}/api/products?category=Accessories&inStock=true&minPrice=10000&maxPrice=50000
+
+### Создать товар (сохраните id ответа в productId)
+POST {{baseUrl}}/api/products
+Content-Type: application/json
+x-api-key: college-demo
+
+{
+  "name": "SSD 2TB",
+  "price": 65000,
+  "categoryId": 1,
+  "inStock": true
+}
+
+@productId = 6
+
+### Изменить цену
+PATCH {{baseUrl}}/api/products/{{productId}}
+Content-Type: application/json
+
+{"price": 42000}
+
+### Удалить
+DELETE {{baseUrl}}/api/products/{{productId}}
+
+### После удаления — 404
+GET {{baseUrl}}/api/products/{{productId}}

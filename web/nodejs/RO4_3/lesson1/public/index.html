@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Internet Shop</title><link rel="stylesheet" href="/css/style.css"></head>
+<body><main><h1>Internet Shop</h1><section><h2>Добавить товар</h2>
+<form id="product-form"><label>Название <input id="name" required maxlength="150"></label><label>Цена, ₸ <input id="price" type="number" required></label><label>Категория <input id="category" required></label><label><input id="inStock" type="checkbox" checked> В наличии</label><button>Добавить</button></form></section>
+<p id="message" role="status" aria-live="polite"></p><section><h2>Товары</h2><div id="products"></div></section></main><script type="module" src="/js/app.js"></script></body></html>

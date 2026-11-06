@@ -1,3 +1,10 @@
-tools
-node_modules
+tools/
+node_modules/
 .env
+generated/
+playwright-report/
+test-results/
+__pycache__/
+*.py[cod]
+*.log
+!RO4_1/lesson5/storage/activity.log

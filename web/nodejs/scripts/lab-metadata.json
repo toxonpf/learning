@@ -1,0 +1,242 @@
+{
+  "RO4_1": [
+    {
+      "number": 5,
+      "title": "Работа с файловой системой — асинхронная",
+      "source": "Задание.md",
+      "run": "Из каталога урока: node index.js. Для демонстрации копирования создайте source.txt; остальные операции работают и при его отсутствии.",
+      "summary": "setup ожидает создание каталога и status.txt. readUpper обрабатывает отсутствие файла. addLog дописывает дату и сообщение. makeCopy сначала записывает копию, затем удаляет оригинал; при ошибке записи оригинал сохраняется. checkFiles ожидает access внутри try и проверяет файлы параллельно через Promise.all.",
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "number": 6,
+      "title": "Работа с JSON-файлами",
+      "source": "Задание.md",
+      "run": "Из каталога урока: node index.js. Демонстрация изменяет учебный books.json.",
+      "summary": "Асинхронные функции работают с books.json через fs.promises и path.join. Файл создаётся только при отсутствии. Новый id вычисляется по максимальному имеющемуся id, поэтому удаление книг не вызывает дублирования. Реализованы поиск автора, выдача книги и удаление изданий старше 50 лет.",
+      "files": [
+        "index.js"
+      ]
+    },
+    {
+      "number": 9,
+      "title": "Конфигурация и событийная модель в Node.js",
+      "source": "Задание.md",
+      "run": "Из корня репозитория: npm ci. В каталоге урока: cp .env.example .env, затем npm start или npm run dev.",
+      "summary": "Лимит, интервал и максимальная сумма заданы в .env.example. dotenv читает .env относительно каталога урока. EventEmitter связывает генератор переводов и мониторинг: сумма выше LIMIT вызывает fraud-alert, на лимите и ниже — transfer. Интервал по умолчанию 3 секунды. Некорректный LIMIT останавливает запуск с понятным сообщением.",
+      "files": [
+        "package.json",
+        ".env.example",
+        "events.js",
+        "monitor.js",
+        "index.js"
+      ]
+    }
+  ],
+  "RO4_2": [
+    {
+      "title": "Создание первого серверного приложения на Express.js",
+      "summary": "Создан ES Modules проект с Express и npm-командой start. Сервер возвращает текст через res.send(), объекты и массивы через res.json(). В каталоге пять товаров, в списке три категории.",
+      "files": [
+        "package.json",
+        "app.js"
+      ]
+    },
+    {
+      "title": "Маршрутизация и HTTP-методы в Express.js",
+      "summary": "Для одного URL /api/products определены GET, POST, PUT, PATCH и DELETE. На этом этапе изменяющие методы возвращают сообщения-заглушки. Именованная функция getProducts передаётся Express как обработчик, а анонимная функция объявляется непосредственно при регистрации маршрута. Необъявленный DELETE /api/orders возвращает 404.",
+      "files": [
+        "app.js"
+      ]
+    },
+    {
+      "title": "Параметры маршрутов, query-параметры и тело запроса",
+      "summary": "Динамический id читается из req.params, фильтры — из req.query, изменения — из req.body. Фильтры категории, наличия и диапазона цены применяются совместно. POST, PATCH и DELETE изменяют массив. Счётчик nextId предотвращает повтор id после удаления. Маршрут settings демонстрирует три источника данных в одном запросе.",
+      "files": [
+        "app.js"
+      ]
+    },
+    {
+      "title": "Разделение маршрутов с помощью Express Router",
+      "summary": "Маршруты товаров, категорий и заказов вынесены в три отдельных Router. Внутри Router используются локальные пути / и /:id; app.use() добавляет ресурсный префикс. Например, префикс /api/products и путь /:id образуют /api/products/:id. Сервер создаётся один раз в app.js.",
+      "files": [
+        "app.js",
+        "routes/productRoutes.js",
+        "routes/categoryRoutes.js",
+        "routes/orderRoutes.js"
+      ]
+    },
+    {
+      "title": "Создание и использование middleware в Express.js",
+      "summary": "Глобальные logger и requestTime выполняются до express.json() и маршрутизаторов. Route middleware checkApiKey защищает только POST товаров. Router middleware применяется только к products. next() передаёт управление следующему обработчику; без него и без ответа запрос остаётся незавершённым. express.json() должен выполняться до чтения req.body.",
+      "files": [
+        "app.js",
+        "middleware/logger.js",
+        "middleware/requestTime.js",
+        "middleware/checkApiKey.js",
+        "routes/productRoutes.js"
+      ]
+    },
+    {
+      "title": "Разделение приложения на routes, controllers и services",
+      "summary": "Routes описывают endpoints, Controller преобразует HTTP-данные и формирует ответ, Service выполняет операции над обычными JavaScript-значениями. Service не получает req/res. Сохранены URL, фильтрация и CRUD. Отсутствующий товар приводит к 404, новый — к 201.",
+      "files": [
+        "routes/productRoutes.js",
+        "controllers/productController.js",
+        "services/productService.js"
+      ]
+    },
+    {
+      "title": "Разработка REST API и CRUD-операций",
+      "summary": "Реализован полный цикл Create → Read → Update → Read → Delete → Read. PATCH сохраняет поля, не переданные в запросе. После удаления GET возвращает 404. Каждый ресурс имеет постоянный URL, а действие определяется HTTP-методом.",
+      "files": [
+        "routes/productRoutes.js",
+        "controllers/productController.js",
+        "services/productService.js"
+      ]
+    },
+    {
+      "title": "Валидация входных данных и обработка ошибок",
+      "summary": "POST проверяет все обязательные поля, PATCH — только переданные. Отклоняются пустое изменение, неизвестные поля и некорректные значения. Middleware возвращает список ошибок с 400. AppError передаётся через next(error), централизованный errorHandler формирует ответ; неизвестные маршруты дают 404, неожиданные ошибки — 500 без технических подробностей.",
+      "files": [
+        "validators/productValidator.js",
+        "middleware/validateCreateProduct.js",
+        "middleware/validateUpdateProduct.js",
+        "errors/AppError.js",
+        "middleware/errorHandler.js"
+      ]
+    },
+    {
+      "title": "Интеграция REST API с клиентским приложением",
+      "summary": "Express отдаёт public. api.js содержит fetch-запросы и проверку response.ok; ui.js безопасно создаёт DOM через textContent; app.js связывает форму и кнопки с CRUD. После изменения выполняется повторный GET. DELETE требует подтверждения, PATCH изменяет цену выбранного id. Ошибки API выводятся на странице.",
+      "files": [
+        "public/index.html",
+        "public/js/api.js",
+        "public/js/ui.js",
+        "public/js/app.js"
+      ]
+    }
+  ],
+  "RO4_3": [
+    {
+      "title": "Подключение Internet Shop API к PostgreSQL",
+      "summary": "Создана таблица products с identity primary key, обязательными полями и CHECK(price > 0). pg Pool читает конфигурацию из .env. Чтение товаров выполняется параметризованными SELECT, in_stock преобразуется в inStock. Данные хранятся в PostgreSQL и не зависят от жизненного цикла Express.",
+      "files": [
+        "sql/01_products.sql",
+        "config/db.js",
+        "services/productService.js",
+        "test-db.js"
+      ]
+    },
+    {
+      "title": "Полный CRUD Product API с PostgreSQL",
+      "summary": "Массив заменён SELECT, INSERT, UPDATE и DELETE через pg. Пользовательские значения передаются отдельно как параметры $1…$5. RETURNING возвращает изменённую строку или id. В PATCH COALESCE сохраняет поля, которые не были переданы, включая корректное изменение inStock на false. practice.sql демонстрирует фильтрацию, сортировку и изменения в откатываемой транзакции.",
+      "files": [
+        "services/productService.js",
+        "sql/practice.sql",
+        "controllers/productController.js"
+      ]
+    },
+    {
+      "title": "Проектирование базы данных Internet Shop",
+      "summary": "Категории выделены в таблицу categories с UNIQUE(name). В транзакции перенесены DISTINCT названия, заполнен category_id, проверено отсутствие NULL, добавлены NOT NULL и FOREIGN KEY. Старое поле category удаляется после переноса. JOIN возвращает название категории вместе с categoryId. Будущие сущности: users(id PK, email UNIQUE), orders(id PK, user_id FK), order_items(order_id + product_id составной PK, quantity и price обязательны).",
+      "files": [
+        "sql/02_categories.sql",
+        "services/productService.js",
+        "validators/productValidator.js"
+      ]
+    },
+    {
+      "title": "Связи между таблицами Internet Shop",
+      "summary": "User–UserProfile реализует 1:1 через PK/FK user_id; User–Order и Category–Product — 1:N; Order–Product — M:N через order_items. Составной ключ запрещает повтор пары order/product, CHECK запрещает quantity ≤ 0. JOIN соединяет пользователя, заказ и товары. Итог рассчитывается по исторической цене позиции, умноженной на количество.",
+      "files": [
+        "sql/03_relations.sql",
+        "sql/relations_queries.sql",
+        "services/orderService.js"
+      ]
+    },
+    {
+      "title": "Подключение Prisma ORM к существующей базе shop_db",
+      "summary": "Prisma 7 подключена к той же PostgreSQL через PrismaPg adapter. Introspection существующих таблиц сохранена в prisma/introspection.txt. Модели приведены к Product, Category, User и другим именам с @map/@@map. Генерируется TypeScript Client, приложение запускается через tsx. Чтение переведено на findMany/findUnique; SQL-версия сохранена для сравнения. Baseline отмечается применённой для существующей схемы.",
+      "files": [
+        "prisma.config.ts",
+        "prisma/schema.prisma",
+        "config/prisma.js",
+        "services/productService.js"
+      ]
+    },
+    {
+      "title": "CRUD-операции с использованием Prisma",
+      "summary": "Product Service использует только Prisma Client: findMany, findUnique, create, update и delete. Разрешённые поля явно отбираются. P2025 преобразуется в отсутствие записи и HTTP 404, ошибка внешнего ключа — в 409. Routes и Controller не содержат Prisma-запросов.",
+      "files": [
+        "services/productService.js",
+        "routes/productRoutes.js",
+        "controllers/productController.js"
+      ]
+    },
+    {
+      "title": "Связанные данные и запросы в Prisma",
+      "summary": "Product загружается вместе с Category; вложенный select ограничивает поля категории. Заказ содержит безопасные поля User, позиции OrderItem и названия Product. total вычисляется из OrderItem.price, а не текущей цены каталога. Relation filter some находит заказы с указанным productId.",
+      "files": [
+        "services/productService.js",
+        "services/orderService.js",
+        "controllers/orderController.js"
+      ]
+    },
+    {
+      "title": "Миграции и начальное заполнение базы данных",
+      "summary": "Отдельная миграция добавляет nullable Product.description и сохраняет существующие строки. Самостоятельная миграция добавляет Category.slug с уникальным индексом. Seed использует upsert категорий и проверяет наличие товаров до create. Повторный запуск не создаёт дублей. migrate dev разрабатывает миграции, migrate deploy применяет сохранённые, generate обновляет клиент, seed добавляет данные.",
+      "files": [
+        "prisma.config.ts",
+        "prisma/migrations/20261104000200_add_product_description/migration.sql",
+        "prisma/migrations/20261104000300_add_category_slug/migration.sql",
+        "prisma/seed.js"
+      ]
+    },
+    {
+      "title": "Транзакции и целостность данных",
+      "summary": "Создание заказа и позиций выполняется в одном Prisma $transaction callback через tx. Сервер получает цену из Product, проверяет пользователя и наличие товара. Успех фиксирует все записи; ошибка второй позиции откатывает уже созданный Order и первую позицию. Валидация запрещает пустой заказ, нулевое количество и повтор productId; ограничения PostgreSQL защищают данные дополнительно.",
+      "files": [
+        "services/orderService.js",
+        "middleware/validateOrder.js",
+        "controllers/orderController.js",
+        "routes/orderRoutes.js"
+      ]
+    }
+  ],
+  "RO4_4": [
+    {
+      "title": "Аутентификация пользователей",
+      "summary": "User дополнен passwordHash и role. Регистрация проверяет данные и уникальный email, хеширует пароль через Argon2 и возвращает безопасный select. Login проверяет verify(), не сравнивает новые хеши. Неверный пароль и неизвестный email дают одинаковую ошибку 401. HTML-форма отправляет fetch и показывает имя. Старые записи сохраняются миграцией и требуют назначения пароля; открытый пароль не создаётся.",
+      "files": [
+        "prisma/migrations/20261104000400_add_user_auth_fields/migration.sql",
+        "services/passwordService.js",
+        "services/authService.js",
+        "controllers/authController.js",
+        "public/js/login.js"
+      ]
+    },
+    {
+      "title": "Хеширование и безопасное хранение паролей",
+      "summary": "Криптографические операции сосредоточены в passwordService. Argon2id создаёт encoded hash со случайной salt, поэтому одинаковые пароли дают разные строки. verify() учитывает параметры и salt из encoded hash. Простое сравнение двух hash через === не подходит. hash-benchmark.js измеряет время hash/verify без вывода исходного пароля или его хеша. Быстрый SHA-256 не заменяет memory-hard password hashing.",
+      "files": [
+        "services/passwordService.js",
+        "services/authService.js",
+        "hash-benchmark.js"
+      ]
+    },
+    {
+      "title": "JWT-аутентификация",
+      "summary": "После login сервер подписывает access JWT через HS256 со сроком 15 минут, sub, issuer и audience. Случайный JWT_SECRET хранится только в .env. requireAuth извлекает Bearer token и вызывает verify() с ограничением алгоритма. /api/auth/me и /api/orders/my требуют JWT. Изменённая подпись и истёкший exp дают 401. Payload можно декодировать без секрета; доверять ему можно только после проверки подписи.",
+      "files": [
+        "services/tokenService.js",
+        "middleware/authMiddleware.js",
+        "controllers/authController.js",
+        "routes/authRoutes.js",
+        "routes/orderRoutes.js"
+      ]
+    }
+  ]
+}
