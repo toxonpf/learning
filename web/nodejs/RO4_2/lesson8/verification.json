@@ -1,0 +1,424 @@
+{
+  "checkedAt": "2026-11-05T08:44:48.121Z",
+  "runtime": "v26.12.1",
+  "checks": [
+    "Обязательные endpoints",
+    "HTTP-статусы и содержимое ответов",
+    "Полный CRUD-цикл",
+    "Совместная фильтрация",
+    "Уникальные id после удаления"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200,
+      "response": "Internet Shop API"
+    },
+    {
+      "method": "GET",
+      "path": "/about",
+      "status": 200,
+      "response": "Учебный REST API магазина компьютерной техники"
+    },
+    {
+      "method": "GET",
+      "path": "/api/status",
+      "status": 200,
+      "response": {
+        "status": "ok",
+        "message": "Server is running",
+        "requestTime": "2026-11-05T08:44:48.095Z"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/shop",
+      "status": 200,
+      "response": {
+        "name": "Kirill Tech Store",
+        "description": "Учебный интернет-магазин",
+        "currency": "KZT"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 2,
+          "name": "Mouse",
+          "price": 8000,
+          "category": "Accessories",
+          "inStock": true
+        },
+        {
+          "id": 3,
+          "name": "Monitor",
+          "price": 85000,
+          "category": "Monitors",
+          "inStock": false
+        },
+        {
+          "id": 4,
+          "name": "Laptop",
+          "price": 420000,
+          "category": "Computers",
+          "inStock": true
+        },
+        {
+          "id": 5,
+          "name": "Webcam",
+          "price": 22000,
+          "category": "Accessories",
+          "inStock": false
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/categories",
+      "status": 200,
+      "response": [
+        "Computers",
+        "Accessories",
+        "Monitors"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api",
+      "status": 200,
+      "response": {
+        "name": "Internet Shop API",
+        "version": "1.0",
+        "resources": [
+          "/api/products",
+          "/api/categories",
+          "/api/orders"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders",
+      "status": 200,
+      "response": []
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/3",
+      "status": 200,
+      "response": {
+        "id": 3,
+        "name": "Monitor",
+        "price": 85000,
+        "category": "Monitors",
+        "inStock": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?category=Accessories&inStock=true&minPrice=10000&maxPrice=50000",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 15000,
+          "category": "Accessories",
+          "inStock": true
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?inStock=false",
+      "status": 200,
+      "response": [
+        {
+          "id": 3,
+          "name": "Monitor",
+          "price": 85000,
+          "category": "Monitors",
+          "inStock": false
+        },
+        {
+          "id": 5,
+          "name": "Webcam",
+          "price": 22000,
+          "category": "Accessories",
+          "inStock": false
+        }
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "message": "Access denied"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "message": "Access denied"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=abc",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must be a non-negative integer"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?inStock=maybe",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "inStock must be true or false"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products?minPrice=500&maxPrice=100",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "minPrice must not exceed maxPrice"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "price must be a positive integer"
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "At least one field is required"
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "Unknown field: id"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/test/error",
+      "status": 500,
+      "response": {
+        "message": "Internal server error"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 65000,
+        "category": "Components",
+        "inStock": true,
+        "id": 6
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 65000,
+        "category": "Components",
+        "inStock": true,
+        "id": 6
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 42000,
+        "category": "Components",
+        "inStock": false,
+        "id": 6
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/6",
+      "status": 400,
+      "response": {
+        "message": "Validation failed",
+        "errors": [
+          "price must be a positive integer"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 42000,
+        "category": "Components",
+        "inStock": false,
+        "id": 6
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/4/settings?notify=true",
+      "status": 200,
+      "response": {
+        "id": 4,
+        "notify": true,
+        "changes": {
+          "price": 399000
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/6",
+      "status": 200,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 42000,
+        "category": "Components",
+        "inStock": false,
+        "id": 6
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/6",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/6",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/6",
+      "status": 404,
+      "response": {
+        "message": "Product not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "name": "SSD 2TB",
+        "price": 65000,
+        "category": "Components",
+        "inStock": true,
+        "id": 7
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/unknown",
+      "status": 404,
+      "response": {
+        "message": "Route GET /api/unknown not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 201,
+      "response": {
+        "status": "new",
+        "id": 1
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/1",
+      "status": 200,
+      "response": {
+        "status": "new",
+        "id": 1
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/orders/1",
+      "status": 200,
+      "response": {
+        "status": "paid",
+        "id": 1
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/999",
+      "status": 404,
+      "response": {
+        "message": "Order not found"
+      }
+    }
+  ]
+}

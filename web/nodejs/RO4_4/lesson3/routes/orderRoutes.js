@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { getOrders, getOrderById, createOrderController } from '../controllers/orderController.js';
+import { validateId } from '../middleware/validateId.js';
+import { validateOrder } from '../middleware/validateOrder.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
+import { getMyOrders } from '../controllers/orderController.js';
+const router = Router();
+router.get('/my', requireAuth, getMyOrders);
+router.param('id', validateId);
+router.get('/', getOrders);
+router.get('/:id', getOrderById);
+router.post('/', validateOrder, createOrderController);
+export default router;

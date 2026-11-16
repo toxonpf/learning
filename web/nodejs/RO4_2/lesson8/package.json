@@ -1,0 +1,13 @@
+{
+  "name": "ro4_2-lesson8",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

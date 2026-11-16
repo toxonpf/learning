@@ -1,0 +1,11 @@
+import { hashPassword, verifyPassword } from './services/passwordService.js';
+const password = 'Example123!';
+console.time('argon2.hash');
+const first = await hashPassword(password);
+console.timeEnd('argon2.hash');
+const second = await hashPassword(password);
+console.log('Different hashes:', first !== second);
+console.time('argon2.verify');
+console.log('Correct:', await verifyPassword(first, password));
+console.timeEnd('argon2.verify');
+console.log('Wrong:', await verifyPassword(first, 'wrong-password'));

@@ -1,0 +1,14 @@
+import { Router } from 'express';
+import * as controller from '../controllers/productController.js';
+import { validateId } from '../middleware/validateId.js';
+import checkApiKey from '../middleware/checkApiKey.js';
+const router = Router();
+router.param('id', validateId);
+router.use((req, res, next) => { console.log('Product Router:', req.method, req.originalUrl); next(); });
+router.get('/', controller.getProducts);
+router.get('/:id', controller.getProductById);
+router.post('/', checkApiKey, controller.createProduct);
+router.patch('/:id', controller.updateProduct);
+router.delete('/:id', controller.deleteProduct);
+router.patch('/:id/settings', controller.productSettings);
+export default router;

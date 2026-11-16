@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:3000
+
+### Состояние
+GET {{baseUrl}}/api/status
+
+### Каталог
+GET {{baseUrl}}/api/products
+
+### Один товар
+GET {{baseUrl}}/api/products/1
+
+### Совместная фильтрация
+GET {{baseUrl}}/api/products?category=Accessories&inStock=true&minPrice=10000&maxPrice=50000
