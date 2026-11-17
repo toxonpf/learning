@@ -1,0 +1,341 @@
+{
+  "checkedAt": "2026-11-16T09:43:39.989Z",
+  "runtime": "v26.3.0",
+  "database": "PostgreSQL 18.6, отдельная БД nodejs_lab_new_ro4_4_5_1794822215368",
+  "checks": [
+    "Prisma Client сгенерирован; миграции применены к новой изолированной PostgreSQL",
+    "Публичное чтение каталога; JWT/RBAC: 401, 403 и admin CRUD",
+    "Регистрация не повышает роль; владелец Order берётся из JWT; чужой Order возвращает 404",
+    "Guest guard перенаправляет profile на login",
+    "Login через fetch; собственные заказы; 403 сохраняет auth state",
+    "User не открывает admin UI; admin видит ссылку и форму; logout очищает UI",
+    "Reload удаляет in-memory JWT; localStorage/sessionStorage пусты",
+    "Реальное истечение JWT: 401 очищает state и открывает login"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 25000,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999999",
+      "status": 404,
+      "response": {
+        "error": "Product not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "error": "Invalid id"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822219430@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822219430@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822219430@example.com",
+          "role": "user"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822219430@example.com",
+          "role": "admin"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822219430@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Invalid or expired token"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 12000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:43:39.808Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822219430@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ],
+        "total": 25000
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "userId": 1,
+          "status": "new",
+          "createdAt": "2026-11-16T09:43:39.808Z",
+          "user": {
+            "id": 1,
+            "name": "User One",
+            "email": "user-1794822219430@example.com"
+          },
+          "items": [
+            {
+              "orderId": 1,
+              "productId": 1,
+              "quantity": 1,
+              "price": 25000,
+              "product": {
+                "id": 1,
+                "name": "Keyboard"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:43:39.808Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822219430@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 404,
+      "response": {
+        "error": "Order not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    }
+  ],
+  "commands": [
+    {
+      "command": "prisma migrate deploy",
+      "output": "Datasource \"db\": PostgreSQL database \"nodejs_lab_new_ro4_4_5_1794822215368\", schema \"public\" at \"localhost:55439\"\n\n4 migrations found in prisma/migrations\n\nApplying migration `20261104000100_baseline`\nApplying migration `20261104000200_add_product_description`\nApplying migration `20261104000300_add_category_slug`\nApplying migration `20261104000400_add_user_auth_fields`\n\nThe following migration(s) have been applied:\n\nmigrations/\n  └─ 20261104000100_baseline/\n    └─ migration.sql\n  └─ 20261104000200_add_product_description/\n    └─ migration.sql\n  └─ 20261104000300_add_category_slug/\n    └─ migration.sql\n  └─ 20261104000400_add_user_auth_fields/\n    └─ migration.sql\n\nAll migrations have been successfully applied.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma\\schema.prisma.\n"
+    }
+  ],
+  "browser": {
+    "engine": "Chromium",
+    "checks": [
+      "Guest guard перенаправляет profile на login",
+      "Login через fetch; собственные заказы; 403 сохраняет auth state",
+      "User не открывает admin UI; admin видит ссылку и форму; logout очищает UI",
+      "Reload удаляет in-memory JWT; localStorage/sessionStorage пусты",
+      "Реальное истечение JWT: 401 очищает state и открывает login"
+    ]
+  }
+}

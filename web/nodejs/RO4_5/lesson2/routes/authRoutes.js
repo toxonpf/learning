@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import * as controller from '../controllers/authController.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
+import { loginLimiter } from '../middleware/rateLimiters.js';
+import { loginValidation, registerValidation } from '../validators/authValidators.js';
+import { validateRequest } from '../middleware/validationMiddleware.js';
+const router = Router();
+router.post('/register', registerValidation, validateRequest, controller.register);
+router.post('/login', loginLimiter, loginValidation, validateRequest, controller.login);
+router.get('/me', requireAuth, controller.getCurrentUser);
+export default router;

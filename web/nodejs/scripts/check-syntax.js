@@ -15,6 +15,6 @@ function visit(directory) {
         }
     }
 }
-for (const directory of ['RO4_1', 'RO4_2', 'RO4_3', 'RO4_4', 'scripts', 'tests']) visit(directory);
+for (const directory of ['RO4_1', 'RO4_2', 'RO4_3', 'RO4_4', 'RO4_5', 'scripts', 'tests']) visit(directory);
 console.log(`Проверено JS-файлов: ${checked}; ошибок: ${failed}`);
 process.exitCode = failed ? 1 : 0;

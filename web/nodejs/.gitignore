@@ -1,6 +1,14 @@
 tools/
 node_modules/
 .env
+.env.*
+!.env.example
+!.env.test.example
+!.env.production.example
+tmp/
+logs/
+**/storage/product-images/*
+!**/storage/product-images/.gitkeep
 generated/
 playwright-report/
 test-results/

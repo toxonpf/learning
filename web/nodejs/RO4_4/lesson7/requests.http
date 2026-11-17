@@ -1,0 +1,39 @@
+@base = http://localhost:3000
+@token = paste-access-token-from-login-response
+
+### Public products
+GET {{base}}/api/products
+
+### Register ignores a role supplied by the client
+POST {{base}}/api/auth/register
+Content-Type: application/json
+
+{"name":"User One","email":"user1@example.com","password":"Example123!","role":"admin"}
+
+### Login
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{"email":"user1@example.com","password":"Example123!"}
+
+### Current user
+GET {{base}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Own orders
+GET {{base}}/api/orders/my
+Authorization: Bearer {{token}}
+
+### User identity comes from the token
+POST {{base}}/api/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"items":[{"productId":1,"quantity":1}]}
+
+### Only admin can modify products
+POST {{base}}/api/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{"name":"USB Hub","price":12000,"categoryId":1,"inStock":true}

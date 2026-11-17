@@ -1,0 +1,90 @@
+{
+  "RO4_4": [
+    {
+      "number": 4,
+      "title": "Авторизация и разграничение доступа",
+      "summary": "Добавлены requireRole и RBAC для каталога. Создание заказа использует идентификатор из JWT; собственные заказы выбираются по userId на сервере. Публичная регистрация игнорирует переданную роль.",
+      "files": ["middleware/authMiddleware.js", "routes/productRoutes.js", "routes/orderRoutes.js"],
+      "discussion": ["Authentication подтверждает личность, Authorization проверяет разрешённые действия. 401 означает отсутствие подходящей аутентификации, 403 — недостаточные права подтверждённого пользователя.", "Фильтр ownership включён в запрос к БД. Чужой заказ возвращает 404, как отсутствующий. Подмена userId в body не меняет владельца.", "Роль admin назначается доверенной SQL-командой. После изменения роли требуется новый login, поскольку ранее выпущенный JWT содержит прежнюю роль."]
+    },
+    {
+      "number": 5,
+      "title": "Интеграция frontend и backend",
+      "summary": "Созданы единый apiFetch и состояние аутентификации в памяти. Форма выполняет login через fetch, запросы получают Bearer JWT автоматически. Добавлены профиль, каталог, загрузка заказов и состояния загрузки и ошибок.",
+      "files": ["frontend/config.js", "frontend/authState.js", "frontend/api.js"],
+      "discussion": ["APIError хранит HTTP status. При 401 apiFetch очищает состояние и сообщает интерфейсу об истечении сессии. При 403 состояние сохраняется.", "Токен живёт только в памяти вкладки. Reload и logout удаляют его. localStorage и sessionStorage не используются.", "Frontend отображает результат, а backend проверяет JWT, роль и принадлежность заказов при каждом запросе."]
+    },
+    {
+      "number": 6,
+      "title": "Аутентификация во frontend-приложении",
+      "summary": "Реализованы состояния guest, loading и authenticated, hash router, requireUser и requireAdmin. Навигация зависит от роли; закрытые страницы очищаются при выходе и истечении JWT.",
+      "files": ["frontend/authState.js", "frontend/router.js"],
+      "discussion": ["Гость перенаправляется с profile и orders на login. Обычный user видит страницу 403 при ручном переходе на admin; admin получает соответствующий пункт навигации.", "Route guards управляют интерфейсом. Доступ к API независимо проверяется сервером, поэтому скрытая кнопка не заменяет авторизацию.", "Auth bootstrap с HttpOnly cookie — отдельная архитектура. В этой работе после reload пользователь становится гостем, поскольку JWT хранится только в памяти."]
+    },
+    {
+      "number": 7,
+      "title": "CORS и безопасность HTTP-взаимодействия",
+      "summary": "Frontend запускается на localhost:5500, backend — на localhost:3000. Настроены explicit CORS origin, разрешённые методы и заголовки, preflight OPTIONS и учебная HttpOnly cookie с credentials.",
+      "files": ["app.js", "frontend/config.js"],
+      "discussion": ["Origin состоит из схемы, хоста и порта. Поэтому localhost:5500 и localhost:3000 имеют разные origins. Chromium блокирует чтение ответа без подходящего Access-Control-Allow-Origin.", "JSON и Authorization вызывают OPTIONS preflight. Запрос содержит Origin, Access-Control-Request-Method и Access-Control-Request-Headers; ответ разрешает методы и заголовки.", "credentials: include позволяет браузеру работать с cookie при cross-origin fetch. HttpOnly скрывает cookie от document.cookie. При credentialed CORS используется конкретный origin вместо wildcard.", "CORS ограничивает браузерное чтение ответа и не заменяет Authentication/Authorization. Cookie автоматически прикладывается браузером, поэтому для cookie-аутентификации нужны меры против CSRF: SameSite, проверка Origin, CSRF token, HTTPS/Secure. Изменения выполняются через POST/PATCH/DELETE."]
+    },
+    {
+      "number": 8,
+      "title": "Защита REST API и валидация пользовательских данных",
+      "summary": "Добавлены express-validator, matchedData, checkExact, req.validated, Helmet, JSON limit 100kb и отдельные лимиты для API и login. Проверяются создание и PATCH товара, id и позиции заказа.",
+      "files": ["validators/productValidators.js", "middleware/validationMiddleware.js", "middleware/rateLimiters.js"],
+      "discussion": ["Сначала выполняются Authentication и Authorization, затем validation и Controller. В Service передаются только проверенные поля из req.validated.", "PATCH проверяет только переданные поля, но требует хотя бы одно изменение. checkExact отклоняет неизвестные поля; userId в Order теперь возвращает 400.", "Defence in depth объединяет независимые слои: JWT/RBAC/ownership, валидацию, ограничения размера, security headers и rate limiting. Ошибки 400, 413 и 429 обрабатываются явно; внутренний stack клиенту не отправляется."]
+    },
+    {
+      "number": 9,
+      "title": "Загрузка файлов и защита пользовательского контента",
+      "summary": "Multer принимает одно изображение до 5 MB. Имя генерируется через UUID, storage вынесен за webroot. MIME проверяется по allowlist и фактической сигнатуре; metadata хранится в PostgreSQL. Добавлены controlled GET и административный DELETE.",
+      "files": ["middleware/uploadMiddleware.js", "services/imageValidationService.js", "services/productImageService.js"],
+      "discussion": ["MIME и original filename поступают от клиента и не заслуживают доверия. Проверяются PNG/JPEG magic bytes и совпадение MIME; сервер сам выбирает расширение и UUID.", "При неверной сигнатуре, отсутствующем товаре и ошибке БД новый файл удаляется. Замена очищает прежний файл; удаление изображения очищает metadata и physical file.", "GET строит путь только по проверенному UUID из metadata. Storage не раздаётся статически. Авторизация выполняется до Multer; ошибки размера возвращают 413, остальные upload errors — безопасный 400.", "Проверка сигнатуры распознаёт формат по заголовку, но не выполняет полное декодирование изображения. Для расширения учебного решения потребуются отдельная проверка содержимого и согласованная стратегия хранения файлов и БД."]
+    }
+  ],
+  "RO4_5": [
+    {
+      "number": 1,
+      "title": "Основы тестирования серверных приложений",
+      "summary": "Выделены чистые calculateOrderTotal и canCancelOrder. Написаны node:test и assert/strict проверки позитивных, негативных и граничных сценариев, включая переполнение безопасного целого. Выполнен эксперимент с неверным assertion и восстановлением suite.",
+      "files": ["services/orderMath.js", "tests/orderMath.test.js"],
+      "discussion": ["Arrange готовит данные, Act вызывает функцию, Assert сравнивает фактический результат с ожидаемым. strictEqual проверяет значение и тип; throws подтверждает исключение.", "Unit test проверяет небольшую изолированную функцию без HTTP и БД. Integration test проверяет совместную работу HTTP, Service и PostgreSQL. E2E воспроизводит пользовательский сценарий через браузер.", "Границы quantity равны 1 и 100. Значения 0, 101 и дробные количества отклоняются. Пустой заказ имеет total 0; отменяется только заказ new."]
+    },
+    {
+      "number": 2,
+      "title": "Модульное тестирование с использованием Jest",
+      "summary": "Настроен Jest ESM. Product Service принимает repository через dependency injection. Tests используют beforeEach, jest.fn, async assertions, test.each и проверки аргументов и числа вызовов. Реализованы positive и negative tests для delete.",
+      "files": ["jest.config.js", "services/productService.js", "tests/unit/productService.test.js"],
+      "discussion": ["Dependency injection передаёт зависимость через аргумент. Unit test использует mock repository, поэтому PostgreSQL и Prisma Client для npm test не требуются.", "beforeEach создаёт новые объекты и mocks для каждого test; clearMocks очищает историю вызовов. mockResolvedValueOnce задаёт последовательные ответы.", "not.toHaveBeenCalled подтверждает, что недопустимая цена или отсутствующий товар не приводят к записи или удалению в repository."]
+    },
+    {
+      "number": 3,
+      "title": "Интеграционное тестирование REST API",
+      "summary": "Express app отделён от server.js. Jest/Supertest проверяют HTTP status, JSON и реальные изменения PostgreSQL. Перед каждым test данные пересоздаются с учётом внешних ключей; защитная проверка имени БД запрещает очистку development/production.",
+      "files": ["app.js", "tests/integration/products.api.test.js"],
+      "discussion": ["Supertest вызывает request(app) без отдельного app.listen в app.js. JWT получается через настоящий login после создания тестового пользователя.", "Integration suite использует только shop_test или отдельную БД с префиксом nodejs_lab_new_. До очистки проверяются NODE_ENV и имя БД.", "Проверены пустая коллекция, чтение ресурса, 400/401/403/404, POST 201, PATCH и DELETE, а также наличие и отсутствие записей после mutations. --runInBand исключает конкурирующую очистку общей test database."]
+    },
+    {
+      "number": 4,
+      "title": "Отладка и логирование Node.js-приложений",
+      "summary": "Подключён Pino, request ID, child logger, время обработки и безопасные error responses. Отдельный диагностический сценарий воспроизводит неверный тип Prisma id и использует Node Inspector для проверки локальных переменных на breakpoint.",
+      "files": ["config/logger.js", "middleware/requestContext.js", "middleware/requestLogger.js", "scripts/diagnose.js"],
+      "discussion": ["Debugging позволяет остановиться на breakpoint и исследовать переменные. Logging сохраняет context событий. Testing автоматически обнаруживает регрессию при повторных изменениях.", "Inspector показал: id является number, а queryId после String(id) — string. Prisma отклоняет неверный тип; исправленный Service передаёт число. GET по id закреплён integration test.", "Stack trace читается от места ошибки до первой относящейся к проекту строки. Request ID связывает HTTP response с логами start/completed/error. Пароли и токены скрываются redaction.", "--inspect открывает Inspector и продолжает исполнение. --inspect-brk дополнительно останавливается до начала выполнения. Диагностический debugger находится в отдельном exercise script, а не в production Controller."]
+    },
+    {
+      "number": 5,
+      "title": "Подготовка приложения к Production-окружению",
+      "summary": "Добавлены строгий env config, fail-fast, liveness/readiness, безопасные ошибки и graceful shutdown. SIGINT/SIGTERM закрывают HTTP server и Prisma; force timeout создаётся только при завершении. Proxy trust включается лишь при явно заданном одном доверенном hop.",
+      "files": ["config/env.js", "routes/healthRoutes.js", "config/shutdown.js", "server.js"],
+      "discussion": ["Liveness подтверждает работу HTTP process и не обращается к БД. Readiness выполняет SELECT 1: при недоступной PostgreSQL возвращает 503, а liveness продолжает возвращать 200.", "Fail-fast проверяет обязательные variables, NODE_ENV, PORT, PostgreSQL URL, длину JWT_SECRET, CORS origin и log level до открытия HTTP port. Секреты не выводятся в startup logs.", "Graceful shutdown прекращает приём новых запросов, ожидает server.close, отключает Prisma и очищает timer. Повторный сигнал не запускает завершение повторно.", "Reverse proxy принимает внешний HTTP/TLS и передаёт запросы приложению. TRUST_PROXY_HOPS=0 по умолчанию. Значение 1 допустимо только при известном единственном proxy и закрытом прямом доступе.", "Production checklist: migrations применены; secrets заданы инфраструктурой; CORS origin точен; health endpoints доступны; proxy topology проверена; ошибки безопасны; JSON logs и request ID работают; тесты и shutdown проверены."]
+    },
+    {
+      "number": 6,
+      "title": "Автоматизация тестирования Node.js REST API с использованием CI",
+      "summary": "Подготовлен GitHub Actions workflow для push и pull request в main. Pipeline использует Node.js 22, npm ci, временную PostgreSQL shop_test, Prisma generate/migrate deploy и Jest/Supertest. Локально на Node.js 22 выполнен цикл success/failure/success.",
+      "files": [".github/workflows/ci.yml", "package.json"],
+      "discussion": ["Continuous Integration автоматически проверяет изменения одним воспроизводимым pipeline. Workflow запускается при push в main и pull request в main.", "GitHub runner — выделенное окружение выполнения job. PostgreSQL service предоставляет временную test database со своей health check.", "npm ci устанавливает версии из package-lock.json и завершается ошибкой при расхождении lock и manifest. Lock фиксирует дерево зависимостей для повторяемости.", "prisma generate создаёт Client из schema; migrate deploy подготавливает схему test database. Production database в CI не используется.", "Failure означает ненулевой exit code одного из шагов. Причину ищут в первом failed step и его logs. Учебный assertion ожидал 25001 вместо фактического 25000; после исправления suite снова прошёл.", "Каждый следующий push автоматически запускает workflow заново. Файл pipeline расположен также в .github/workflows/nodejs-shop-ci.yml корня Git-репозитория; копия сохранена внутри урока.", "Локальная проверка Node.js 22 записана в verification.json. Hosted workflow запускается после отправки подготовленных изменений в GitHub; его success/failure screenshots относятся к результатам этого запуска."]
+    }
+  ]
+}

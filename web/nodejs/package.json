@@ -9,13 +9,15 @@
     "RO4_1/lesson9",
     "RO4_2/lesson*",
     "RO4_3/lesson*",
-    "RO4_4/lesson*"
+    "RO4_4/lesson*",
+    "RO4_5/lesson*"
   ],
   "scripts": {
     "test": "node --test tests/labs.test.js tests/basics.test.js",
     "check": "node scripts/check-syntax.js",
     "test:db": "node --import tsx --test tests/database.test.js",
-    "test:browser": "node --import tsx scripts/check-browser.js"
+    "test:browser": "node --import tsx scripts/check-browser.js",
+    "test:new": "node scripts/verify-new-lessons.js"
   },
   "devDependencies": {
     "playwright": "^1.56.0",

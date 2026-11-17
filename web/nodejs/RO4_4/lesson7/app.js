@@ -1,0 +1,26 @@
+import express from 'express';
+import { fileURLToPath } from 'node:url';
+import './config/env.js';
+import productRoutes from './routes/productRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import cors from 'cors';
+export const app = express();
+app.use(cors({ origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5500', credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.post('/api/demo-cookie', (req, res) => {
+    res.cookie('demo_session', 'demo-value', { httpOnly: true, sameSite: 'lax', maxAge: 600000 });
+    res.json({ message: 'Demo cookie created' });
+});
+app.disable('x-powered-by');
+app.use(express.json({ limit: '100kb' }));
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/auth', authRoutes);
+app.use(express.static(fileURLToPath(new URL('./frontend', import.meta.url))));
+app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+app.use(errorHandler);
+export default app;

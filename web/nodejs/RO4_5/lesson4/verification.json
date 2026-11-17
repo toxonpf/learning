@@ -1,0 +1,767 @@
+{
+  "checkedAt": "2026-11-16T09:45:47.875Z",
+  "runtime": "v26.3.0",
+  "database": "PostgreSQL 18.6, отдельная БД nodejs_lab_new_ro4_5_4_1794822325804",
+  "checks": [
+    "Prisma Client сгенерирован; миграции применены к новой изолированной PostgreSQL",
+    "Публичное чтение каталога; JWT/RBAC: 401, 403 и admin CRUD",
+    "Регистрация не повышает роль; владелец Order берётся из JWT; чужой Order возвращает 404",
+    "express-validator: диапазоны, PATCH, id, неизвестные поля, Order; 100kb → 413; Helmet headers",
+    "CORS explicit origin, preflight OPTIONS и credentialed HttpOnly demo cookie",
+    "Multer: JPEG/PNG, UUID, metadata PostgreSQL, controlled GET/DELETE, 401/403, fake MIME/signature, >5MB, cleanup и замена",
+    "X-Request-Id и регрессионный GET с числовым id",
+    "Отдельный login limiter возвращает 429 и RateLimit headers",
+    "Jest ESM: unit, mocks, DI; повторный запуск прошёл; Supertest и отдельная test database",
+    "Node Inspector: breakpoint выявил number → string перед Prisma; HTTP 500 безопасен, исправленный запрос 200; Pino скрывает password/token"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 25000,
+          "imageName": null,
+          "imageMime": null,
+          "imageSize": null,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999999",
+      "status": 404,
+      "response": {
+        "error": "Product not found",
+        "requestId": "6b911046-224b-4209-8d53-7ee6b78e6684"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "id",
+            "location": "params"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822333685@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822333685@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822333685@example.com",
+          "role": "user"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822333685@example.com",
+          "role": "admin"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822333685@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Invalid or expired token"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 12000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:45:34.370Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822333685@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ],
+        "total": 25000
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "userId": 1,
+          "status": "new",
+          "createdAt": "2026-11-16T09:45:34.370Z",
+          "user": {
+            "id": 1,
+            "name": "User One",
+            "email": "user-1794822333685@example.com"
+          },
+          "items": [
+            {
+              "orderId": 1,
+              "productId": 1,
+              "quantity": 1,
+              "price": 25000,
+              "product": {
+                "id": 1,
+                "name": "Keyboard"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:45:34.370Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822333685@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 404,
+      "response": {
+        "error": "Order not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "categoryId",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "name",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "name",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "role",
+                "value": "admin",
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "role",
+                "value": "admin",
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "id",
+            "location": "params"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].quantity",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].quantity",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].productId",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "userId",
+                "value": 999,
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "email",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 413,
+      "response": {
+        "error": "Request body too large",
+        "requestId": "b49357f7-8679-4a01-9220-b10455eb3048"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/products",
+      "status": 204,
+      "response": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,PATCH,DELETE",
+        "access-control-allow-origin": "http://localhost:5500",
+        "connection": "keep-alive",
+        "content-length": "0",
+        "date": "Mon, 16 Nov 2026 09:45:34 GMT",
+        "keep-alive": "timeout=5",
+        "vary": "Origin"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1/image",
+      "status": 404,
+      "response": {
+        "error": "Image not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Unsupported file type",
+        "requestId": "ba64e85c-2b10-4d53-b656-88d90f1b3644"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Invalid image content",
+        "requestId": "d2587cf6-96bf-4ba3-b7eb-148df3fcc276"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Invalid image content",
+        "requestId": "07b74494-0883-4cea-bde4-0e36459f423c"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/999999/image",
+      "status": 404,
+      "response": {
+        "error": "Product not found",
+        "requestId": "a0d72df3-4bba-4109-a6a4-15d7da1aa9b4"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 413,
+      "response": {
+        "error": "Image is too large",
+        "requestId": "14e3ad13-fc7a-4a22-b2a1-c1f91c5092c9"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "imageName": "894f213c-c21c-4778-a381-91315cfa21dd.jpg",
+        "imageMime": "image/jpeg",
+        "imageSize": 633
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "imageName": "f8db3cb1-7020-4f5c-9739-d4559dcdc507.png",
+        "imageMime": "image/png",
+        "imageSize": 92
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1/image",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1/image",
+      "status": 204,
+      "response": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1/image",
+      "status": 404,
+      "response": {
+        "error": "Image not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 429,
+      "response": {
+        "error": "Too many login attempts"
+      }
+    }
+  ],
+  "commands": [
+    {
+      "command": "prisma migrate deploy",
+      "output": "Datasource \"db\": PostgreSQL database \"nodejs_lab_new_ro4_5_4_1794822325804\", schema \"public\" at \"localhost:55439\"\n\n5 migrations found in prisma/migrations\n\nApplying migration `20261104000100_baseline`\nApplying migration `20261104000200_add_product_description`\nApplying migration `20261104000300_add_category_slug`\nApplying migration `20261104000400_add_user_auth_fields`\nApplying migration `20261116000100_add_product_image`\n\nThe following migration(s) have been applied:\n\nmigrations/\n  └─ 20261104000100_baseline/\n    └─ migration.sql\n  └─ 20261104000200_add_product_description/\n    └─ migration.sql\n  └─ 20261104000300_add_category_slug/\n    └─ migration.sql\n  └─ 20261104000400_add_user_auth_fields/\n    └─ migration.sql\n  └─ 20261116000100_add_product_image/\n    └─ migration.sql\n\nAll migrations have been successfully applied.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma\\schema.prisma.\n"
+    },
+    {
+      "command": "npm test",
+      "output": "(node:2144) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\nTest Suites: 3 passed, 3 total\nTests:       47 passed, 47 total\nSnapshots:   0 total\nTime:        6.544 s\nRan all test suites.\n"
+    },
+    {
+      "command": "npm test (повтор)",
+      "output": "(node:27924) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\nTest Suites: 3 passed, 3 total\nTests:       47 passed, 47 total\nSnapshots:   0 total\nTime:        5.25 s, estimated 7 s\nRan all test suites.\n"
+    },
+    {
+      "command": "node --inspect=127.0.0.1:0 scripts/diagnose.js",
+      "output": "{\"level\":30,\"time\":1794822637403,\"pid\":7372,\"hostname\":\"winsha_kun\",\"requestId\":\"e5d64cec-74ea-47ec-b8ec-bd73d9a9e552\",\"method\":\"GET\",\"path\":\"/fault/1\",\"msg\":\"Request started\"}\n{\"level\":50,\"time\":1794822637523,\"pid\":7372,\"hostname\":\"winsha_kun\",\"requestId\":\"e5d64cec-74ea-47ec-b8ec-bd73d9a9e552\",\"err\":{\"type\":\"PrismaClientValidationError\",\"message\":\"\\nInvalid `prisma.product.findUnique()` invocation:\\n\\n{\\n  where: {\\n    id: \\\"1\\\"\\n        ~~~\\n  }\\n}\\n\\nArgument `id`: Invalid value provided. Expected Int, provided String.\",\"stack\":\"PrismaClientValidationError: \\nInvalid `prisma.product.findUnique()` invocation:\\n\\n{\\n  where: {\\n    id: \\\"1\\\"\\n        ~~~\\n  }\\n}\\n\\nArgument `id`: Invalid value provided. Expected Int, provided String.\\n    at Fr (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson4\\\\generated\\\\prisma\\\\runtime\\\\client.js:14:1374)\\n    at vn.handleRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson4\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:8277)\\n    at vn.handleAndLogRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson4\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7929)\\n    at vn.request (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson4\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7636)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\\n    at async a (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson4\\\\generated\\\\prisma\\\\runtime\\\\client.js:103:6921)\\n    at async file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson4/scripts/diagnose.js:30:52\",\"name\":\"PrismaClientValidationError\",\"clientVersion\":\"7.10.1\"},\"method\":\"GET\",\"path\":\"/fault/1\",\"msg\":\"Request failed\"}\n{\"level\":30,\"time\":1794822637526,\"pid\":7372,\"hostname\":\"winsha_kun\",\"requestId\":\"e5d64cec-74ea-47ec-b8ec-bd73d9a9e552\",\"method\":\"GET\",\"path\":\"/fault/1\",\"statusCode\":500,\"durationMs\":123.46,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822637534,\"pid\":7372,\"hostname\":\"winsha_kun\",\"requestId\":\"f8e0549e-c591-4978-9ab3-e7a6e3d6a9a9\",\"method\":\"GET\",\"path\":\"/fixed/1\",\"msg\":\"Request started\"}\n{\"level\":30,\"time\":1794822637603,\"pid\":7372,\"hostname\":\"winsha_kun\",\"requestId\":\"f8e0549e-c591-4978-9ab3-e7a6e3d6a9a9\",\"method\":\"GET\",\"path\":\"/fixed/1\",\"statusCode\":200,\"durationMs\":68.96,\"msg\":\"Request completed\"}\n{\"inspector\":[{\"functionName\":\"faultyLookup\",\"line\":26,\"values\":{\"id\":1,\"queryId\":\"1\",\"inputType\":\"number\",\"queryType\":\"string\"}}],\"faulty\":{\"status\":500,\"body\":{\"error\":\"Internal server error\",\"requestId\":\"e5d64cec-74ea-47ec-b8ec-bd73d9a9e552\"}},\"fixed\":200}\n{\"level\":30,\"time\":1794822637603,\"pid\":7372,\"hostname\":\"winsha_kun\",\"password\":\"[Redacted]\",\"accessToken\":\"[Redacted]\",\"passwordHash\":\"[Redacted]\",\"msg\":\"Redaction demo\"}\nDebugger listening on ws://127.0.0.1:64327/ba37f9cc-099e-4084-a955-a99e6ccbeac9\r\nFor help, see: https://nodejs.org/learn/getting-started/debugging\r\n"
+    }
+  ]
+}

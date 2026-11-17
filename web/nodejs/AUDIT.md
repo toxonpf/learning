@@ -1,3 +1,39 @@
+# Новые лабораторные работы — 16 ноября 2026
+
+Добавлены 12 отдельных проектов: RO4_4/lesson4–lesson9 и RO4_5/lesson1–lesson6. Все исходные PDF сохранены рядом с решениями; SHA-256 каждой копии совпадает с файлом из корня. Прежние проекты и отчёты не изменялись.
+
+| Раздел | Проверка | Результат |
+|---|---|---|
+| RO4_4/4 | RBAC, admin CRUD, JWT, регистрация без повышения роли, ownership заказов | HTTP-сценарии прошли |
+| RO4_4/5–6 | Fetch API, in-memory auth, guards, роли, 401/403, logout/reload | HTTP и Chromium прошли |
+| RO4_4/7 | CORS без middleware, origins 5500/5600, preflight, HttpOnly cookie | HTTP и реальный Chromium подтвердили разрешение/блокировку |
+| RO4_4/8 | Product/Order/id/PATCH validation, неизвестные поля, 413, Helmet, login 429 | HTTP-сценарии прошли |
+| RO4_4/9 | JPEG/PNG, fake MIME/signature, >5MB, UUID, metadata, controlled GET/DELETE, очистка | PostgreSQL, HTTP и браузерный FormData upload прошли |
+| RO4_5/1 | node:test, assert/strict, позитивные/негативные/граничные tests | 23/23, повторный запуск прошёл |
+| RO4_5/2 | Jest ESM, DI, jest.fn, beforeEach, async/matchers/delete | 31/31, повторный запуск прошёл без БД |
+| RO4_5/3 | Jest/Supertest, настоящий login, PostgreSQL и isolation | 47/47, повторный запуск прошёл |
+| RO4_5/4 | Pino, request ID, Inspector breakpoint, неправильный тип id, redaction | 47/47 и диагностический сценарий прошли |
+| RO4_5/5 | fail-fast, health, DB unavailable, graceful shutdown | 50/50; production дополнительно проверен на Node.js 22.23.5 |
+| RO4_5/6 | workflow, Node.js 22, локальный failure/success | 50/50; hosted GitHub Actions требует отправки изменений |
+
+Основная проверка новых проектов выполнена на Node.js 26.3.0 и отдельной временной PostgreSQL 18.6. Для каждого этапа создавалась новая БД с префиксом nodejs_lab_new_; существующие пользовательские базы не очищались. Интеграционные suites до удаления данных проверяют NODE_ENV=test и имя test database.
+
+Прежние общие тесты: 17/17. Проверка синтаксиса: 1157 JS-файлов, без ошибок. `npm ci --ignore-scripts --dry-run` подтвердил соответствие package-lock.json manifest-файлам.
+
+В новых проектах сохранены verification.json с фактическими responses и test output. JWT/password/passwordHash исключаются из HTTP-журналов. Случайные JWT-секреты тестового окружения не обнаружены в материалах для сдачи; `.env`, `.env.test`, generated, node_modules и upload storage исключены из Git.
+
+Для RO4_5/1, /2 и /6 зафиксирован намеренно неверный assertion: expected 25001, actual 25000, exit 1; после удаления временного failing test suite возвращается к exit 0. Для /6 эксперимент выполнен на Node.js 22.23.5. Это локальная проверка, а не подмена GitHub Actions run.
+
+Inspector в RO4_5/4 остановил выполнение в faultyLookup на строке 26: id — number, queryId — string. Prisma отклонила неверный тип; безопасный ответ содержит 500 и requestId без stack. Исправленный запрос дал 200. Pino redaction проверена на реальном выводе.
+
+Production-проверка /5 и /6: пустой JWT_SECRET завершает startup; при недоступной DB liveness=200, readiness=503, Product API=500 без stack. Оба SIGINT/SIGTERM handlers в Windows вызваны через process.emit в дочернем процессе; server.close и Prisma disconnect завершились, process вышел с кодом 0.
+
+Созданы 12 DOCX и 12 PDF по сохранённому шаблону: титульный лист, ФИО, Times New Roman, геометрия A4 и One Dark листинги. DOCX построены с сохранением package framework исходного шаблона; исходный DOCX остался неизменным. Все 83 страницы итоговых отчётов отрендерены и просмотрены; разрывы примеров HTTP-ответов исправлены. В README уроков и отчётах приведены ответы на контрольные вопросы.
+
+Рабочий workflow находится в `.github/workflows/nodejs-shop-ci.yml` корня Git-репозитория; копия — в RO4_5/lesson6/.github/workflows/ci.yml. По решению пользователя изменения оставлены локально; commit/push не выполнялись. Prisma generate и migrate deploy дополнительно прошли на Node.js 22.23.5. Hosted success/failure/success runs и их screenshots не выполнялись.
+
+---
+
 # Проверка лабораторных работ — 5 ноября 2026
 
 Сверены все 21 исходное PDF-задание в RO4_2–RO4_4: обязательные endpoints, порядок развития архитектуры, SQL-схема, Prisma, миграции, транзакции, регистрация, хеширование и JWT. Ранее выполненные работы RO4_1 дополнительно проверены по коду и имеющимся отчётам.

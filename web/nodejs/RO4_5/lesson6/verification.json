@@ -1,0 +1,805 @@
+{
+  "checkedAt": "2026-11-16T09:46:25.850Z",
+  "runtime": "v26.3.0",
+  "database": "PostgreSQL 18.6, отдельная БД nodejs_lab_new_ro4_5_6_1794822367574",
+  "checks": [
+    "Prisma Client сгенерирован; миграции применены к новой изолированной PostgreSQL",
+    "Публичное чтение каталога; JWT/RBAC: 401, 403 и admin CRUD",
+    "Регистрация не повышает роль; владелец Order берётся из JWT; чужой Order возвращает 404",
+    "express-validator: диапазоны, PATCH, id, неизвестные поля, Order; 100kb → 413; Helmet headers",
+    "CORS explicit origin, preflight OPTIONS и credentialed HttpOnly demo cookie",
+    "Multer: JPEG/PNG, UUID, metadata PostgreSQL, controlled GET/DELETE, 401/403, fake MIME/signature, >5MB, cleanup и замена",
+    "X-Request-Id и регрессионный GET с числовым id",
+    "Liveness 200; readiness выполняет SELECT 1 в PostgreSQL",
+    "Отдельный login limiter возвращает 429 и RateLimit headers",
+    "Jest ESM: unit, mocks, DI; повторный запуск прошёл; Supertest и отдельная test database",
+    "Эксперимент: assertion 25001 вместо 25000 → exit 1; восстановленный suite → exit 0, локально на Node.js 22",
+    "SIGINT: обработчик вызван через process.emit в Windows; server.close и Prisma disconnect завершились без зависания",
+    "SIGTERM: обработчик вызван через process.emit в Windows; server.close и Prisma disconnect завершились без зависания",
+    "Production на Node.js 22: без JWT_SECRET startup падает; при недоступной DB live=200, ready=503, API=500 без stack"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/products",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "name": "Keyboard",
+          "price": 25000,
+          "imageName": null,
+          "imageMime": null,
+          "imageSize": null,
+          "description": null,
+          "categoryId": 1,
+          "inStock": true,
+          "category": {
+            "id": 1,
+            "name": "Accessories"
+          }
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/999999",
+      "status": 404,
+      "response": {
+        "error": "Product not found",
+        "requestId": "318d8c77-a418-4e09-8bbb-b4bba4b9099f"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "id",
+            "location": "params"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822371451@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": 201,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822371451@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822371451@example.com",
+          "role": "user"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 2,
+          "name": "Admin One",
+          "email": "admin-1794822371451@example.com",
+          "role": "admin"
+        },
+        "accessToken": "[скрыто]"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "status": 200,
+      "response": {
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822371451@example.com",
+          "role": "user"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 401,
+      "response": {
+        "error": "Invalid or expired token"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 201,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 12000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/2",
+      "status": 200,
+      "response": {
+        "id": 2,
+        "name": "USB Hub",
+        "price": 15000,
+        "imageName": null,
+        "imageMime": null,
+        "imageSize": null,
+        "description": null,
+        "categoryId": 1,
+        "inStock": true
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:46:11.841Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822371451@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ],
+        "total": 25000
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 200,
+      "response": [
+        {
+          "id": 1,
+          "userId": 1,
+          "status": "new",
+          "createdAt": "2026-11-16T09:46:11.841Z",
+          "user": {
+            "id": 1,
+            "name": "User One",
+            "email": "user-1794822371451@example.com"
+          },
+          "items": [
+            {
+              "orderId": 1,
+              "productId": 1,
+              "quantity": 1,
+              "price": 25000,
+              "product": {
+                "id": 1,
+                "name": "Keyboard"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 200,
+      "response": {
+        "id": 1,
+        "userId": 1,
+        "status": "new",
+        "createdAt": "2026-11-16T09:46:11.841Z",
+        "user": {
+          "id": 1,
+          "name": "User One",
+          "email": "user-1794822371451@example.com"
+        },
+        "items": [
+          {
+            "orderId": 1,
+            "productId": 1,
+            "quantity": 1,
+            "price": 25000,
+            "product": {
+              "id": 1,
+              "name": "Keyboard"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my/1",
+      "status": 404,
+      "response": {
+        "error": "Order not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/1",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders/my",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "categoryId",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "name",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "name",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "role",
+                "value": "admin",
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "price",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/products/1",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "role",
+                "value": "admin",
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/abc",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "id",
+            "location": "params"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].quantity",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].quantity",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "items[0].productId",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "unknown_fields",
+            "msg": "Unknown field",
+            "fields": [
+              {
+                "path": "userId",
+                "value": 999,
+                "location": "body"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 400,
+      "response": {
+        "error": "Validation failed",
+        "details": [
+          {
+            "type": "field",
+            "msg": "Invalid value",
+            "path": "email",
+            "location": "body"
+          }
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 413,
+      "response": {
+        "error": "Request body too large",
+        "requestId": "6ff652d3-acb2-45ad-8704-7ec450cb7ca4"
+      }
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/api/products",
+      "status": 204,
+      "response": {
+        "access-control-allow-credentials": "true",
+        "access-control-allow-headers": "Content-Type,Authorization",
+        "access-control-allow-methods": "GET,POST,PATCH,DELETE",
+        "access-control-allow-origin": "http://localhost:5500",
+        "connection": "keep-alive",
+        "content-length": "0",
+        "date": "Mon, 16 Nov 2026 09:46:12 GMT",
+        "keep-alive": "timeout=5",
+        "vary": "Origin"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 401,
+      "response": {
+        "error": "Authentication required"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1/image",
+      "status": 404,
+      "response": {
+        "error": "Image not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Unsupported file type",
+        "requestId": "20c7447d-27d3-4cfb-b08c-4d450d152703"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Invalid image content",
+        "requestId": "719a5a34-0427-40fa-88f8-7ab2109ab100"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 400,
+      "response": {
+        "error": "Invalid image content",
+        "requestId": "f15b8187-bf68-46ce-8fdb-3afcd2af85f0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/999999/image",
+      "status": 404,
+      "response": {
+        "error": "Product not found",
+        "requestId": "e6b988b5-8816-4dcb-b67b-a928a56a9ce8"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 413,
+      "response": {
+        "error": "Image is too large",
+        "requestId": "c69d2568-22d3-4cec-a9f4-df71ece1c253"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "imageName": "de1ebead-6ee5-4958-b429-10e02965de3e.jpg",
+        "imageMime": "image/jpeg",
+        "imageSize": 633
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/products/1/image",
+      "status": 201,
+      "response": {
+        "id": 1,
+        "imageName": "9a43c2a1-c1fe-4b75-aa29-b3ea98922d74.png",
+        "imageMime": "image/png",
+        "imageSize": 92
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1/image",
+      "status": 403,
+      "response": {
+        "error": "Forbidden"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/products/1/image",
+      "status": 204,
+      "response": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/1/image",
+      "status": 404,
+      "response": {
+        "error": "Image not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/health/live",
+      "status": 200,
+      "response": {
+        "status": "ok"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/health/ready",
+      "status": 200,
+      "response": {
+        "status": "ready"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": 429,
+      "response": {
+        "error": "Too many login attempts"
+      }
+    }
+  ],
+  "commands": [
+    {
+      "command": "prisma migrate deploy",
+      "output": "Datasource \"db\": PostgreSQL database \"nodejs_lab_new_ro4_5_6_1794822367574\", schema \"public\" at \"localhost:55439\"\n\n5 migrations found in prisma/migrations\n\nApplying migration `20261104000100_baseline`\nApplying migration `20261104000200_add_product_description`\nApplying migration `20261104000300_add_category_slug`\nApplying migration `20261104000400_add_user_auth_fields`\nApplying migration `20261116000100_add_product_image`\n\nThe following migration(s) have been applied:\n\nmigrations/\n  └─ 20261104000100_baseline/\n    └─ migration.sql\n  └─ 20261104000200_add_product_description/\n    └─ migration.sql\n  └─ 20261104000300_add_category_slug/\n    └─ migration.sql\n  └─ 20261104000400_add_user_auth_fields/\n    └─ migration.sql\n  └─ 20261116000100_add_product_image/\n    └─ migration.sql\n\nAll migrations have been successfully applied.\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma\\schema.prisma.\n"
+    },
+    {
+      "command": "npm test",
+      "output": "(node:7560) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\nTest Suites: 4 passed, 4 total\nTests:       50 passed, 50 total\nSnapshots:   0 total\nTime:        6.166 s\nRan all test suites.\n"
+    },
+    {
+      "command": "npm test (повтор)",
+      "output": "(node:29448) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\nTest Suites: 4 passed, 4 total\nTests:       50 passed, 50 total\nSnapshots:   0 total\nTime:        6.013 s, estimated 7 s\nRan all test suites.\n"
+    },
+    {
+      "command": "Локальный CI: failure → success, Node.js 22",
+      "failureExitCode": 1,
+      "successExitCode": 0,
+      "output": "(node:28580) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\nFAIL tests/unit/failure-demo.test.js\n  ● intentional failure\n\n    expect(received).toBe(expected) // Object.is equality\n\n    Expected: 25001\n    Received: 25000\n\n    > 1 | import { test, expect } from '@jest/globals'; import { calculateOrderTotal } from '../../services/orderMath.js'; test('intentional failure',()=>expect(calculateOrderTotal([{price:25000,quantity:1}])).toBe(25001));\n        |                                                                                                                                                                                                         ^\n\n      at Object.<anonymous> (tests/unit/failure-demo.test.js:1:201)\n\n\nTest Suites: 1 failed, 4 passed, 5 total\nTests:       1 failed, 50 passed, 51 total\nSnapshots:   0 total\nTime:        17.793 s\nRan all test suites.\n\nRESTORED\n(node:29884) ExperimentalWarning: VM Modules is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\nTest Suites: 4 passed, 4 total\nTests:       50 passed, 50 total\nSnapshots:   0 total\nTime:        5.976 s, estimated 17 s\nRan all test suites.\n"
+    },
+    {
+      "command": "Node.js 22 production / DB unavailable / SIGINT",
+      "output": "{\"level\":30,\"time\":1794822640244,\"pid\":27772,\"hostname\":\"winsha_kun\",\"port\":64358,\"nodeEnv\":\"production\",\"msg\":\"HTTP server started\"}\n{\"level\":30,\"time\":1794822640254,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"51873307-97ec-4146-af9f-77e59d9652f1\",\"method\":\"GET\",\"path\":\"/health/live\",\"msg\":\"Request started\"}\n{\"level\":30,\"time\":1794822640259,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"51873307-97ec-4146-af9f-77e59d9652f1\",\"method\":\"GET\",\"path\":\"/live\",\"statusCode\":200,\"durationMs\":4.69,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640261,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"02edd51d-bae6-4ad5-b8c1-3bede34e2464\",\"method\":\"GET\",\"path\":\"/health/live\",\"msg\":\"Request started\"}\n{\"level\":30,\"time\":1794822640262,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"02edd51d-bae6-4ad5-b8c1-3bede34e2464\",\"method\":\"GET\",\"path\":\"/live\",\"statusCode\":200,\"durationMs\":1.07,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640264,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"7f7fd8a7-8519-418d-9d5e-295088ec0d2b\",\"method\":\"GET\",\"path\":\"/health/ready\",\"msg\":\"Request started\"}\n{\"level\":40,\"time\":1794822640332,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"7f7fd8a7-8519-418d-9d5e-295088ec0d2b\",\"err\":{\"type\":\"PrismaClientKnownRequestError\",\"message\":\"\\nInvalid `prisma.$queryRaw()` invocation:\\n\\n\\n\",\"stack\":\"PrismaClientKnownRequestError: \\nInvalid `prisma.$queryRaw()` invocation:\\n\\n\\n\\n    at vn.handleRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:8640)\\n    at vn.handleAndLogRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7929)\\n    at vn.request (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7636)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\\n    at async a (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:103:6921)\\n    at async file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/routes/healthRoutes.js:6:11\",\"code\":\"ECONNREFUSED\",\"clientVersion\":\"7.10.1\",\"name\":\"PrismaClientKnownRequestError\"},\"msg\":\"Readiness check failed\"}\n{\"level\":30,\"time\":1794822640333,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"7f7fd8a7-8519-418d-9d5e-295088ec0d2b\",\"method\":\"GET\",\"path\":\"/ready\",\"statusCode\":503,\"durationMs\":69.26,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640335,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"dc2622f8-03b1-4444-aa47-de3e9009d92c\",\"method\":\"GET\",\"path\":\"/api/products\",\"msg\":\"Request started\"}\n{\"level\":50,\"time\":1794822640372,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"dc2622f8-03b1-4444-aa47-de3e9009d92c\",\"err\":{\"type\":\"PrismaClientKnownRequestError\",\"message\":\"\\nInvalid `prisma.product.findMany()` invocation:\\n\\n\\n\",\"stack\":\"PrismaClientKnownRequestError: \\nInvalid `prisma.product.findMany()` invocation:\\n\\n\\n\\n    at vn.handleRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:8640)\\n    at vn.handleAndLogRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7929)\\n    at vn.request (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7636)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\\n    at async a (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:103:6921)\\n    at async getProducts (file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/controllers/productController.js:5:20)\",\"code\":\"ECONNREFUSED\",\"meta\":{\"modelName\":\"Product\"},\"clientVersion\":\"7.10.1\",\"name\":\"PrismaClientKnownRequestError\"},\"method\":\"GET\",\"path\":\"/api/products\",\"msg\":\"Request failed\"}\n{\"level\":30,\"time\":1794822640372,\"pid\":27772,\"hostname\":\"winsha_kun\",\"requestId\":\"dc2622f8-03b1-4444-aa47-de3e9009d92c\",\"method\":\"GET\",\"path\":\"/api/products\",\"statusCode\":500,\"durationMs\":37.37,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640374,\"pid\":27772,\"hostname\":\"winsha_kun\",\"signal\":\"SIGINT\",\"msg\":\"Shutdown started\"}\n{\"level\":30,\"time\":1794822640376,\"pid\":27772,\"hostname\":\"winsha_kun\",\"msg\":\"Shutdown completed\"}\n"
+    },
+    {
+      "command": "Node.js 22 production / DB unavailable / SIGTERM",
+      "output": "{\"level\":30,\"time\":1794822640866,\"pid\":31976,\"hostname\":\"winsha_kun\",\"port\":64369,\"nodeEnv\":\"production\",\"msg\":\"HTTP server started\"}\n{\"level\":30,\"time\":1794822640956,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"49e38a24-568c-47a6-bd4d-f993ff498275\",\"method\":\"GET\",\"path\":\"/health/live\",\"msg\":\"Request started\"}\n{\"level\":30,\"time\":1794822640961,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"49e38a24-568c-47a6-bd4d-f993ff498275\",\"method\":\"GET\",\"path\":\"/live\",\"statusCode\":200,\"durationMs\":4.39,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640962,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"f464783c-ab03-4455-a2bc-5eb9c79e067c\",\"method\":\"GET\",\"path\":\"/health/live\",\"msg\":\"Request started\"}\n{\"level\":30,\"time\":1794822640964,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"f464783c-ab03-4455-a2bc-5eb9c79e067c\",\"method\":\"GET\",\"path\":\"/live\",\"statusCode\":200,\"durationMs\":1.09,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822640965,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"ce2a991c-37c1-49aa-9a4f-b528099abd02\",\"method\":\"GET\",\"path\":\"/health/ready\",\"msg\":\"Request started\"}\n{\"level\":40,\"time\":1794822641029,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"ce2a991c-37c1-49aa-9a4f-b528099abd02\",\"err\":{\"type\":\"PrismaClientKnownRequestError\",\"message\":\"\\nInvalid `prisma.$queryRaw()` invocation:\\n\\n\\n\",\"stack\":\"PrismaClientKnownRequestError: \\nInvalid `prisma.$queryRaw()` invocation:\\n\\n\\n\\n    at vn.handleRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:8640)\\n    at vn.handleAndLogRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7929)\\n    at vn.request (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7636)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\\n    at async a (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:103:6921)\\n    at async file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/routes/healthRoutes.js:6:11\",\"code\":\"ECONNREFUSED\",\"clientVersion\":\"7.10.1\",\"name\":\"PrismaClientKnownRequestError\"},\"msg\":\"Readiness check failed\"}\n{\"level\":30,\"time\":1794822641030,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"ce2a991c-37c1-49aa-9a4f-b528099abd02\",\"method\":\"GET\",\"path\":\"/ready\",\"statusCode\":503,\"durationMs\":65.53,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822641032,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"124b304b-3578-4c03-86eb-6416365f7d39\",\"method\":\"GET\",\"path\":\"/api/products\",\"msg\":\"Request started\"}\n{\"level\":50,\"time\":1794822641069,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"124b304b-3578-4c03-86eb-6416365f7d39\",\"err\":{\"type\":\"PrismaClientKnownRequestError\",\"message\":\"\\nInvalid `prisma.product.findMany()` invocation:\\n\\n\\n\",\"stack\":\"PrismaClientKnownRequestError: \\nInvalid `prisma.product.findMany()` invocation:\\n\\n\\n\\n    at vn.handleRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:8640)\\n    at vn.handleAndLogRequestError (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7929)\\n    at vn.request (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:69:7636)\\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)\\n    at async a (D:\\\\prl\\\\codes\\\\learning\\\\web\\\\nodejs\\\\RO4_5\\\\lesson6\\\\generated\\\\prisma\\\\runtime\\\\client.js:103:6921)\\n    at async getProducts (file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/controllers/productController.js:5:20)\",\"code\":\"ECONNREFUSED\",\"meta\":{\"modelName\":\"Product\"},\"clientVersion\":\"7.10.1\",\"name\":\"PrismaClientKnownRequestError\"},\"method\":\"GET\",\"path\":\"/api/products\",\"msg\":\"Request failed\"}\n{\"level\":30,\"time\":1794822641069,\"pid\":31976,\"hostname\":\"winsha_kun\",\"requestId\":\"124b304b-3578-4c03-86eb-6416365f7d39\",\"method\":\"GET\",\"path\":\"/api/products\",\"statusCode\":500,\"durationMs\":37.58,\"msg\":\"Request completed\"}\n{\"level\":30,\"time\":1794822641071,\"pid\":31976,\"hostname\":\"winsha_kun\",\"signal\":\"SIGTERM\",\"msg\":\"Shutdown started\"}\n{\"level\":30,\"time\":1794822641073,\"pid\":31976,\"hostname\":\"winsha_kun\",\"msg\":\"Shutdown completed\"}\n"
+    },
+    {
+      "command": "Fail-fast without JWT_SECRET",
+      "output": "file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/config/env.js:6\r\n        if (!input[name]?.trim()) throw new Error(`Missing required environment variable: ${name}`);\r\n                                        ^\r\n\r\nError: Missing required environment variable: JWT_SECRET\r\n    at required (file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/config/env.js:6:41)\r\n    at readEnv (file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/config/env.js:17:23)\r\n    at file:///D:/prl/codes/learning/web/nodejs/RO4_5/lesson6/config/env.js:31:20\r\n    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)\r\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)\r\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)\r\n\r\nNode.js v22.23.5\r\n"
+    },
+    {
+      "command": "Prisma generate / migrate deploy на Node.js 22.23.5",
+      "output": "Loaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma\\schema.prisma.\n\n✔ Generated Prisma Client (v7.10.1) to .\\generated\\prisma in 488ms\n\nStart by importing your Prisma Client (See: https://pris.ly/d/importing-client)\n\n\nLoaded Prisma config from prisma.config.ts.\n\nPrisma schema loaded from prisma\\schema.prisma.\nDatasource \"db\": PostgreSQL database \"nodejs_lab_new_ro4_5_6_1794822367574\", schema \"public\" at \"localhost:55439\"\n\n5 migrations found in prisma/migrations\n\n\nNo pending migrations to apply.\n"
+    }
+  ]
+}

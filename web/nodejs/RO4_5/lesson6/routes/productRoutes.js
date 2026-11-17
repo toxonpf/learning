@@ -1,0 +1,21 @@
+import { uploadProductImage } from '../middleware/uploadMiddleware.js';
+import { uploadProductImageController, getProductImage, deleteImage } from '../controllers/productImageController.js';
+import { Router } from 'express';
+import * as controller from '../controllers/productController.js';
+import { requireAuth, requireRole } from '../middleware/authMiddleware.js';
+import { validateRequest } from '../middleware/validationMiddleware.js';
+import { createProductValidation, updateProductValidation, productIdValidation } from '../validators/productValidators.js';
+import { validateCreateProduct } from '../middleware/validateCreateProduct.js';
+import { validateUpdateProduct } from '../middleware/validateUpdateProduct.js';
+import { validateProductQuery } from '../middleware/validateProductQuery.js';
+const router = Router();
+router.get('/', validateProductQuery, controller.getProducts);
+router.get('/:id', productIdValidation, validateRequest, controller.getProductById);
+router.post('/', requireAuth, requireRole('admin'), createProductValidation, validateRequest, controller.createProduct);
+router.patch('/:id', requireAuth, requireRole('admin'), productIdValidation, validateRequest, updateProductValidation, validateRequest, controller.updateProduct);
+router.delete('/:id', requireAuth, requireRole('admin'), productIdValidation, validateRequest, controller.deleteProduct);
+router.post('/:id/image', requireAuth, requireRole('admin'), productIdValidation, validateRequest,
+    uploadProductImage.single('image'), uploadProductImageController);
+router.get('/:id/image', productIdValidation, validateRequest, getProductImage);
+router.delete('/:id/image', requireAuth, requireRole('admin'), productIdValidation, validateRequest, deleteImage);
+export default router;
