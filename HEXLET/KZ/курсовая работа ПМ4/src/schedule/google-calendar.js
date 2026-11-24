@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:
 import { Router } from 'express';
 import { HttpError, send } from '../lib/http.js';
 import { requireAuth } from '../middleware/auth.js';
-import { scheduleAudience } from './service.js';
+import { publishedScheduleRows } from './service.js';
 
 const scope = 'https://www.googleapis.com/auth/calendar.app.created';
 const callback = '/integrations/google-calendar/callback';
@@ -80,10 +80,9 @@ export function createGoogleCalendar(db, config, request = fetch) {
   }
 
   async function desired(user) {
-    const rows = await db.scheduledSession.findMany({
-      where: scheduleAudience(user),
-      select: { date: true, startMinute: true, endMinute: true, subject: true, room: true,
-        kind: true, audience: true, teacherName: true },
+    const rows = await publishedScheduleRows(db, user, {}, {
+      date: true, startMinute: true, endMinute: true, subject: true, room: true,
+      kind: true, audience: true, teacherName: true,
     });
     return new Map(rows.map((row) => targetEvent(row, timeZone)).map(({ fingerprint, body }) => [fingerprint, body]));
   }

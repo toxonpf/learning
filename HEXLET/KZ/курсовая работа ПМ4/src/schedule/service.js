@@ -219,17 +219,26 @@ export function unpublishPlan(db, id, revision) {
   });
 }
 
-export function scheduleAudience(user) {
-  return user.role === 'user' ? { studentIds: { has: user.id } } :
+export async function publishedScheduleRows(db, user, where, select) {
+  const audience = user.role === 'user' ? { studentIds: { has: user.id } } :
     user.role === 'teacher' ? { teacherId: user.id } : {};
+  const events = await db.scheduledSession.findMany({
+    where: { ...where, ...audience }, select: { ...select, groupIds: true },
+    orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { audience: 'asc' }, { id: 'asc' }],
+  });
+  if (user.role !== 'user' || !events.length) return events;
+
+  const memberships = await db.groupMembership.findMany({
+    where: { userId: user.id, groupId: { in: [...new Set(events.flatMap((event) => event.groupIds))] } },
+    select: { groupId: true, joinedOn: true, leftOn: true },
+  });
+  const byGroup = Map.groupBy(memberships, (row) => row.groupId);
+  return events.filter(({ date, groupIds }) => groupIds.some((groupId) =>
+    byGroup.get(groupId)?.some(({ joinedOn, leftOn }) => joinedOn <= date && (!leftOn || date < leftOn))));
 }
 
 export async function getSchedule(db, user, { from, to }) {
   validateRange(from, to, 31);
-  const events = await db.scheduledSession.findMany({
-    where: { date: { gte: asDate(from), lte: asDate(to) }, ...scheduleAudience(user) },
-    select: eventFields,
-    orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { audience: 'asc' }, { id: 'asc' }],
-  });
+  const events = await publishedScheduleRows(db, user, { date: { gte: asDate(from), lte: asDate(to) } }, eventFields);
   return events.map((event) => ({ ...event, date: asDay(event.date) }));
 }

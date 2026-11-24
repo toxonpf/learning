@@ -14,8 +14,10 @@ test('Google connection requires its browser state and reconciles only managed c
     GOOGLE_CALENDAR_REDIRECT_URI: 'http://127.0.0.1:3000/integrations/google-calendar/callback',
   };
   let record;
-  let rows = [{ date: new Date('2026-11-24'), startMinute: 510, endMinute: 600,
+  const groupId = '54dc44fa-67ba-462e-bba2-8c4e8c68456a';
+  const rows = [{ date: new Date('2026-11-24'), startMinute: 510, endMinute: 600, groupIds: [groupId],
     subject: 'Алгоритмы', kind: 'Практика', audience: 'ПО-24/1', teacherName: 'Преподаватель', room: '214' }];
+  let leftOn = null;
   let calendarCalls = 0;
   const events = new Map([['personal', { id: 'personal', summary: 'Личная встреча' }]]);
   const db = {
@@ -24,6 +26,7 @@ test('Google connection requires its browser state and reconciles only managed c
       assert.deepEqual(where, { studentIds: { has: user.id } });
       return rows;
     } },
+    groupMembership: { findMany: async () => [{ groupId, joinedOn: new Date('2026-09-01'), leftOn }] },
     googleCalendarConnection: {
       findUnique: async () => record && { ...record, user },
       upsert: async ({ create }) => { record = { ...create }; },
@@ -80,7 +83,7 @@ test('Google connection requires its browser state and reconciles only managed c
   const again = await fetch(origin + '/google/sync', { method: 'POST', headers });
   assert.equal((await again.json()).data.count, 1);
   assert.equal(events.size, 2);
-  rows = [];
+  leftOn = new Date('2026-11-24');
   await google.refreshLinked();
   assert.deepEqual([...events.keys()], ['personal']);
 });

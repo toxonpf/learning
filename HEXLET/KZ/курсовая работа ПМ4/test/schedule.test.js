@@ -185,6 +185,12 @@ test('REST publishing makes the authoritative schedule visible only to its audie
   assert.deepEqual(await request(window, 200, unrelated), []);
   await request(path + '/publish', 200, admin, 'POST', { revision: saved.revision, draftId: draft.id });
   assert.deepEqual(await request(window, 200, student), first);
+  await db.groupMembership.updateMany({
+    where: { groupId: group.id, userId: student.id },
+    data: { joinedOn: asDate('2031-01-05'), leftOn: asDate(first[0].date) },
+  });
+  assert.deepEqual(await request(window, 200, student), []);
+  assert.deepEqual(await request(window, 200, teacher), first);
   await request(path + '/unpublish', 200, admin, 'POST', { revision: saved.revision });
   assert.deepEqual(await request(window, 200, student), []);
 });
