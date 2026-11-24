@@ -174,6 +174,15 @@ test('REST API writes attendance in PostgreSQL and enforces membership and roles
     assert.equal(marks.length, 2);
     const own = await request('GET', `/attendance?lessonId=${lesson.id}`, 200, null, s);
     assert.deepEqual(own.map(({ id }) => id), [mark.id]);
+    const roster = await request('GET', `/groups/${group.id}/members`, 200, null, a);
+    const otherMember = roster.find(({ user }) => user.id === second.user.id);
+    const removalPath = `/groups/${group.id}/members/${otherMember.id}`;
+    await request('DELETE', removalPath, 403, null, p);
+    const departure = await request('DELETE', removalPath, 200, null, a);
+    assert.equal(departure.deleted, false);
+    assert.ok(departure.leftOn.slice(0, 10) > date);
+    const history = await request('GET', `/attendance?lessonId=${lesson.id}`, 200, null, second.accessToken);
+    assert.equal(history.length, 1);
     const pathToJournal = `/groups/${group.id}/journal?from=${before}&to=${after}`;
     const journal = await request('GET', pathToJournal, 200, null, s);
     assert.deepEqual(journal.members.map(({ user }) => user.id), [first.user.id]);

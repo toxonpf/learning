@@ -1,7 +1,8 @@
 import { button, el, empty, field, input, notify, openDialog, select } from './dom.js';
 import { roleLabel } from './format.js';
+import { sortable } from './table.js';
 import {
-  actions, addButton, checklist, checkbox, editButton, editItem, featureFields, featureValues, gridFields,
+  actions, addButton, checklist, checkbox, duplicate, editButton, editItem, featureFields, featureValues, gridFields,
   isChecked, names, number, numberField, optionalSelect, panel, picked, removeItem, resourceTable,
   textField, weekdays, wholeName,
 } from './planner-controls.js';
@@ -11,7 +12,8 @@ const groupChoices = (groups) => groups.map(({ id, code, name }) => [id, `${code
 const accountChoices = (users) => users.map((user) => [user.id, wholeName(user)]);
 const codes = (ids, groups) => ids.map((id) => groups.find((group) => group.id === id)?.code ?? 'Архивная группа').join(', ');
 
-function teacherEditor(context, item) {
+function teacherEditor(context, existing, copy) {
+  const item = existing ?? copy;
   const { teachers, groups, plan } = context.planner;
   const disciplines = names(plan.config.disciplines);
   const choices = accountChoices(teachers.filter(({ id }) => !plan.config.teachers.some(({ userId }) => userId === id)));
@@ -22,9 +24,10 @@ function teacherEditor(context, item) {
   mode.addEventListener('change', modeChanged);
   modeChanged();
   openDialog({
-    title: item ? 'Изменить назначение преподавателя' : 'Добавить преподавателя',
+    title: existing ? 'Изменить назначение преподавателя' : 'Добавить преподавателя',
+    json: !existing,
     fields: [
-      item
+      existing
         ? el('p', {}, teachers.find(({ id }) => id === item.userId)?.name ?? 'Преподаватель')
         : field('Преподаватель', select('userId', [['', 'Выберите аккаунт'], ...choices])),
       checklist('Дисциплины преподавателя', 'discipline-', disciplines, item?.disciplineIds),
@@ -38,8 +41,8 @@ function teacherEditor(context, item) {
       const chosenDays = picked(values, 'day-', weekdays).map(Number);
       if (!disciplineIds.length) throw new Error('Выберите хотя бы одну дисциплину');
       if (!chosenDays.length) throw new Error('Выберите хотя бы один день доступности');
-      return editItem(context, 'teachers', item, () => ({
-        userId: item?.userId ?? values.userId, disciplineIds, weekdays: chosenDays,
+      return editItem(context, 'teachers', existing, () => ({
+        userId: existing?.userId ?? values.userId, disciplineIds, weekdays: chosenDays,
         maxDailyMinutes: number(values.maxDailyMinutes), maxWeeklyMinutes: number(values.maxWeeklyMinutes),
         groupMode: values.groupMode, groupIds: values.groupMode === 'only' ? picked(values, 'allowed-', availableGroups) : [],
       }), 'userId');
@@ -47,7 +50,8 @@ function teacherEditor(context, item) {
   });
 }
 
-function groupEditor(context, item) {
+function groupEditor(context, existing, copy) {
+  const item = existing ?? copy;
   const { groups, plan } = context.planner;
   const options = groupChoices(groups.filter(({ id }) => !plan.config.groups.some(({ groupId }) => groupId === id)));
   const split = item?.split;
@@ -83,9 +87,10 @@ function groupEditor(context, item) {
   limit.addEventListener('change', syncLimit);
   syncLimit();
   openDialog({
-    title: item ? 'Изменить настройки группы' : 'Добавить группу в план',
+    title: existing ? 'Изменить настройки группы' : 'Добавить группу в план',
+    json: !existing,
     fields: [
-      item
+      existing
         ? el('p', {}, codes([item.groupId], groups))
         : field('Учебная группа', select('groupId', [['', 'Выберите группу'], ...options])),
       gridFields(numberField('Курс', 'studyYear', item?.studyYear, 1, 20),
@@ -99,8 +104,8 @@ function groupEditor(context, item) {
       if (percentages.length && (percentages.length !== number(values.count) || percentages.some((value) => !Number.isInteger(value) || value < 1))) {
         throw new Error('Укажите целые проценты через запятую для каждой подгруппы');
       }
-      return editItem(context, 'groups', item, () => ({
-        groupId: item?.groupId ?? values.groupId, studyYear: number(values.studyYear), capacity: number(values.capacity),
+      return editItem(context, 'groups', existing, () => ({
+        groupId: existing?.groupId ?? values.groupId, studyYear: number(values.studyYear), capacity: number(values.capacity),
         dailyLimit: values.unit === 'none' ? null : { unit: values.unit, value: number(values.value) },
         split: isChecked(values, 'splittable') ? {
           count: number(values.count), method: values.method, order: values.order,
@@ -121,7 +126,7 @@ export function participantPanels(context) {
       config.groups.length ? resourceTable(['Группа', 'Курс', 'Вместимость', 'Подгруппы', 'Действия'], config.groups.map((item) => {
         const code = codes([item.groupId], groups);
         return [code, item.studyYear ?? '—', item.capacity ?? '—', item.split?.count ?? '—',
-          actions(editButton(() => groupEditor(context, item)),
+          actions(editButton(() => groupEditor(context, item)), duplicate(() => groupEditor(context, null, item)),
             editButton(() => removeItem(context, 'groups', item, code, 'groupId'), 'Удалить'))];
       })) : null, addButton('Добавить группу', () => groupEditor(context))),
     panel('Преподаватели учебного периода', 'Выберите дисциплины, дни доступности и лимиты нагрузки.',
@@ -129,7 +134,7 @@ export function participantPanels(context) {
         const name = teachersById.get(item.userId) ? wholeName(teachersById.get(item.userId)) : 'Аккаунт недоступен';
         return [name, item.disciplineIds.map((id) => disciplineNames.get(id)).join(', '),
           item.groupMode === 'any' ? 'Все группы' : codes(item.groupIds, groups),
-          actions(editButton(() => teacherEditor(context, item)),
+          actions(editButton(() => teacherEditor(context, item)), duplicate(() => teacherEditor(context, null, item)),
             editButton(() => removeItem(context, 'teachers', item, name, 'userId'), 'Удалить'))];
       })) : null, addButton('Добавить преподавателя', () => teacherEditor(context))),
     profilePanel(context));
@@ -187,7 +192,8 @@ function editProfile(context, person, refresh) {
   });
 }
 
-function requirementEditor(context, item) {
+function requirementEditor(context, existing, copy) {
+  const item = existing ?? copy;
   const { plan, groups, teachers } = context.planner;
   const { config } = plan;
   const allowed = new Set(config.groups.map(({ groupId }) => groupId));
@@ -203,7 +209,8 @@ function requirementEditor(context, item) {
   discipline.addEventListener('change', updateTeachers);
   updateTeachers();
   openDialog({
-    title: item ? 'Изменить строку нагрузки' : 'Новая строка учебного плана',
+    title: existing ? 'Изменить строку нагрузки' : 'Новая строка учебного плана',
+    json: !existing,
     fields: [
       gridFields(field('Дисциплина', discipline), textField('Вид занятия', 'kind', item?.kind ?? 'Лекция', 48)),
       checklist('Учебные группы', 'group-', groupOptions, item?.groupIds),
@@ -221,8 +228,8 @@ function requirementEditor(context, item) {
       const groupIds = picked(values, 'group-', groupOptions);
       if (!groupIds.length) throw new Error('Выберите учебную группу');
       if (groupIds.length > 4) throw new Error('Для одного занятия можно выбрать до четырёх групп');
-      return editItem(context, 'requirements', item, () => ({
-        id: item?.id ?? crypto.randomUUID(), disciplineId: values.disciplineId, kind: values.kind, groupIds,
+      return editItem(context, 'requirements', existing, () => ({
+        id: existing?.id ?? crypto.randomUUID(), disciplineId: values.disciplineId, kind: values.kind, groupIds,
         split: isChecked(values, 'split'), periodId: values.periodId || null,
         totalHours: number(values.totalHours), hoursPerMeeting: number(values.hoursPerMeeting),
         durationMinutes: number(values.durationMinutes), maxPerWeek: number(values.maxPerWeek),
@@ -243,8 +250,8 @@ export function studyPanels(context) {
         const subject = disciplines.get(item.disciplineId) ?? 'Дисциплина удалена';
         return [el('div', { class: 'table-person' }, subject, el('small', { class: 'muted' }, item.kind)),
           codes(item.groupIds, groups) + (item.split ? ' · по подгруппам' : ''),
-          `${item.totalHours} ак. ч. · по ${item.hoursPerMeeting} ак. ч.`,
-          actions(editButton(() => requirementEditor(context, item)),
+          sortable(`${item.totalHours} ак. ч. · по ${item.hoursPerMeeting} ак. ч.`, item.totalHours),
+          actions(editButton(() => requirementEditor(context, item)), duplicate(() => requirementEditor(context, null, item)),
             editButton(() => removeItem(context, 'requirements', item, subject), 'Удалить'))];
       })) : null, addButton('Добавить строку плана', () => requirementEditor(context))));
 }

@@ -15,6 +15,16 @@ try {
 
 if (!process.exitCode) {
   const app = createApp({ db, config });
+  const google = app.locals.googleCalendar;
+  let syncing = false;
+  const syncTimer = google.enabled ? setInterval(async () => {
+    if (syncing) return;
+    syncing = true;
+    try { await google.refreshLinked(); }
+    catch { console.error('Не удалось проверить обновления календаря'); }
+    finally { syncing = false; }
+  }, 30_000) : null;
+  syncTimer?.unref();
   const server = app.listen(config.PORT, config.HOST, () => {
     console.log(`Журнал посещаемости: http://${config.HOST}:${config.PORT}`);
   });
@@ -25,6 +35,7 @@ if (!process.exitCode) {
   });
 
   function shutdown() {
+    clearInterval(syncTimer);
     server.close(() => db.$disconnect());
   }
   process.once('SIGINT', shutdown);

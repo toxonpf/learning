@@ -41,6 +41,7 @@ export function apiRoutes(db, config) {
   router.get('/groups/:id/members', admin, groups.members);
   router.post('/groups/:id/members', admin, groups.addMember);
   router.patch('/groups/:id/members/:memberId', admin, groups.updateMember);
+  router.delete('/groups/:id/members/:memberId', admin, groups.removeMember);
   router.get('/users', admin, groups.users);
   router.patch('/users/:id/role', admin, groups.updateRole);
 

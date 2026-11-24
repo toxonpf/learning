@@ -1,6 +1,7 @@
-import { el, field, openDialog, select } from './dom.js';
+import { confirmAction, el, field, openDialog, select } from './dom.js';
+import { sortable } from './table.js';
 import {
-  actions, addButton, checklist, checkbox, dateField, editButton, editItem, featureFields, featureValues,
+  actions, addButton, checklist, checkbox, copyName, dateField, duplicate, editButton, editItem, featureFields, featureValues,
   gridFields, isChecked, names, number, numberField, optionalSelect, panel, picked, rangeTitle,
   removeItem, resourceTable, saveChanges, textField, timeField, weekdays,
 } from './planner-controls.js';
@@ -20,10 +21,11 @@ function basicCalendar(context) {
   });
 }
 
-function slotEditor(context, slot = null) {
+function slotEditor(context, slot = null, copy = null) {
   openDialog({
     title: slot ? 'Изменить слот' : 'Новый слот',
-    fields: [gridFields(timeField('Начало слота', 'start', slot?.start), timeField('Конец слота', 'end', slot?.end))],
+    json: !slot,
+    fields: [gridFields(timeField('Начало слота', 'start', (slot ?? copy)?.start), timeField('Конец слота', 'end', (slot ?? copy)?.end))],
     onSubmit: ({ start, end }) => saveChanges(context, ({ config }) => {
       if (slot) config.slots = config.slots.map((item) => item.start === slot.start ? { start, end } : item);
       else config.slots.push({ start, end });
@@ -31,21 +33,23 @@ function slotEditor(context, slot = null) {
   });
 }
 
-function periodEditor(context, record) {
+function periodEditor(context, record, copy) {
   const { startsOn, endsOn } = context.planner.plan;
   openDialog({
     title: record ? 'Изменить модуль' : 'Новый модуль',
+    json: !record,
     fields: [
-      textField('Название модуля', 'name', record?.name),
-      gridFields(dateField('Начало модуля', 'from', record?.from ?? startsOn),
-        dateField('Конец модуля', 'to', record?.to ?? endsOn)),
+      textField('Название модуля', 'name', record?.name ?? copyName(copy?.name)),
+      gridFields(dateField('Начало модуля', 'from', (record ?? copy)?.from ?? startsOn),
+        dateField('Конец модуля', 'to', (record ?? copy)?.to ?? endsOn)),
     ],
     onSubmit: ({ name, from, to }) => editItem(context, 'periods', record,
       () => ({ id: record?.id ?? crypto.randomUUID(), name, from, to })),
   });
 }
 
-function exceptionEditor(context, record) {
+function exceptionEditor(context, existing, copy) {
+  const record = existing ?? copy;
   const { plan, teachers } = context.planner;
   const scopes = [['school', 'Всё учреждение'], ['teacher', 'Преподаватель'], ['room', 'Кабинет']];
   const scope = select('scope', scopes, record?.scope ?? 'school');
@@ -62,18 +66,19 @@ function exceptionEditor(context, record) {
   scope.addEventListener('change', scopeChanged);
   scopeChanged();
   openDialog({
-    title: record ? 'Изменить исключение' : 'Добавить исключение',
+    title: existing ? 'Изменить исключение' : 'Добавить исключение',
+    json: !existing,
     description: 'Выходной или период недоступности. Пустое время блокирует день целиком.',
     fields: [
-      textField('Причина', 'name', record?.name, 120, { placeholder: 'Например, каникулы' }),
+      textField('Причина', 'name', existing?.name ?? copyName(copy?.name), 120, { placeholder: 'Например, каникулы' }),
       field('Кого касается', scope), resource,
       gridFields(dateField('С даты', 'from', record?.from ?? plan.startsOn),
         dateField('По дату', 'to', record?.to ?? plan.startsOn)),
       gridFields(timeField('С какого времени', 'start', record?.start ?? '', false),
         timeField('До какого времени', 'end', record?.end ?? '', false)),
     ],
-    onSubmit: ({ name, from, to, scope, resourceId, start, end }) => editItem(context, 'exceptions', record, () => ({
-      id: record?.id ?? crypto.randomUUID(), name, from, to, scope, resourceId: resourceId || null, start: start || null, end: end || null,
+    onSubmit: ({ name, from, to, scope, resourceId, start, end }) => editItem(context, 'exceptions', existing, () => ({
+      id: existing?.id ?? crypto.randomUUID(), name, from, to, scope, resourceId: resourceId || null, start: start || null, end: end || null,
     })),
   });
 }
@@ -91,10 +96,11 @@ export function calendarPanels(context) {
     panel('Временные слоты', 'Добавьте интервалы занятий. Промежутки между ними остаются свободными.',
       resourceTable(['Начало', 'Конец', 'Действия'], [...config.slots].sort((a, b) => a.start.localeCompare(b.start)).map((slot) => [
         slot.start, slot.end,
-        actions(editButton(() => slotEditor(context, slot)),
-          config.slots.length > 1 && editButton(() => openDialog({
+        actions(editButton(() => slotEditor(context, slot)), duplicate(() => slotEditor(context, null, slot)),
+          config.slots.length > 1 && editButton(() => confirmAction({
             title: 'Удалить слот?',
             description: `${slot.start} – ${slot.end}`,
+            code: slot.start,
             submitLabel: 'Удалить слот',
             onSubmit: () => saveChanges(context, ({ config: work }) => {
               work.slots = work.slots.filter((item) => item.start !== slot.start);
@@ -103,22 +109,23 @@ export function calendarPanels(context) {
       ])), addButton('Добавить слот', () => slotEditor(context))),
     panel('Модули периода', 'Строку учебного плана можно ограничить датами одного модуля.',
       config.periods.length ? resourceTable(['Модуль', 'Даты', 'Действия'], config.periods.map((item) => [
-        item.name, rangeTitle(item.from, item.to), actions(editButton(() => periodEditor(context, item)),
+        item.name, sortable(rangeTitle(item.from, item.to), item.from), actions(editButton(() => periodEditor(context, item)), duplicate(() => periodEditor(context, null, item)),
           editButton(() => removeItem(context, 'periods', item, item.name), 'Удалить')),
       ])) : null, addButton('Добавить модуль', () => periodEditor(context))),
     panel('Выходные и исключения', 'Каникулы, праздники и интервалы недоступности преподавателей или кабинетов.',
       config.exceptions.length ? resourceTable(['Причина', 'Даты', 'Время', 'Кого касается', 'Действия'], config.exceptions.map((item) => [
-        item.name, rangeTitle(item.from, item.to), item.start ? `${item.start} – ${item.end}` : 'Весь день',
+        item.name, sortable(rangeTitle(item.from, item.to), item.from), item.start ? `${item.start} – ${item.end}` : 'Весь день',
         item.scope === 'school' ? 'Всё учреждение' : refs.get(item.resourceId) ?? 'Ресурс недоступен',
-        actions(editButton(() => exceptionEditor(context, item)),
+        actions(editButton(() => exceptionEditor(context, item)), duplicate(() => exceptionEditor(context, null, item)),
           editButton(() => removeItem(context, 'exceptions', item, item.name), 'Удалить')),
       ])) : null, addButton('Добавить исключение', () => exceptionEditor(context))));
 }
 
-export function dictionaryEditor(context, collection, label, item) {
+export function dictionaryEditor(context, collection, label, item, copy) {
   openDialog({
     title: item ? `Переименовать ${label}` : `Добавить ${label}`,
-    fields: [textField('Название', 'name', item?.name)],
+    json: !item,
+    fields: [textField('Название', 'name', item?.name ?? copyName(copy?.name))],
     onSubmit: ({ name }) => editItem(context, collection, item, () => ({ id: item?.id ?? crypto.randomUUID(), name })),
   });
 }
@@ -128,33 +135,37 @@ export function dictionaryPanel(context, collection, title, label, description, 
   return panel(title, description, rows.length ? resourceTable(['Название', 'Действия'], rows.map((item) => [
     item.name,
     actions(editButton(() => dictionaryEditor(context, collection, label, item)),
+      duplicate(() => dictionaryEditor(context, collection, label, null, item)),
       editButton(() => removeItem(context, collection, item, item.name), 'Удалить')),
   ])) : null, addButton(addLabel, () => dictionaryEditor(context, collection, label)));
 }
 
-function roomTypeEditor(context, item) {
+function roomTypeEditor(context, item, copy) {
   const { features } = context.planner.plan.config;
   openDialog({
     title: item ? 'Изменить тип кабинета' : 'Новый тип кабинета',
-    fields: [textField('Название типа кабинета', 'name', item?.name),
-      featureFields('Стандартное оснащение этого типа', features, item?.features)],
+    json: !item,
+    fields: [textField('Название типа кабинета', 'name', item?.name ?? copyName(copy?.name)),
+      featureFields('Стандартное оснащение этого типа', features, (item ?? copy)?.features)],
     onSubmit: (values) => editItem(context, 'roomTypes', item, () => ({
       id: item?.id ?? crypto.randomUUID(), name: values.name, features: featureValues(values, features),
     })),
   });
 }
 
-function roomEditor(context, item) {
+function roomEditor(context, existing, copy) {
+  const item = existing ?? copy;
   const { features, roomTypes } = context.planner.plan.config;
   openDialog({
-    title: item ? 'Изменить кабинет' : 'Новый кабинет',
-    fields: [textField('Кабинет или аудитория', 'name', item?.name),
+    title: existing ? 'Изменить кабинет' : 'Новый кабинет',
+    json: !existing,
+    fields: [textField('Кабинет или аудитория', 'name', existing?.name ?? copyName(copy?.name)),
       gridFields(numberField('Количество мест', 'capacity', item?.capacity, 1, 10000, true),
         optionalSelect('Тип кабинета', 'typeId', names(roomTypes), item?.typeId, 'Любой тип')),
       checkbox('Разрешить совместное занятие нескольких групп', 'jointGroups', item?.jointGroups),
       featureFields('Оснащение кабинета. Укажите 0, если позиция отсутствует', features, item?.features, 0)],
-    onSubmit: (values) => editItem(context, 'rooms', item, () => ({
-      id: item?.id ?? crypto.randomUUID(), name: values.name, capacity: number(values.capacity),
+    onSubmit: (values) => editItem(context, 'rooms', existing, () => ({
+      id: existing?.id ?? crypto.randomUUID(), name: values.name, capacity: number(values.capacity),
       typeId: values.typeId || null, jointGroups: isChecked(values, 'jointGroups'), features: featureValues(values, features),
     })),
   });
@@ -172,12 +183,13 @@ export function roomPanels(context) {
     panel('Кабинеты', 'Количество мест и доступное оснащение учитываются при назначении.',
       rooms.length ? resourceTable(['Кабинет', 'Тип', 'Места', 'Оснащение', 'Действия'], rooms.map((item) => [
         item.name, types.get(item.typeId) ?? '—', item.capacity, quantitySummary(item.features, features),
-        actions(editButton(() => roomEditor(context, item)), editButton(() => removeItem(context, 'rooms', item, item.name), 'Удалить')),
+        actions(editButton(() => roomEditor(context, item)), duplicate(() => roomEditor(context, null, item)),
+          editButton(() => removeItem(context, 'rooms', item, item.name), 'Удалить')),
       ])) : null, addButton('Добавить кабинет', () => roomEditor(context))),
     panel('Типы кабинетов', 'Оснащение типа используется по умолчанию. Для отдельного кабинета можно задать своё количество.',
       roomTypes.length ? resourceTable(['Тип', 'Стандартное оснащение', 'Действия'], roomTypes.map((item) => [
         item.name, quantitySummary(item.features, features),
-        actions(editButton(() => roomTypeEditor(context, item)),
+        actions(editButton(() => roomTypeEditor(context, item)), duplicate(() => roomTypeEditor(context, null, item)),
           editButton(() => removeItem(context, 'roomTypes', item, item.name), 'Удалить')),
       ])) : null, addButton('Добавить тип', () => roomTypeEditor(context))),
     dictionaryPanel(context, 'features', 'Виды оснащения', 'оснащение', null, 'Добавить оснащение'));

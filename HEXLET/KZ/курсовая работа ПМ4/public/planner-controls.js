@@ -1,5 +1,6 @@
-import { button, el, empty, field, input, openDialog, select } from './dom.js';
+import { button, confirmAction, el, empty, field, input, select } from './dom.js';
 import { displayDate } from './format.js';
+import { sortableTable } from './table.js';
 
 export const weekdays = [['1', 'Пн'], ['2', 'Вт'], ['3', 'Ср'], ['4', 'Чт'], ['5', 'Пт'], ['6', 'Сб'], ['7', 'Вс']];
 export const names = (rows) => rows.map(({ id, name }) => [id, name]);
@@ -72,9 +73,10 @@ export function editItem(context, collection, existing, transform, key = 'id') {
 }
 
 export function removeItem(context, collection, item, name, key = 'id') {
-  openDialog({
+  confirmAction({
     title: 'Удалить из плана?',
     description: name,
+    code: name,
     submitLabel: 'Удалить из плана',
     onSubmit: () => saveChanges(context, ({ config }) => {
       config[collection] = config[collection].filter((entry) => entry[key] !== item[key]);
@@ -85,12 +87,11 @@ export function removeItem(context, collection, item, name, key = 'id') {
 export const editButton = (action, label = 'Изменить') => button(label, action, { variant: 'quiet' });
 export const addButton = (label, action) => button(label, action, { glyph: 'plus' });
 export const actions = (...buttons) => el('div', { class: 'row-actions' }, buttons);
+export const duplicate = (action) => editButton(action, 'Дублировать');
+export const copyName = (name) => name ? `${name.slice(0, 112)} (копия)` : '';
 
 export function resourceTable(headers, rows) {
-  return el('div', { class: 'management-scroll planner-table-wrap' }, el('table', { class: 'data-table planner-table' },
-    el('thead', {}, el('tr', {}, headers.map((header) => el('th', { scope: 'col' }, header)))),
-    el('tbody', {}, rows.map((row) => el('tr', {}, row.map((cell, index) =>
-      el(index === 0 ? 'th' : 'td', index === 0 ? { scope: 'row' } : {}, cell)))))));
+  return sortableTable(headers, rows, { wrapper: 'management-scroll planner-table-wrap', table: 'data-table planner-table' });
 }
 
 export function panel(title, description, detail, action) {

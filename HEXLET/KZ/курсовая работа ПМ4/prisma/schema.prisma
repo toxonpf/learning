@@ -14,6 +14,7 @@ enum Role {
 }
 
 model User {
+  googleCalendar GoogleCalendarConnection?
   id               String             @id @default(uuid()) @db.Uuid
   email            String             @unique @db.VarChar(254)
   name             String             @db.VarChar(120)
@@ -134,4 +135,15 @@ model ScheduledSession {
   @@index([teacherId, date])
   @@index([studentIds], type: Gin)
   @@index([planId])
+}
+
+model GoogleCalendarConnection {
+  userId      String    @id @db.Uuid
+  calendarId  String
+  credential  String
+  sourceHash  String?
+  lastChecked DateTime? @db.Timestamptz(3)
+  lastSynced  DateTime? @db.Timestamptz(3)
+  failed      Boolean   @default(false)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -4,6 +4,7 @@ import { renderJournal } from './journal.js';
 import { renderGroups, renderStatuses, renderUsers } from './management.js';
 import { renderSchedule } from './schedule.js';
 import { renderPlanner } from './planner.js';
+import { creationJson } from './form-json.js';
 
 const root = document.getElementById('app');
 const storageKey = 'attendance.accessToken';
@@ -128,6 +129,7 @@ function renderAuth(message) {
     minlength: registering ? 10 : 1, maxlength: 128,
   }), registering && 'Не менее 10 символов'),
   error, submit);
+  if (registering) error.before(creationJson(form, 'Регистрация аккаунта'));
   root.replaceChildren(el('main', { class: 'auth-layout' },
     el('div', { class: 'auth-main' }, brand(), el('div', { class: 'auth-content' },
       el('h1', {}, registering ? 'Регистрация' : 'Войти в журнал'),
@@ -310,7 +312,16 @@ async function boot() {
     ({ user, timeZone } = await api('/auth/me'));
     day = today(timeZone);
     week = weekOf(day);
+    const result = new URLSearchParams(window.location.search).get('googleCalendar');
+    if (result) {
+      view = 'schedule';
+      window.history.replaceState(null, '', window.location.pathname);
+    }
     await reload({ allGroups: true });
+    if (result === 'connected') notify('Google Календарь подключён. Расписание появится после синхронизации.');
+    if (result === 'error') {
+      openDialog({ title: 'Google Календарь', description: 'Подключение не завершено. Откройте настройки календаря и повторите.' });
+    }
   } catch (error) {
     if (error.status !== 401) logout(error.message);
   }

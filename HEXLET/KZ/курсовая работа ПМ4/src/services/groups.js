@@ -113,6 +113,29 @@ export function updateMember(db, groupId, id, user, today, { leftOn }) {
   });
 }
 
+export function removeMember(db, groupId, id, user, today) {
+  return writeTransaction(db, async (tx) => {
+    await requireGroup(tx, groupId, user, today);
+    const member = await tx.groupMembership.findUnique({ where: { id, groupId } });
+    if (!member) throw new HttpError(404, 'Участник группы не найден');
+    const latest = await tx.attendance.findFirst({
+      where: { membershipId: id },
+      orderBy: { lesson: { date: 'desc' } },
+      select: { lesson: { select: { date: true } } },
+    });
+    if (!latest && member.joinedOn >= today) {
+      await tx.groupMembership.delete({ where: { id } });
+      return { deleted: true, leftOn: null };
+    }
+    const firstDayOutside = latest ? new Date(Math.max(+today, +latest.lesson.date + DAY)) : today;
+    const leftOn = member.leftOn && member.leftOn <= firstDayOutside ? member.leftOn : firstDayOutside;
+    if (+leftOn !== +member.leftOn) {
+      await tx.groupMembership.update({ where: { id }, data: { leftOn } });
+    }
+    return { deleted: false, leftOn };
+  });
+}
+
 function attends(member, lesson) {
   return member.joinedOn <= lesson.date && (!member.leftOn || member.leftOn > lesson.date);
 }

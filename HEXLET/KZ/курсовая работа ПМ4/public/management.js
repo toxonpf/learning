@@ -1,24 +1,19 @@
-import { button, el, empty, field, input, mark, openDialog, pageHeader, select } from './dom.js';
+import { button, confirmAction, el, empty, field, input, mark, openDialog, pageHeader, select } from './dom.js';
 import { activeAt, dateInput, displayDate, roleLabel } from './format.js';
-
-function dataTable(headers, rows) {
-  return el('div', { class: 'management-scroll' }, el('table', { class: 'data-table' },
-    el('thead', {}, el('tr', {}, headers.map((label) => el('th', { scope: 'col' }, label)))),
-    el('tbody', {}, rows.map((row) => el('tr', {}, row.map((cell, index) =>
-      el(index === 0 ? 'th' : 'td', index === 0 ? { scope: 'row' } : {}, cell)))))));
-}
+import { sortable, sortableTable as dataTable } from './table.js';
 
 function toggle(name, label, checked) {
   return el('label', { class: 'toggle' }, input(name, 'yes', { type: 'checkbox', checked }), el('span', {}, label));
 }
 
-function groupEditor(context, group) {
+function groupEditor(context, group, copy) {
   const { mutate, selectManageGroup } = context;
   openDialog({
-    title: group ? 'Редактировать группу' : 'Новая группа',
+    title: group ? 'Редактировать группу' : copy ? 'Дублировать группу' : 'Новая группа',
+    json: !group,
     fields: [
-      field('Код группы', input('code', group?.code, { placeholder: 'Например, ПО-24/1', required: true, maxlength: 32 })),
-      field('Название программы', input('name', group?.name, { placeholder: 'Например, Программное обеспечение', required: true, maxlength: 120 })),
+      field('Код группы', input('code', group?.code ?? (copy && `${copy.code.slice(0, 26)}-КОПИЯ`), { placeholder: 'Например, ПО-24/1', required: true, maxlength: 32 })),
+      field('Название программы', input('name', group?.name ?? copy?.name, { placeholder: 'Например, Программное обеспечение', required: true, maxlength: 120 })),
       group && toggle('archived', 'Переместить группу в архив', group.archived),
     ],
     submitLabel: group ? 'Сохранить' : 'Создать группу',
@@ -38,25 +33,44 @@ export function renderGroups(context) {
     el('span', { class: item.archived ? 'muted' : 'row-active' }, item.archived ? 'В архиве' : 'Действует'),
     el('div', { class: 'row-actions' },
       button('Состав', () => selectManageGroup(item.id), { variant: item.id === manageGroupId ? 'selected' : '' }),
-      button('Изменить', () => groupEditor(context, item), { variant: 'quiet' })),
+      button('Изменить', () => groupEditor(context, item), { variant: 'quiet' }),
+      button('Дублировать', () => groupEditor(context, null, item), { variant: 'quiet' })),
   ]);
 
+  const roster = el('div', {});
+  const history = input('showHistory', 'yes', { type: 'checkbox', onchange: () => showRoster() });
+  function showRoster() {
+    const visible = members?.filter((item) => history.checked || !item.leftOn || dateInput(item.leftOn) > day);
+    roster.replaceChildren(visible?.length ? dataTable(['Участник', 'Роль', 'Период', 'Состояние', 'Действия'],
+      visible.map((member) => [
+        sortable(el('div', { class: 'table-person' }, member.user.name, el('small', { class: 'muted' }, member.user.email)), member.user.name),
+        roleLabel[member.user.role],
+        sortable(`${displayDate(member.joinedOn)} — ${member.leftOn ? displayDate(member.leftOn) : 'по настоящее время'}`, dateInput(member.joinedOn)),
+        activeAt(member, day) ? member.leftOn ? `До ${displayDate(member.leftOn)}` : 'В группе'
+          : dateInput(member.joinedOn) > day ? 'Ожидает вступления' : 'Выбыл',
+        el('div', { class: 'row-actions' },
+          button('Изменить период', () => memberEditor(context, group, member), { variant: 'quiet' }),
+          (!member.leftOn || dateInput(member.leftOn) > day) && button('Удалить из группы', () => confirmAction({
+            title: 'Удалить участника из группы?',
+            description: `${member.user.name} · ${group.code}. Отметки сохранятся. Если уже есть отметка за сегодня, выход будет оформлен со следующего дня.`,
+            code: group.code, submitLabel: 'Удалить из группы',
+            onSubmit: () => context.mutate(`/groups/${group.id}/members/${member.id}`, 'DELETE', null,
+              (result) => result.leftOn && dateInput(result.leftOn) > day
+                ? `Выход оформлен с ${displayDate(result.leftOn)}` : 'Участник удалён из текущего состава'),
+          }), { variant: 'danger' })),
+      ])) : empty(members ? 'Участников пока нет' : 'Загрузка состава',
+      members && 'Добавьте зарегистрированных студентов и преподавателей'));
+  }
+  if (group) showRoster();
   const assignments = group && el('section', { class: 'panel' },
     el('div', { class: 'panel-heading' }, el('div', {},
       el('h2', {}, `Состав группы ${group.code}`),
       el('p', { class: 'muted' }, 'Дата выхода — первый день вне группы')),
     el('div', { class: 'row-actions' },
+      el('label', { class: 'toggle' }, history, 'Показать выбывших'),
       button('Открыть журнал', () => openJournal(group.id), { variant: 'quiet' }),
       !group.archived && button('Добавить участника', () => memberEditor(context, group), { glyph: 'plus' }))),
-    members?.length ? dataTable(['Участник', 'Роль', 'Период', 'Состояние', 'Действия'],
-      members.map((member) => [
-        el('div', { class: 'table-person' }, member.user.name, el('small', { class: 'muted' }, member.user.email)),
-        roleLabel[member.user.role],
-        `${displayDate(member.joinedOn)} — ${member.leftOn ? displayDate(member.leftOn) : 'по настоящее время'}`,
-        activeAt(member, day) ? 'В группе' : dateInput(member.joinedOn) > day ? 'Ожидает вступления' : 'Выбыл',
-        button('Изменить период', () => memberEditor(context, group, member), { variant: 'quiet' }),
-      ])) : empty(members ? 'Участников пока нет' : 'Загрузка состава',
-      members && 'Добавьте зарегистрированных студентов и преподавателей'));
+    roster);
 
   return el('section', { class: 'page management-page' },
     pageHeader('Учебные группы', 'Состав групп и назначение преподавателей',
@@ -106,6 +120,7 @@ function memberEditor({ api, day, mutate }, group, member) {
   });
   openDialog({
     title: 'Добавить участника',
+    json: true,
     description: group.code,
     fields: [
       el('div', { class: 'search-line' }, lookup, button('Найти', search, { glyph: 'search' })),
@@ -121,11 +136,11 @@ function memberEditor({ api, day, mutate }, group, member) {
   void search();
 }
 
-function statusEditor(context, status) {
+function statusEditor(context, status, copy) {
   const { mutate } = context;
-  const name = input('name', status?.name, { required: true, maxlength: 60, placeholder: 'Например, Дистанционно' });
+  const name = input('name', status?.name ?? (copy && `${copy.name.slice(0, 52)} (копия)`), { required: true, maxlength: 60, placeholder: 'Например, Дистанционно' });
   const code = input('code', status?.code, { required: true, maxlength: 6, placeholder: 'Д' });
-  const color = input('color', status?.color ?? '#24735a', { type: 'color', required: true });
+  const color = input('color', status?.color ?? copy?.color ?? '#24735a', { type: 'color', required: true });
   const preview = mark({ name: 'Образец', code: status?.code ?? 'Д', color: color.value }, { large: true });
   const renderPreview = () => {
     preview.textContent = code.value.trim().toUpperCase() || 'Д';
@@ -134,14 +149,15 @@ function statusEditor(context, status) {
   color.addEventListener('input', renderPreview);
   code.addEventListener('input', renderPreview);
   openDialog({
-    title: status ? 'Редактировать статус' : 'Новый статус',
+    title: status ? 'Редактировать статус' : copy ? 'Дублировать статус' : 'Новый статус',
+    json: !status,
     fields: [
       field('Название', name),
       el('div', { class: 'status-fields' },
         field('Код в журнале', code, 'До 6 букв, цифр или знаков + и -'),
         field('Цвет', color),
         el('div', { class: 'field' }, el('span', {}, 'В журнале'), preview)),
-      toggle('countsAsPresent', 'Считать как присутствие', status?.countsAsPresent),
+      toggle('countsAsPresent', 'Считать как присутствие', status?.countsAsPresent ?? copy?.countsAsPresent),
       status && toggle('archived', 'Переместить в архив', status.archived),
       status && el('small', { class: 'muted' }, 'Ранее сохранённые отметки используют это название, код и цвет'),
     ],
@@ -166,7 +182,8 @@ export function renderStatuses(context) {
         statuses.map((status) => [
           status.name, mark(status, { large: true }), status.countsAsPresent ? 'Да' : 'Нет',
           status.archived ? 'В архиве' : el('span', { class: 'row-active' }, 'Действует'),
-          button('Изменить', () => statusEditor(context, status), { variant: 'quiet' }),
+          el('div', { class: 'row-actions' }, button('Изменить', () => statusEditor(context, status), { variant: 'quiet' }),
+            button('Дублировать', () => statusEditor(context, null, status), { variant: 'quiet' })),
         ])) : empty(statuses ? 'Статусов пока нет' : 'Загрузка статусов')));
 }
 

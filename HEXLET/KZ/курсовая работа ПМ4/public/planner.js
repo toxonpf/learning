@@ -1,8 +1,8 @@
-import { button, el, empty, field, openDialog, pageHeader, select } from './dom.js';
+import { button, confirmAction, el, empty, field, openDialog, pageHeader, select } from './dom.js';
 import { addDays, dateInput, weekOf } from './format.js';
 import { calendarPanels, roomPanels } from './planner-resources.js';
 import { participantPanels, studyPanels } from './planner-study.js';
-import { dateField, gridFields, panel, rangeTitle, saveChanges, textField } from './planner-controls.js';
+import { copyName, dateField, gridFields, panel, rangeTitle, saveChanges, textField } from './planner-controls.js';
 import { weekControl, weekGrid } from './schedule.js';
 
 const sections = [
@@ -15,20 +15,21 @@ const sections = [
 
 let activeSection = 'calendar';
 
-function editPeriod(context, plan) {
-  const start = plan?.startsOn ?? weekOf(context.day).from;
+function editPeriod(context, plan, copy) {
+  const start = (plan ?? copy)?.startsOn ?? weekOf(context.day).from;
   openDialog({
-    title: plan ? 'Изменить учебный период' : 'Новый учебный период',
+    title: plan ? 'Изменить учебный период' : copy ? 'Дублировать учебный период' : 'Новый учебный период',
+    json: !plan,
     description: 'Диапазон дат, на который нужно составить расписание. Длина периода — до 185 дней.',
     fields: [
-      textField('Название учебного периода', 'name', plan?.name, 120, { placeholder: 'Например, Осенний семестр' }),
+      textField('Название учебного периода', 'name', plan?.name ?? copyName(copy?.name), 120, { placeholder: 'Например, Осенний семестр' }),
       gridFields(dateField('Начало периода', 'startsOn', start),
-        dateField('Конец периода', 'endsOn', plan?.endsOn ?? addDays(start, 13))),
+        dateField('Конец периода', 'endsOn', (plan ?? copy)?.endsOn ?? addDays(start, 13))),
     ],
     submitLabel: plan ? 'Сохранить' : 'Создать период',
     onSubmit: (values) => {
       if (plan) return saveChanges(context, (data) => Object.assign(data, values));
-      return context.mutate('/schedule/plans', 'POST', values, 'Учебный период создан', {
+      return context.mutate('/schedule/plans', 'POST', { ...values, ...(copy && { sourceId: copy.id }) }, 'Учебный период создан', {
         beforeRefresh: (created) => {
           activeSection = 'calendar';
           context.selectPlan(created.id, false);
@@ -76,6 +77,7 @@ function processPublication(context, publish) {
     description: publish ? 'Студенты и преподаватели увидят назначенные им занятия.' :
       'Этот период исчезнет из расписаний студентов и преподавателей. Черновик сохранится.',
     submitLabel: publish ? 'Опубликовать' : 'Снять с публикации',
+    confirmation: publish ? null : plan.name,
     onSubmit: () => context.mutate(`/schedule/plans/${plan.id}/${publish ? 'publish' : 'unpublish'}`, 'POST',
       { revision: plan.revision, ...(publish && { draftId: plan.draft.id }) },
       publish ? 'Расписание опубликовано' : 'Публикация снята'),
@@ -130,7 +132,13 @@ function periodSummary(context) {
     el('div', { class: 'planner-period-top' },
       field('Учебный период', chooser),
       el('div', { class: 'planner-period-actions' },
-        button('Параметры периода', () => editPeriod(context, plan), { variant: 'quiet' }), generateControl(context))),
+        button('Параметры периода', () => editPeriod(context, plan), { variant: 'quiet' }),
+        button('Дублировать', () => editPeriod(context, null, plan), { variant: 'quiet' }),
+        !plan.publishedAt && button('Удалить период', () => confirmAction({
+          title: 'Удалить учебный период?', code: plan.name, submitLabel: 'Удалить период',
+          onSubmit: () => context.mutate(`/schedule/plans/${plan.id}`, 'DELETE', { revision: plan.revision },
+            'Период удалён', { beforeRefresh: () => context.selectPlan(null, false) }),
+        }), { variant: 'quiet' }), generateControl(context))),
     el('div', { class: 'planner-period-meta' },
       el('span', { class: 'planner-period-date' }, rangeTitle(plan.startsOn, plan.endsOn)),
       el('span', { class: `planner-state ${status === 'Опубликовано' ? 'is-published' : ''}` }, status),

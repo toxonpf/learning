@@ -58,6 +58,7 @@ export const configSchema = z.strictObject({
 });
 
 export const startPlan = z.strictObject({ name: text(120), startsOn: isoDay, endsOn: isoDay });
+export const createPlanRequest = startPlan.extend({ sourceId: uuid.optional() });
 export const planUpdate = startPlan.extend({ revision: int(1, 2147483646), config: configSchema });
 export const generationRequest = z.strictObject({ revision: int(1, 2147483646) });
 export const publishRequest = generationRequest.extend({ draftId: uuid });

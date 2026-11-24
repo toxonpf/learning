@@ -4,7 +4,7 @@ import { isoDay } from '../lib/dates.js';
 import { read, send } from '../lib/http.js';
 import { uuid, uuidParams } from '../lib/validation.js';
 import { requireRole } from '../middleware/auth.js';
-import { generationRequest, planUpdate, profileUpdate, publishRequest, startPlan } from './config.js';
+import { createPlanRequest, generationRequest, planUpdate, profileUpdate, publishRequest } from './config.js';
 import * as schedule from './service.js';
 
 const range = z.strictObject({ from: isoDay, to: isoDay });
@@ -19,8 +19,10 @@ export function scheduleRoutes(db) {
   router.get('/planner', async (req, res) => send(res, await schedule.getPlanner(db, read(selection, req.query).id)));
   router.get('/people', async (req, res) => send(res, await schedule.listPeople(db, read(people, req.query))));
   router.patch('/people/:id', async (req, res) => send(res, await schedule.updateProfile(db, id(req), read(profileUpdate, req.body))));
-  router.post('/plans', async (req, res) => send(res, await schedule.createPlan(db, read(startPlan, req.body)), 201));
+  router.post('/plans', async (req, res) => send(res, await schedule.createPlan(db, read(createPlanRequest, req.body)), 201));
   router.put('/plans/:id', async (req, res) => send(res, await schedule.savePlan(db, id(req), read(planUpdate, req.body))));
+  router.delete('/plans/:id', async (req, res) =>
+    send(res, await schedule.deletePlan(db, id(req), read(generationRequest, req.body).revision)));
   router.post('/plans/:id/generate', async (req, res) =>
     send(res, await schedule.generatePlan(db, id(req), read(generationRequest, req.body).revision)));
   router.post('/plans/:id/publish', async (req, res) => send(res, await schedule.publishPlan(db, id(req), read(publishRequest, req.body))));

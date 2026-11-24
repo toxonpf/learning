@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Подключение Google Календаря</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="page">
+    <h1>Подключение Google Календаря</h1>
+    <ol>
+      <li>В проекте <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com">Google Cloud</a> включите Google Calendar API.</li>
+      <li>Настройте экран согласия OAuth и создайте идентификатор клиента типа «Веб-приложение». Для приложения в режиме тестирования добавьте нужные Google-аккаунты в список тестовых пользователей.</li>
+      <li>Добавьте разрешённый URI перенаправления <code>http://127.0.0.1:3000/integrations/google-calendar/callback</code>. Для развёрнутого приложения используйте его HTTPS-адрес с тем же путём.</li>
+      <li>В <code>.env</code> укажите <code>GOOGLE_CALENDAR_CLIENT_ID</code>, <code>GOOGLE_CALENDAR_CLIENT_SECRET</code> и <code>GOOGLE_CALENDAR_REDIRECT_URI</code>, затем перезапустите сервер. Откройте платформу на том же адресе, что указан в URI перенаправления.</li>
+      <li>Откройте «Расписание», нажмите «Google Календарь», подключите личный аккаунт и подтвердите доступ. В Google появится отдельный календарь «Учебное расписание».</li>
+    </ol>
+    <p>Автоматическое обновление идёт из платформы в Google. Через кнопку «Синхронизировать сейчас» можно запросить обновление вручную. После отключения уже перенесённые события остаются в созданном календаре.</p>
+    <p><a href="https://developers.google.com/identity/protocols/oauth2/web-server">Документация Google OAuth</a></p>
+  </main>
+</body>
+</html>

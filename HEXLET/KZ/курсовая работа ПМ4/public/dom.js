@@ -1,3 +1,5 @@
+import { creationJson } from './form-json.js';
+
 const svgPaths = {
   book: '<path d="M4 19V5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 1 0-4h14M9 7h6M9 11h6"/>',
   journal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11M3 14h18"/>',
@@ -81,15 +83,28 @@ export function notify(message) {
   noticeTimer = setTimeout(() => { notice.hidden = true; }, 3600);
 }
 
-export function openDialog({ title, description, fields, onSubmit, submitLabel = 'Сохранить', onDelete, deleteLabel = 'Удалить' }) {
+export function confirmAction({ title, description, code = 'УДАЛИТЬ', submitLabel = 'Удалить', onSubmit }) {
+  return openDialog({ title, description, confirmation: code, submitLabel, onSubmit });
+}
+
+export function openDialog({ title, description, fields, onSubmit, submitLabel = 'Сохранить', onDelete,
+  deleteLabel = 'Удалить', deleteCode, confirmation, json = false }) {
   const dialog = document.getElementById('dialog');
   const opener = document.activeElement;
   const focusKey = opener?.dataset.focusKey;
   const error = el('p', { class: 'form-error', role: 'alert', hidden: true });
-  const submit = button(submitLabel, null, { type: 'submit', variant: 'primary' });
+  const submit = button(submitLabel, null, { type: 'submit', variant: confirmation ? 'danger' : 'primary', disabled: !!confirmation });
+  const matches = () => !confirmation || confirmationInput.value === confirmation;
+  const confirmationInput = confirmation && input('confirmation', '', {
+    required: true, autocomplete: 'off', spellcheck: 'false',
+    oninput: () => { submit.disabled = !matches(); },
+  });
   const cancel = button(onSubmit ? 'Отмена' : 'Закрыть', () => dialog.close(), { variant: 'quiet' });
   const dismiss = button('Закрыть окно', () => dialog.close(), { glyph: 'close', iconOnly: true, variant: 'quiet' });
-  const remove = onDelete && button(deleteLabel, () => execute(onDelete), { variant: 'danger' });
+  const remove = onDelete && button(deleteLabel, () => {
+    dialog.close();
+    confirmAction({ title: `${deleteLabel}?`, description, code: deleteCode, submitLabel: deleteLabel, onSubmit: onDelete });
+  }, { variant: 'danger' });
 
   async function execute(action, values) {
     error.hidden = true;
@@ -104,7 +119,7 @@ export function openDialog({ title, description, fields, onSubmit, submitLabel =
       error.textContent = problem.message;
       error.hidden = false;
     } finally {
-      submit.disabled = false;
+      submit.disabled = !matches();
       cancel.disabled = false;
       dismiss.disabled = false;
       if (remove) remove.disabled = false;
@@ -114,11 +129,13 @@ export function openDialog({ title, description, fields, onSubmit, submitLabel =
   const form = el('form', {
     onsubmit: (event) => {
       event.preventDefault();
-      if (onSubmit && !submit.disabled) void execute(onSubmit, formValues(form));
+      if (onSubmit && !submit.disabled && matches()) void execute(onSubmit, formValues(form));
     },
-  }, el('div', { class: 'dialog-body' }, fields, error),
+  }, el('div', { class: 'dialog-body' }, fields,
+    confirmationInput && field('Код подтверждения', confirmationInput, `Введите точно: ${confirmation}`), error),
   el('div', { class: 'dialog-actions' }, remove, el('div', { class: 'actions' }, cancel, onSubmit && submit)));
-  dialog.oncancel = (event) => { if (submit.disabled) event.preventDefault(); };
+  if (json) error.before(creationJson(form, title));
+  dialog.oncancel = (event) => { if (cancel.disabled) event.preventDefault(); };
   dialog.onclose = () => {
     if (dialog.open || !focusKey || opener.isConnected) return;
     document.querySelector(`[data-focus-key="${CSS.escape(focusKey)}"]`)?.focus({ preventScroll: true });

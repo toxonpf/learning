@@ -45,6 +45,10 @@ export function groupController(db) {
       const { id, memberId } = read(memberParams, req.params);
       send(res, await groups.updateMember(db, id, memberId, req.user, req.today, read(memberChanges, req.body)));
     },
+    removeMember: async (req, res) => {
+      const { id, memberId } = read(memberParams, req.params);
+      send(res, await groups.removeMember(db, id, memberId, req.user, req.today));
+    },
     users: async (req, res) => send(res, await groups.listUsers(db, read(userQuery, req.query))),
     updateRole: async (req, res) => {
       const { id } = read(uuidParams, req.params);

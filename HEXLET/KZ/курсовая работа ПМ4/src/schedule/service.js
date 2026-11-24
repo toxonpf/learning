@@ -73,12 +73,28 @@ export function updateProfile(db, id, data) {
   });
 }
 
-export async function createPlan(db, { name, startsOn, endsOn }) {
+export async function createPlan(db, { name, startsOn, endsOn, sourceId }) {
   validateRange(startsOn, endsOn);
+  const source = sourceId ? await getPlan(db, sourceId) : null;
+  const config = source ? structuredClone(source.config) : newConfig();
+  if (source) {
+    const offset = +asDate(startsOn) - +source.startsOn;
+    for (const row of [...config.periods, ...config.exceptions]) {
+      row.from = asDay(new Date(+asDate(row.from) + offset));
+      row.to = asDay(new Date(+asDate(row.to) + offset));
+    }
+    validateConfig({ startsOn, endsOn, config }, await catalog(db));
+  }
   const plan = await db.schedulePlan.create({
-    data: { name, startsOn: asDate(startsOn), endsOn: asDate(endsOn), config: newConfig() },
+    data: { name, startsOn: asDate(startsOn), endsOn: asDate(endsOn), config },
   });
   return localDates(plan);
+}
+
+export async function deletePlan(db, id, revision) {
+  const result = await db.schedulePlan.deleteMany({ where: { id, revision, publishedAt: null } });
+  if (!result.count) throw new HttpError(409, 'Обновите список периодов или сначала снимите расписание с публикации');
+  return { deleted: true };
 }
 
 export async function savePlan(db, id, body) {
@@ -203,12 +219,15 @@ export function unpublishPlan(db, id, revision) {
   });
 }
 
+export function scheduleAudience(user) {
+  return user.role === 'user' ? { studentIds: { has: user.id } } :
+    user.role === 'teacher' ? { teacherId: user.id } : {};
+}
+
 export async function getSchedule(db, user, { from, to }) {
   validateRange(from, to, 31);
-  const audience = user.role === 'user' ? { studentIds: { has: user.id } } :
-    user.role === 'teacher' ? { teacherId: user.id } : {};
   const events = await db.scheduledSession.findMany({
-    where: { date: { gte: asDate(from), lte: asDate(to) }, ...audience },
+    where: { date: { gte: asDate(from), lte: asDate(to) }, ...scheduleAudience(user) },
     select: eventFields,
     orderBy: [{ date: 'asc' }, { startMinute: 'asc' }, { audience: 'asc' }, { id: 'asc' }],
   });

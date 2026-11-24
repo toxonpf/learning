@@ -1,4 +1,4 @@
-import { button, el, empty, field, icon, input, mark, openDialog, pageHeader, select } from './dom.js';
+import { button, confirmAction, el, empty, field, icon, input, mark, openDialog, pageHeader, select } from './dom.js';
 import { activeAt, columnDate, dateInput, dayLabel, displayDate, initials, weekTitle } from './format.js';
 
 function roster(members) {
@@ -92,6 +92,21 @@ function addLessonButton(context, group) {
 
 function journalTable(context, rows, canWrite) {
   const { journal, day } = context;
+  const collator = new Intl.Collator('ru', { numeric: true });
+  let selectedHeading;
+  let order = 1;
+  function sortButton(heading, label, key, accessLabel) {
+    const trigger = el('button', { class: 'column-sort', type: 'button', 'aria-label': accessLabel, onclick: () => {
+      order = selectedHeading === heading ? -order : 1;
+      selectedHeading?.removeAttribute('aria-sort');
+      selectedHeading = heading;
+      heading.setAttribute('aria-sort', order === 1 ? 'ascending' : 'descending');
+      const arranged = rows.map((row, i) => ({ row, i, value: key(row) })).sort((a, b) =>
+        order * (typeof a.value === 'number' ? a.value - b.value : collator.compare(a.value, b.value)));
+      body.replaceChildren(...arranged.map(({ i }) => rendered[i]));
+    } }, label, el('span', { class: 'column-sort-arrow', 'aria-hidden': 'true' }));
+    return trigger;
+  }
   const groupedDates = [];
   journal.lessons.forEach((lesson) => {
     const key = dateInput(lesson.date);
@@ -114,14 +129,20 @@ function journalTable(context, rows, canWrite) {
         onclick: () => lessonActions(context, journal.group, lesson),
       }, info, icon('more'))
       : el('div', { class: 'lesson-button' }, info);
-    return el('th', { scope: 'col', class: newDay ? 'day-start' : '' }, content);
+    const heading = el('th', { scope: 'col', class: newDay ? 'day-start' : '' }, content);
+    heading.append(sortButton(heading, '', (row) => row.cells[index].status?.name ?? '',
+      `Сортировать по отметкам: ${lesson.title}, ${lesson.startTime}`));
+    return heading;
   });
+  const studentHeading = el('th', { rowspan: 2, scope: 'col', class: 'sticky-student' });
+  studentHeading.append(sortButton(studentHeading, 'Студент', (row) => row.person.name));
+  const totalHeading = el('th', { rowspan: 2, scope: 'col', class: 'row-total' });
+  totalHeading.append(sortButton(totalHeading, 'Отмечено', (row) => row.cells.filter((cell) => cell.value).length));
   const head = el('thead', {},
-    el('tr', {}, el('th', { rowspan: 2, scope: 'col', class: 'sticky-student' }, 'Студент'), dates,
-      el('th', { rowspan: 2, scope: 'col', class: 'row-total' }, 'Отмечено')),
+    el('tr', {}, studentHeading, dates, totalHeading),
     el('tr', {}, lessonHeaders));
 
-  const body = el('tbody', {}, rows.map(({ person, cells }) => {
+  const rendered = rows.map(({ person, cells }) => {
     const taken = cells.filter((cell) => cell.value).length;
     const possible = cells.filter((cell) => cell.member).length;
     return el('tr', {},
@@ -132,7 +153,8 @@ function journalTable(context, rows, canWrite) {
         return el('td', { class: `journal-cell ${dayStart ? 'day-start' : ''}` }, cellView(context, person, cell, canWrite));
       }),
       el('td', { class: 'row-total' }, el('span', { class: 'text-number' }, taken), el('span', { class: 'muted' }, ` / ${possible}`)));
-  }));
+  });
+  const body = el('tbody', {}, rendered);
   return el('div', { class: 'journal-scroll', tabindex: '0', role: 'region', 'aria-label': 'Таблица посещаемости' },
     el('table', { class: 'journal-table' }, head, body));
 }
@@ -166,6 +188,7 @@ function editMark({ journal, mutate }, person, { lesson, value, status }, canWri
   openDialog({
     title: person.name,
     description,
+    json: !value,
     fields: [
       field('Статус', select('statusId', [['', 'Выберите статус'], ...available.map((item) => [item.id, item.name])], status?.id)),
       field('Примечание', el('textarea', { name: 'note', rows: 3, maxlength: 500 }, value?.note ?? '')),
@@ -175,18 +198,20 @@ function editMark({ journal, mutate }, person, { lesson, value, status }, canWri
       : mutate('/attendance', 'POST', { lessonId: lesson.id, studentId: person.id, statusId, note }, 'Отметка сохранена'),
     onDelete: value && (() => mutate(`/attendance/${value.id}`, 'DELETE', null, 'Отметка удалена')),
     deleteLabel: 'Убрать отметку',
+    deleteCode: journal.group.code,
   });
 }
 
-function editLesson({ day, week, mutate, jumpToWeek }, group, existing) {
-  const date = day >= week.from && day <= week.to ? day : week.from;
+function editLesson({ day, week, mutate, jumpToWeek }, group, existing, copy) {
+  const date = copy ? dateInput(copy.date) : day >= week.from && day <= week.to ? day : week.from;
   openDialog({
-    title: existing ? 'Редактировать занятие' : 'Добавить занятие',
+    title: existing ? 'Редактировать занятие' : copy ? 'Дублировать занятие' : 'Добавить занятие',
+    json: !existing,
     description: existing ? `${group.code} · ${displayDate(existing.date)}` : group.code,
     fields: [
-      field('Название занятия', input('title', existing?.title, { placeholder: 'Например, Базы данных', required: true, maxlength: 120 })),
+      field('Название занятия', input('title', (existing ?? copy)?.title, { placeholder: 'Например, Базы данных', required: true, maxlength: 120 })),
       !existing && field('Дата занятия', input('date', date, { type: 'date', required: true })),
-      field('Время начала', input('startTime', existing?.startTime ?? '09:00', { type: 'time', required: true })),
+      field('Время начала', input('startTime', existing?.startTime ?? copy?.startTime ?? '09:00', { type: 'time', required: true })),
     ],
     submitLabel: existing ? 'Сохранить' : 'Добавить занятие',
     onSubmit: async (values) => {
@@ -212,10 +237,12 @@ function lessonActions(context, group, lesson) {
     description: `${displayDate(lesson.date)} · ${lesson.startTime}`,
     fields: el('div', { class: 'dialog-menu' },
       button('Редактировать занятие', () => switchTo(() => editLesson(context, group, lesson))),
+      button('Дублировать', () => switchTo(() => editLesson(context, group, null, lesson))),
       button('Заполнить пустые отметки', () => switchTo(() => fillLesson(context, lesson, activeStatuses)), { disabled: !activeStatuses.length }),
-      button('Удалить занятие', () => switchTo(() => openDialog({
+      button('Удалить занятие', () => switchTo(() => confirmAction({
         title: 'Удалить занятие?',
         description: lesson.title,
+        code: group.code,
         submitLabel: 'Удалить',
         onSubmit: () => mutate(`/lessons/${lesson.id}`, 'DELETE', null, 'Занятие удалено'),
       })), { variant: 'danger', disabled: hasMarks }),
@@ -226,6 +253,7 @@ function lessonActions(context, group, lesson) {
 function fillLesson({ mutate }, lesson, statuses) {
   openDialog({
     title: 'Заполнить пустые отметки',
+    json: true,
     description: 'Уже внесённые отметки сохранятся',
     fields: [field('Статус для пустых ячеек', select('statusId', [['', 'Выберите статус'],
       ...statuses.map(({ id, name }) => [id, name])]))],

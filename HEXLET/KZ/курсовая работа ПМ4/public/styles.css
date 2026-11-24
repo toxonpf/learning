@@ -451,3 +451,16 @@ textarea { resize: vertical; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; }
 }
+.column-sort { display: inline-flex; align-items: center; gap: 5px; padding: 3px 1px; color: inherit; font: inherit; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.column-sort-arrow::after { content: '↕'; opacity: .62; }
+[aria-sort="ascending"] .column-sort-arrow::after { content: '↑'; opacity: 1; }
+[aria-sort="descending"] .column-sort-arrow::after { content: '↓'; opacity: 1; }
+.form-json { padding: 10px; border: 1px solid var(--rule); border-radius: 8px; }
+.form-json summary { cursor: pointer; color: var(--accent); }
+.form-json > .field, .form-json > .row-actions, .json-guide { margin-top: 8px; }
+.form-json textarea { font-family: ui-monospace, Consolas, monospace; resize: vertical; }
+.json-guide { min-width: 0; overflow-wrap: anywhere; }
+.json-guide pre { overflow: auto; max-height: 180px; padding: 8px; background: var(--surface); }
+.json-guide dd { margin: 0 0 6px; color: var(--muted); }
+.json-guide ul { max-height: 120px; overflow: auto; }
+.json-feedback { font-size: .85rem; margin-top: 4px; }
