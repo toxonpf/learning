@@ -1,0 +1,30 @@
+{
+  "name": "attendance-journal-pm4",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.js",
+    "demo:defense": "node scripts/defense-demo.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "prisma": "6.19.3"
+  }
+}

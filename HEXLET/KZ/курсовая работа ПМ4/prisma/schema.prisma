@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  user
+  teacher
+  admin
+}
+
+model User {
+  id           String            @id @default(uuid()) @db.Uuid
+  email        String            @unique @db.VarChar(254)
+  name         String            @db.VarChar(120)
+  role         Role              @default(user)
+  passwordHash String
+  memberships  GroupMembership[]
+  editedMarks  Attendance[]     @relation("MarkedBy")
+  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+}
+
+model Group {
+  id          String            @id @default(uuid()) @db.Uuid
+  code        String            @unique @db.VarChar(32)
+  name        String            @db.VarChar(120)
+  archived    Boolean           @default(false)
+  memberships GroupMembership[]
+  lessons     Lesson[]
+}
+
+model GroupMembership {
+  id          String       @id @default(uuid()) @db.Uuid
+  groupId     String       @db.Uuid
+  userId      String       @db.Uuid
+  joinedOn    DateTime     @db.Date
+  leftOn      DateTime?    @db.Date
+  group       Group        @relation(fields: [groupId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  marks       Attendance[]
+
+  @@unique([id, groupId])
+  @@unique([groupId, userId, joinedOn])
+  @@index([userId, leftOn, joinedOn])
+}
+
+model Lesson {
+  id          String       @id @default(uuid()) @db.Uuid
+  groupId     String       @db.Uuid
+  title       String       @db.VarChar(120)
+  date        DateTime     @db.Date
+  startTime   String       @db.Char(5)
+  group       Group        @relation(fields: [groupId], references: [id])
+  marks       Attendance[]
+
+  @@unique([id, groupId])
+  @@unique([groupId, date, startTime])
+}
+
+model AttendanceStatus {
+  id              String       @id @default(uuid()) @db.Uuid
+  name            String       @unique @db.VarChar(60)
+  code            String       @unique @db.VarChar(6)
+  color           String       @db.Char(7)
+  countsAsPresent Boolean      @default(false)
+  archived        Boolean      @default(false)
+  marks           Attendance[]
+}
+
+model Attendance {
+  id           String           @id @default(uuid()) @db.Uuid
+  groupId      String           @db.Uuid
+  lessonId     String           @db.Uuid
+  membershipId String           @db.Uuid
+  statusId     String           @db.Uuid
+  markedById   String           @db.Uuid
+  note         String?          @db.VarChar(500)
+  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
+  lesson       Lesson           @relation(fields: [lessonId, groupId], references: [id, groupId])
+  membership   GroupMembership  @relation(fields: [membershipId, groupId], references: [id, groupId])
+  status       AttendanceStatus @relation(fields: [statusId], references: [id])
+  markedBy     User             @relation("MarkedBy", fields: [markedById], references: [id])
+
+  @@unique([lessonId, membershipId])
+  @@index([membershipId])
+  @@index([groupId])
+  @@index([statusId])
+}
