@@ -42,9 +42,13 @@ export function button(label, onClick, { glyph, variant = '', type = 'button', i
   }, glyph && icon(glyph), !iconOnly && label);
 }
 
+let fieldId = 0;
 export function field(label, input, hint) {
-  return el('label', { class: 'field' }, el('span', {}, label), input,
-    hint && el('small', { class: 'muted' }, hint));
+  const id = `field-${++fieldId}`;
+  input.setAttribute('aria-labelledby', id);
+  if (hint) input.setAttribute('aria-describedby', id + '-hint');
+  return el('label', { class: 'field' }, el('span', { id }, label), input,
+    hint && el('small', { id: id + '-hint', class: 'muted' }, hint));
 }
 
 export function input(name, value = '', options = {}) {

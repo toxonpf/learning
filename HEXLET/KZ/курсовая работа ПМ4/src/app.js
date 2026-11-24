@@ -11,6 +11,7 @@ export function createApp({ db, config, logger = console }) {
   app.use(helmet({
     contentSecurityPolicy: { directives: { upgradeInsecureRequests: null } },
   }));
+  app.use('/api/schedule/plans', express.json({ limit: '768kb' }));
   app.use('/api', express.json({ limit: '32kb' }), apiRoutes(db, config), notFound);
   app.use(express.static(publicPath));
   app.use(notFound);

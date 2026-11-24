@@ -1,6 +1,6 @@
 const DAY = 86_400_000;
 const date = (day) => new Date(`${day.slice(0, 10)}T12:00:00Z`);
-const addDays = (day, count) => new Date(date(day).getTime() + count * DAY).toISOString().slice(0, 10);
+export const addDays = (day, count) => new Date(date(day).getTime() + count * DAY).toISOString().slice(0, 10);
 const dates = (options) => new Intl.DateTimeFormat('ru-KZ', { timeZone: 'UTC', ...options });
 const full = dates({ day: 'numeric', month: 'long', year: 'numeric' });
 const monthAndDay = dates({ day: 'numeric', month: 'long' });

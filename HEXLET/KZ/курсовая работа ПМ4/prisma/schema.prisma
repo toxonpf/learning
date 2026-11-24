@@ -14,14 +14,18 @@ enum Role {
 }
 
 model User {
-  id           String            @id @default(uuid()) @db.Uuid
-  email        String            @unique @db.VarChar(254)
-  name         String            @db.VarChar(120)
-  role         Role              @default(user)
-  passwordHash String
-  memberships  GroupMembership[]
-  editedMarks  Attendance[]     @relation("MarkedBy")
-  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+  id               String             @id @default(uuid()) @db.Uuid
+  email            String             @unique @db.VarChar(254)
+  name             String             @db.VarChar(120)
+  firstName        String?            @db.VarChar(80)
+  lastName         String?            @db.VarChar(80)
+  patronymic       String?            @db.VarChar(80)
+  role             Role               @default(user)
+  passwordHash     String
+  memberships      GroupMembership[]
+  editedMarks      Attendance[]       @relation("MarkedBy")
+  scheduledLessons ScheduledSession[]
+  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
 }
 
 model Group {
@@ -34,14 +38,14 @@ model Group {
 }
 
 model GroupMembership {
-  id          String       @id @default(uuid()) @db.Uuid
-  groupId     String       @db.Uuid
-  userId      String       @db.Uuid
-  joinedOn    DateTime     @db.Date
-  leftOn      DateTime?    @db.Date
-  group       Group        @relation(fields: [groupId], references: [id])
-  user        User         @relation(fields: [userId], references: [id])
-  marks       Attendance[]
+  id       String       @id @default(uuid()) @db.Uuid
+  groupId  String       @db.Uuid
+  userId   String       @db.Uuid
+  joinedOn DateTime     @db.Date
+  leftOn   DateTime?    @db.Date
+  group    Group        @relation(fields: [groupId], references: [id])
+  user     User         @relation(fields: [userId], references: [id])
+  marks    Attendance[]
 
   @@unique([id, groupId])
   @@unique([groupId, userId, joinedOn])
@@ -49,13 +53,13 @@ model GroupMembership {
 }
 
 model Lesson {
-  id          String       @id @default(uuid()) @db.Uuid
-  groupId     String       @db.Uuid
-  title       String       @db.VarChar(120)
-  date        DateTime     @db.Date
-  startTime   String       @db.Char(5)
-  group       Group        @relation(fields: [groupId], references: [id])
-  marks       Attendance[]
+  id        String       @id @default(uuid()) @db.Uuid
+  groupId   String       @db.Uuid
+  title     String       @db.VarChar(120)
+  date      DateTime     @db.Date
+  startTime String       @db.Char(5)
+  group     Group        @relation(fields: [groupId], references: [id])
+  marks     Attendance[]
 
   @@unique([id, groupId])
   @@unique([groupId, date, startTime])
@@ -90,4 +94,44 @@ model Attendance {
   @@index([membershipId])
   @@index([groupId])
   @@index([statusId])
+}
+
+model SchedulePlan {
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String             @db.VarChar(120)
+  startsOn          DateTime           @db.Date
+  endsOn            DateTime           @db.Date
+  revision          Int                @default(1)
+  config            Json
+  draft             Json?
+  publishedRevision Int?
+  publishedDraftId  String?            @db.Uuid
+  publishedStartsOn DateTime?          @db.Date
+  publishedEndsOn   DateTime?          @db.Date
+  publishedAt       DateTime?          @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+  sessions          ScheduledSession[]
+}
+
+model ScheduledSession {
+  id          String       @id @default(uuid()) @db.Uuid
+  planId      String       @db.Uuid
+  teacherId   String       @db.Uuid
+  studentIds  String[]     @db.Uuid
+  groupIds    String[]     @db.Uuid
+  date        DateTime     @db.Date
+  startMinute Int
+  endMinute   Int
+  subject     String       @db.VarChar(120)
+  kind        String       @db.VarChar(48)
+  audience    String       @db.VarChar(220)
+  teacherName String       @db.VarChar(254)
+  room        String       @db.VarChar(120)
+  plan        SchedulePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  teacher     User         @relation(fields: [teacherId], references: [id])
+
+  @@index([date])
+  @@index([teacherId, date])
+  @@index([studentIds], type: Gin)
+  @@index([planId])
 }

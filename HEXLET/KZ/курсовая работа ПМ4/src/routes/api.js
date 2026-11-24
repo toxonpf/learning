@@ -5,6 +5,7 @@ import { authController } from '../controllers/auth.js';
 import { groupController } from '../controllers/groups.js';
 import { asDate, localDay } from '../lib/dates.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { scheduleRoutes } from '../schedule/routes.js';
 
 export function apiRoutes(db, config) {
   const router = Router();
@@ -31,6 +32,7 @@ export function apiRoutes(db, config) {
   router.post('/auth/login', authLimit, auth.login);
   router.use(requireAuth(db, JWT_SECRET));
   router.get('/auth/me', auth.me);
+  router.use('/schedule', scheduleRoutes(db));
 
   router.get('/groups', groups.list);
   router.post('/groups', admin, groups.create);

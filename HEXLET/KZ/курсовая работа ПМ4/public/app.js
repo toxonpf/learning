@@ -2,17 +2,24 @@ import { button, el, empty, field, icon, input, notify } from './dom.js';
 import { initials, roleLabel, today, weekOf } from './format.js';
 import { renderJournal } from './journal.js';
 import { renderGroups, renderStatuses, renderUsers } from './management.js';
+import { renderSchedule } from './schedule.js';
+import { renderPlanner } from './planner.js';
 
 const root = document.getElementById('app');
 const storageKey = 'attendance.accessToken';
 const defaultTimeZone = 'Asia/Almaty';
 const navItems = [
   ['journal', 'Посещаемость', 'journal'],
+  ['schedule', 'Расписание', 'calendar'],
+  ['planner', 'Планировщик', 'status'],
   ['groups', 'Учебные группы', 'groups'],
   ['users', 'Пользователи', 'users'],
   ['statuses', 'Настройки статусов', 'status'],
 ];
-const viewRenderers = { journal: renderJournal, groups: renderGroups, users: renderUsers, statuses: renderStatuses };
+const viewRenderers = {
+  journal: renderJournal, schedule: renderSchedule, planner: renderPlanner,
+  groups: renderGroups, users: renderUsers, statuses: renderStatuses,
+};
 
 let token = sessionStorage.getItem(storageKey);
 let user = null;
@@ -21,6 +28,7 @@ let day = today(timeZone);
 let week = weekOf(day);
 let groupId = null;
 let manageGroupId = null;
+let planId = null;
 let groups = [];
 let view = 'journal';
 let content = null;
@@ -143,7 +151,7 @@ function navButton(id, title, glyph) {
 function sidebar() {
   return el('aside', { class: 'sidebar' }, brand(),
     el('nav', { class: 'nav', 'aria-label': 'Разделы' },
-      (user.role === 'admin' ? navItems : navItems.slice(0, 1)).map((item) => navButton(...item))),
+      (user.role === 'admin' ? navItems : navItems.slice(0, 2)).map((item) => navButton(...item))),
     groups.length > 0 && el('nav', { class: 'group-nav', 'aria-label': 'Журналы групп' },
       el('p', {}, user.role === 'admin' ? 'Журналы групп' : 'Мои группы'),
       el('div', { class: 'group-links' }, groups.map((group) => el('button', {
@@ -169,7 +177,7 @@ function render() {
   const focus = document.activeElement?.dataset.focusKey;
   const context = {
     api, mutate, user, day, week, groups, groupId, manageGroupId, searchTerm,
-    loadJournal, jumpToWeek, goTo, selectManageGroup, openJournal, findUsers,
+    loadJournal, jumpToWeek, goTo, selectManageGroup, openJournal, findUsers, selectPlan, openSchedule, redraw: render,
     [view === 'groups' ? 'members' : view]: content,
   };
   const section = navItems.find(([id]) => id === view)[1];
@@ -214,6 +222,8 @@ async function reload({ allGroups = false, reset = false } = {}) {
       groups: manageGroupId && `/groups/${manageGroupId}/members`,
       users: `/users?${new URLSearchParams({ q: searchTerm })}`,
       statuses: '/statuses',
+      schedule: `/schedule?${new URLSearchParams(week)}`,
+      planner: planId ? `/schedule/planner?${new URLSearchParams({ id: planId })}` : '/schedule/planner',
     }[view];
     const loaded = path ? await api(path) : null;
     if (id === requestId) content = loaded;
@@ -239,6 +249,17 @@ function openJournal(id) {
 function selectManageGroup(id, refresh = true) {
   manageGroupId = id;
   if (refresh) void reload({ reset: true });
+}
+
+function selectPlan(id, refresh = true) {
+  planId = id;
+  if (refresh) void reload({ reset: true });
+}
+
+function openSchedule(date) {
+  jumpToWeek(date);
+  view = 'schedule';
+  void reload({ reset: true });
 }
 
 function jumpToWeek(date) {
@@ -270,6 +291,7 @@ function logout(message) {
   groups = [];
   groupId = null;
   manageGroupId = null;
+  planId = null;
   content = null;
   searchTerm = '';
   issue = null;
