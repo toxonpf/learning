@@ -1,6 +1,7 @@
-import { button, confirmAction, el, empty, field, input, select } from './dom.js';
+import { actionMenu, button, confirmAction, el, empty, field, input, select } from './dom.js';
 import { displayDate } from './format.js';
 import { sortableTable } from './table.js';
+import { datePicker, timePicker } from './pickers.js';
 
 export const weekdays = [['1', 'Пн'], ['2', 'Вт'], ['3', 'Ср'], ['4', 'Чт'], ['5', 'Пт'], ['6', 'Сб'], ['7', 'Вс']];
 export const names = (rows) => rows.map(({ id, name }) => [id, name]);
@@ -14,8 +15,8 @@ export function textField(label, name, value = '', max = 120, options = {}) {
 
 export const numberField = (label, name, value, min, max, required = false) =>
   field(label, input(name, value ?? '', { type: 'number', step: 1, min, max, required }));
-export const dateField = (label, name, value) => field(label, input(name, value, { type: 'date', required: true }));
-export const timeField = (label, name, value = '', required = true) => field(label, input(name, value, { type: 'time', required }));
+export const dateField = datePicker;
+export const timeField = (label, name, value, required = true) => timePicker(label, name, value, { required });
 
 export function optionalSelect(label, name, options, value, placeholder) {
   const control = select(name, [['', placeholder], ...options], value ?? '');
@@ -84,10 +85,11 @@ export function removeItem(context, collection, item, name, key = 'id') {
   });
 }
 
-export const editButton = (action, label = 'Изменить') => button(label, action, { variant: 'quiet' });
+export const editButton = (action, label = 'Изменить') => button(label, action, { variant: 'quiet', glyph: 'edit' });
 export const addButton = (label, action) => button(label, action, { glyph: 'plus' });
-export const actions = (...buttons) => el('div', { class: 'row-actions' }, buttons);
-export const duplicate = (action) => editButton(action, 'Дублировать');
+export const actions = (...buttons) => actionMenu('Действия записи', buttons);
+export const duplicate = (action) => button('Дублировать', action, { glyph: 'copy' });
+export const deleteButton = (action) => button('Удалить', action, { glyph: 'trash', variant: 'danger' });
 export const copyName = (name) => name ? `${name.slice(0, 112)} (копия)` : '';
 
 export function resourceTable(headers, rows) {

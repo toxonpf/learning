@@ -1,7 +1,6 @@
 import { activeOn } from '../lib/dates.js';
 import { HttpError } from '../lib/http.js';
 import { writeTransaction } from '../lib/transaction.js';
-import { requireGroup } from './groups.js';
 import { requireLesson } from './lessons.js';
 
 const related = {
@@ -19,7 +18,7 @@ function scope(user, today) {
 async function requireMark(db, id, user, today, options) {
   const mark = await db.attendance.findUnique({ where: { id, ...scope(user, today) }, include: related });
   if (!mark) throw new HttpError(404, 'Отметка не найдена');
-  await requireGroup(db, mark.groupId, user, today, options);
+  await requireLesson(db, mark.lessonId, user, today, options);
   return mark;
 }
 
@@ -41,8 +40,11 @@ async function requireStatus(db, id) {
 }
 
 async function resolveMember(db, lesson, userId) {
+  if (lesson.scheduleTeacherId && !lesson.scheduledStudentIds.includes(userId)) {
+    throw new HttpError(409, 'Студент не назначен на это занятие');
+  }
   const member = await db.groupMembership.findFirst({
-    where: { groupId: lesson.groupId, userId, user: { role: 'user' }, ...activeOn(lesson.date) },
+    where: { groupId: lesson.groupId, userId, user: { role: 'user', deletedAt: null }, ...activeOn(lesson.date) },
     select: { id: true },
   });
   if (!member) throw new HttpError(409, 'Студент не состоит в группе на дату занятия');
@@ -90,7 +92,9 @@ export function fillUnmarked(db, lessonId, user, today, statusId) {
     const lesson = await requireLesson(tx, lessonId, user, today, writable);
     await requireStatus(tx, statusId);
     const members = await tx.groupMembership.findMany({
-      where: { groupId: lesson.groupId, user: { role: 'user' }, ...activeOn(lesson.date) },
+      where: { groupId: lesson.groupId, user: { role: 'user', deletedAt: null }, ...activeOn(lesson.date),
+        ...(lesson.scheduleTeacherId && { userId: { in: lesson.scheduledStudentIds } }),
+      },
       select: { id: true },
     });
     const data = members.map((member) => markData(lesson, member, user, statusId));

@@ -13,6 +13,8 @@ export function today(timeZone = 'Asia/Almaty') {
 }
 
 export const dateInput = (day) => day?.slice(0, 10) ?? '';
+export const isDate = (day) => typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) &&
+  day >= '0001-01-01' && Number.isFinite(+date(day)) && date(day).toISOString().startsWith(day);
 export const displayDate = (day) => full.format(date(day));
 export const columnDate = (day) => weekdayAndDate.format(date(day));
 export const dayLabel = (day) => weekday.format(date(day));

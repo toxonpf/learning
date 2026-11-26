@@ -2,7 +2,7 @@ import { button, el, empty, field, input, notify, openDialog, select } from './d
 import { roleLabel } from './format.js';
 import { sortable } from './table.js';
 import {
-  actions, addButton, checklist, checkbox, duplicate, editButton, editItem, featureFields, featureValues, gridFields,
+  actions, addButton, checklist, checkbox, deleteButton, duplicate, editButton, editItem, featureFields, featureValues, gridFields,
   isChecked, names, number, numberField, optionalSelect, panel, picked, removeItem, resourceTable,
   textField, weekdays, wholeName,
 } from './planner-controls.js';
@@ -127,7 +127,7 @@ export function participantPanels(context) {
         const code = codes([item.groupId], groups);
         return [code, item.studyYear ?? '—', item.capacity ?? '—', item.split?.count ?? '—',
           actions(editButton(() => groupEditor(context, item)), duplicate(() => groupEditor(context, null, item)),
-            editButton(() => removeItem(context, 'groups', item, code, 'groupId'), 'Удалить'))];
+            deleteButton(() => removeItem(context, 'groups', item, code, 'groupId')))];
       })) : null, addButton('Добавить группу', () => groupEditor(context))),
     panel('Преподаватели учебного периода', 'Выберите дисциплины, дни доступности и лимиты нагрузки.',
       config.teachers.length ? resourceTable(['Преподаватель', 'Дисциплины', 'Назначения', 'Действия'], config.teachers.map((item) => {
@@ -135,7 +135,7 @@ export function participantPanels(context) {
         return [name, item.disciplineIds.map((id) => disciplineNames.get(id)).join(', '),
           item.groupMode === 'any' ? 'Все группы' : codes(item.groupIds, groups),
           actions(editButton(() => teacherEditor(context, item)), duplicate(() => teacherEditor(context, null, item)),
-            editButton(() => removeItem(context, 'teachers', item, name, 'userId'), 'Удалить'))];
+            deleteButton(() => removeItem(context, 'teachers', item, name, 'userId')))];
       })) : null, addButton('Добавить преподавателя', () => teacherEditor(context))),
     profilePanel(context));
 }
@@ -160,7 +160,7 @@ function profilePanel(context) {
         ? resourceTable(['Аккаунт', 'Роль', 'ФИО для сортировки', 'Действия'], people.map((person) => [
           el('div', { class: 'table-person' }, person.name, el('small', { class: 'muted' }, person.email)),
           roleLabel[person.role], [person.lastName, person.firstName, person.patronymic].filter(Boolean).join(' ') || '—',
-          editButton(() => editProfile(context, person, search), 'Редактировать ФИО'),
+          actions(editButton(() => editProfile(context, person, search), 'Редактировать ФИО')),
         ])) : empty('Участники не найдены'));
       if (people.length === 40) rows.append(el('p', { class: 'planner-edge muted' }, 'Первые 40 результатов. Уточните поиск по имени или группе.'));
     } catch (error) {
@@ -252,6 +252,6 @@ export function studyPanels(context) {
           codes(item.groupIds, groups) + (item.split ? ' · по подгруппам' : ''),
           sortable(`${item.totalHours} ак. ч. · по ${item.hoursPerMeeting} ак. ч.`, item.totalHours),
           actions(editButton(() => requirementEditor(context, item)), duplicate(() => requirementEditor(context, null, item)),
-            editButton(() => removeItem(context, 'requirements', item, subject), 'Удалить'))];
+            deleteButton(() => removeItem(context, 'requirements', item, subject)))];
       })) : null, addButton('Добавить строку плана', () => requirementEditor(context))));
 }

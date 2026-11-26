@@ -51,7 +51,8 @@ export function attendanceController(db) {
     },
     lesson: async (req, res) => {
       const { id } = read(uuidParams, req.params);
-      send(res, await lessons.requireLesson(db, id, req.user, req.today));
+      const { scheduledStudentIds, ...lesson } = await lessons.requireLesson(db, id, req.user, req.today);
+      send(res, req.user.role === 'user' ? lesson : { ...lesson, scheduledStudentIds });
     },
     createLesson: async (req, res) => {
       const { id } = read(uuidParams, req.params);

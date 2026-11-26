@@ -1,10 +1,12 @@
-import { button, el, empty, field, icon, input, notify } from './dom.js';
-import { initials, roleLabel, today, weekOf } from './format.js';
+import { button, closeDialogs, el, empty, field, icon, input, notify } from './dom.js';
+import { addDays, initials, isDate, roleLabel, today, weekOf } from './format.js';
 import { renderJournal } from './journal.js';
 import { renderGroups, renderStatuses, renderUsers } from './management.js';
 import { renderSchedule } from './schedule.js';
-import { renderPlanner } from './planner.js';
+import { plannerTabs, renderPlanner } from './planner.js';
 import { creationJson } from './form-json.js';
+import { themeControl } from './theme.js';
+import { createNavigation } from './navigation.js';
 
 const root = document.getElementById('app');
 const storageKey = 'attendance.accessToken';
@@ -26,10 +28,13 @@ let token = sessionStorage.getItem(storageKey);
 let user = null;
 let timeZone = defaultTimeZone;
 let day = today(timeZone);
+let selectedDate = day;
 let week = weekOf(day);
 let groupId = null;
 let manageGroupId = null;
 let planId = null;
+let plannerTab = 'calendar';
+let navigation;
 let groups = [];
 let view = 'journal';
 let content = null;
@@ -131,7 +136,7 @@ function renderAuth(message) {
   error, submit);
   if (registering) error.before(creationJson(form, 'Регистрация аккаунта'));
   root.replaceChildren(el('main', { class: 'auth-layout' },
-    el('div', { class: 'auth-main' }, brand(), el('div', { class: 'auth-content' },
+    el('div', { class: 'auth-main' }, el('header', { class: 'auth-header' }, brand(), themeControl()), el('div', { class: 'auth-content' },
       el('h1', {}, registering ? 'Регистрация' : 'Войти в журнал'),
       el('p', { class: 'muted' }, registering ? 'Создайте аккаунт, чтобы получить доступ к своей группе' : 'Используйте свой аккаунт для доступа к учебному журналу'),
       form, el('div', { class: 'auth-switch' }, registering ? 'Уже есть аккаунт?' : 'Впервые здесь?',
@@ -172,14 +177,16 @@ function sidebar() {
 
 function render() {
   if (!user) return renderAuth();
-  const scroll = root.querySelector('.journal-scroll');
+  const scroll = root.querySelector('.journal-scroll, .calendar-scroll');
+  const scrollClass = scroll?.classList.contains('journal-scroll') ? '.journal-scroll' : '.calendar-scroll';
   const left = scroll?.scrollLeft ?? 0;
   const top = scroll?.scrollTop ?? 0;
   const navScroll = root.querySelector('.group-links')?.scrollTop ?? 0;
   const focus = document.activeElement?.dataset.focusKey;
   const context = {
-    api, mutate, user, day, week, groups, groupId, manageGroupId, searchTerm,
-    loadJournal, jumpToWeek, goTo, selectManageGroup, openJournal, findUsers, selectPlan, openSchedule, redraw: render,
+    api, mutate, user, day, week, selectedDate, groups, groupId, manageGroupId, searchTerm, plannerTab,
+    pickDate, moveDate, showToday, jumpToWeek, goTo, selectManageGroup, openJournal, findUsers, selectPlan,
+    selectPlannerTab, openSchedule, redraw: render,
     [view === 'groups' ? 'members' : view]: content,
   };
   const section = navItems.find(([id]) => id === view)[1];
@@ -188,11 +195,14 @@ function render() {
       button('Повторить', () => reload({ allGroups: true }), { variant: 'primary' })))
     : viewRenderers[view](context);
   const app = el('div', { class: 'workspace' }, sidebar(), el('main', { id: 'main', class: 'workspace-main' },
-    el('div', { class: 'topbar' }, el('span', {}, 'Учебный журнал'),
-      el('span', { class: 'breadcrumb-divider', 'aria-hidden': 'true' }, '/'), el('span', {}, section)),
+    el('div', { class: 'topbar' },
+      navigation?.controls(),
+      el('div', { class: 'breadcrumbs' }, el('span', {}, 'Учебный журнал'),
+        el('span', { class: 'breadcrumb-divider', 'aria-hidden': 'true' }, '/'), el('span', {}, section)),
+      themeControl()),
     page));
   root.replaceChildren(app);
-  const currentScroll = root.querySelector('.journal-scroll');
+  const currentScroll = scroll && root.querySelector(scrollClass);
   if (currentScroll) {
     currentScroll.scrollLeft = left;
     currentScroll.scrollTop = top;
@@ -232,50 +242,108 @@ async function reload({ allGroups = false, reset = false } = {}) {
   } catch (error) {
     if (id === requestId) issue = error;
   }
-  if (id === requestId && user) render();
+  if (id === requestId && user) {
+    if (!issue && view === 'planner') planId = content?.plan?.id ?? null;
+    savePage();
+    render();
+  }
+}
+
+function savePage(push = false) {
+  navigation?.record({
+    view, date: selectedDate, group: view === 'journal' ? groupId : view === 'groups' ? manageGroupId : null,
+    plan: view === 'planner' ? planId : null, tab: view === 'planner' ? plannerTab : null,
+    search: view === 'users' ? searchTerm : null,
+  }, { push });
+}
+
+const routeId = (id) => typeof id === 'string' && /^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(id) ? id : null;
+
+function readPage(route = {}) {
+  const allowed = user.role === 'admin' ? navItems : navItems.slice(0, 2);
+  view = allowed.some(([name]) => name === route.view) ? route.view : 'journal';
+  jumpToWeek(isDate(route.date) ? route.date : day);
+  if (view === 'journal') groupId = routeId(route.group);
+  if (view === 'groups') manageGroupId = routeId(route.group);
+  if (view === 'planner') {
+    planId = routeId(route.plan);
+    plannerTab = plannerTabs.includes(route.tab) ? route.tab : plannerTabs[0];
+  }
+  if (view === 'users') searchTerm = typeof route.search === 'string' ? route.search : '';
+}
+
+function navigate({ allGroups = true } = {}) {
+  savePage(true);
+  void reload({ reset: true, allGroups });
 }
 
 function goTo(newView) {
   if (view === newView && !issue) return;
+  const changed = view !== newView;
   view = newView;
-  void reload({ reset: true });
+  if (changed) navigate({ allGroups: view === 'schedule' || view === 'journal' });
+  else void reload({ reset: true, allGroups: true });
 }
 
-function openJournal(id) {
-  if (groupId === id && view === 'journal' && !issue) return;
+function openJournal(id, date) {
+  if (!date && groupId === id && view === 'journal' && !issue) return;
   view = 'journal';
   groupId = id;
-  void reload({ reset: true });
+  if (date) jumpToWeek(date);
+  navigate({ allGroups: false });
 }
 
 function selectManageGroup(id, refresh = true) {
+  const changed = manageGroupId !== id;
   manageGroupId = id;
-  if (refresh) void reload({ reset: true });
+  if (refresh && changed) navigate({ allGroups: false });
 }
 
 function selectPlan(id, refresh = true) {
+  const changed = planId !== id;
   planId = id;
-  if (refresh) void reload({ reset: true });
+  if (refresh && changed) navigate({ allGroups: false });
+}
+
+function selectPlannerTab(tab, refresh = true) {
+  if (plannerTab === tab) return;
+  plannerTab = tab;
+  if (refresh) {
+    savePage(true);
+    render();
+  }
 }
 
 function openSchedule(date) {
   jumpToWeek(date);
   view = 'schedule';
-  void reload({ reset: true });
+  navigate();
 }
 
 function jumpToWeek(date) {
+  selectedDate = date;
   week = weekOf(date);
 }
 
-function loadJournal(offset, reset = false) {
+function pickDate(date) {
+  if (selectedDate === date) return;
+  jumpToWeek(date);
+  savePage();
+  void reload();
+}
+
+function moveDate(days) {
+  pickDate(addDays(selectedDate, days));
+}
+
+function showToday() {
   day = today(timeZone);
-  week = weekOf(reset ? day : week.from, offset);
-  void reload({ reset: true });
+  pickDate(day);
 }
 
 async function findUsers(value) {
   searchTerm = value.trim();
+  savePage();
   await reload({ reset: true });
 }
 
@@ -294,13 +362,17 @@ function logout(message) {
   groupId = null;
   manageGroupId = null;
   planId = null;
+  plannerTab = 'calendar';
   content = null;
   searchTerm = '';
   issue = null;
   view = 'journal';
   authMode = 'login';
-  document.getElementById('dialog').close();
+  closeDialogs();
   document.getElementById('notice').hidden = true;
+  navigation?.detach();
+  navigation = null;
+  history.replaceState(null, '', location.pathname);
   renderAuth(message);
 }
 
@@ -311,12 +383,18 @@ async function boot() {
   try {
     ({ user, timeZone } = await api('/auth/me'));
     day = today(timeZone);
-    week = weekOf(day);
     const result = new URLSearchParams(window.location.search).get('googleCalendar');
+    navigation?.detach();
+    navigation = createNavigation(user.id, (route) => {
+      closeDialogs();
+      readPage(route);
+      void reload({ reset: true, allGroups: true });
+    }, ['view', 'date', 'group', 'plan', 'tab']);
+    readPage(navigation.initial);
     if (result) {
       view = 'schedule';
-      window.history.replaceState(null, '', window.location.pathname);
     }
+    savePage();
     await reload({ allGroups: true });
     if (result === 'connected') notify('Google Календарь подключён. Расписание появится после синхронизации.');
     if (result === 'error') {

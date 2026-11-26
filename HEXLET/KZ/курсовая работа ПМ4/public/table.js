@@ -1,4 +1,5 @@
 import { el } from './dom.js';
+import { horizontalScroll } from './horizontal-scroll.js';
 
 const collator = new Intl.Collator('ru', { numeric: true, sensitivity: 'base' });
 export const sortable = (value, sortValue) => ({ value, sortValue });
@@ -9,7 +10,8 @@ export function sortableTable(headers, rows, { wrapper = 'management-scroll', ta
   let direction = 1;
   const keys = rows.map((row) => row.map((cell) => cell?.sortValue ?? cell?.textContent?.trim() ?? cell));
   const rendered = rows.map((row) => el('tr', {}, row.map((cell, index) => el(
-    index ? 'td' : 'th', index ? {} : { scope: 'row' }, cell?.sortValue === undefined ? cell : cell.value,
+    index ? 'td' : 'th', index ? { class: headers[index] === 'Действия' ? 'table-actions' : undefined } : { scope: 'row' },
+    cell?.sortValue === undefined ? cell : cell.value,
   ))));
   function draw() {
     const order = rendered.map((_, index) => index);
@@ -23,7 +25,10 @@ export function sortableTable(headers, rows, { wrapper = 'management-scroll', ta
   }
   const headings = headers.map((label, index) => {
     const heading = el('th', { scope: 'col' });
-    if (label === 'Действия') heading.append(label);
+    if (label === 'Действия') {
+      heading.classList.add('table-actions');
+      heading.append(el('span', { class: 'sr-only' }, label));
+    }
     else heading.append(el('button', { type: 'button', class: 'column-sort', onclick: () => {
       direction = column === index ? -direction : 1;
       column = index;
@@ -36,5 +41,6 @@ export function sortableTable(headers, rows, { wrapper = 'management-scroll', ta
     return heading;
   });
   draw();
-  return el('div', { class: wrapper }, el('table', { class: table }, el('thead', {}, el('tr', {}, headings)), body));
+  const grid = el('table', { class: table }, el('thead', {}, el('tr', {}, headings)), body);
+  return horizontalScroll(grid, { className: wrapper, label: headers[0], focusKey: 'table-' + headers.slice(0, 3).join('-') });
 }

@@ -3,6 +3,7 @@ import { asDate, DAY, isoDay } from '../lib/dates.js';
 import { HttpError, read, send } from '../lib/http.js';
 import { changes, text, uuid, uuidParams } from '../lib/validation.js';
 import * as groups from '../services/groups.js';
+import { deleteUser } from '../services/users.js';
 
 const groupFields = {
   code: text(32).toUpperCase().pipe(z.string().max(32).regex(/^[\p{L}\p{N}][\p{L}\p{N} ./_-]*$/u)),
@@ -17,6 +18,7 @@ const memberParams = z.object({ id: uuid, memberId: uuid });
 const accountRole = z.enum(['user', 'teacher']);
 const userQuery = z.strictObject({ q: z.string().trim().max(120).default(''), role: accountRole.optional() });
 const roleBody = z.strictObject({ role: accountRole });
+const userDeletion = z.strictObject({ confirmation: z.string().min(1).max(254) });
 
 export function groupController(db) {
   return {
@@ -54,6 +56,11 @@ export function groupController(db) {
       const { id } = read(uuidParams, req.params);
       const { role } = read(roleBody, req.body);
       send(res, await groups.updateUserRole(db, id, role));
+    },
+    removeUser: async (req, res) => {
+      const { id } = read(uuidParams, req.params);
+      const { confirmation } = read(userDeletion, req.body);
+      send(res, await deleteUser(db, id, confirmation, req.today));
     },
   };
 }

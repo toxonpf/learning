@@ -19,7 +19,7 @@ export function requireAuth(db, secret) {
       throw new HttpError(401, 'Срок сеанса истёк или токен недействителен');
     }
     if (!uuid.safeParse(id).success) throw new HttpError(401, 'Токен недействителен');
-    const user = await db.user.findUnique({ where: { id }, select: publicUser });
+    const user = await db.user.findUnique({ where: { id, deletedAt: null }, select: publicUser });
     if (!user) throw new HttpError(401, 'Аккаунт не найден');
     req.user = user;
     next();

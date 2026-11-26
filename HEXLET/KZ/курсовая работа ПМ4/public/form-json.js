@@ -1,7 +1,7 @@
 import { button, el, field } from './dom.js';
 
 const controls = (form) => [...form.querySelectorAll('input[name], select[name], textarea[name]')]
-  .filter((node) => !node.disabled && !node.closest('[hidden]') && node.type !== 'search' && !node.dataset.noJson);
+  .filter((node) => node.name && !node.disabled && !node.closest('[hidden]') && node.type !== 'search' && !node.dataset.noJson);
 
 function fieldValue(node) {
   if (node.type === 'checkbox') return node.checked;

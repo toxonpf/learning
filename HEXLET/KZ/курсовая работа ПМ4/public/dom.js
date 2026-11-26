@@ -11,7 +11,13 @@ const svgPaths = {
   right: '<path d="m9 18 6-6-6-6"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  theme: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
   more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+  edit: '<path d="m14 5 5 5M4 20l4.5-1 11-11a2 2 0 0 0-3-3l-11 11L4 20Z"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 4H6a2 2 0 0 0-2 2v10"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5"/>',
+  external: '<path d="M13 5h6v6m0-6-8 8m6 0v6H5V7h6"/>',
   check: '<path d="m5 12 4 4L19 6"/>',
   close: '<path d="m18 6-12 12M6 6l12 12"/>',
   search: '<circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/>',
@@ -42,6 +48,41 @@ export function button(label, onClick, { glyph, variant = '', type = 'button', i
     type, disabled, onclick: onClick,
     ...(iconOnly && { 'aria-label': label, title: label }),
   }, glyph && icon(glyph), !iconOnly && label);
+}
+
+let actionMenuId = 0;
+export function actionMenu(label, items, focusKey) {
+  const choices = items.filter(Boolean);
+  if (!choices.length) return null;
+  const popup = el('div', { id: `action-menu-${++actionMenuId}`, class: 'action-menu',
+    popover: 'auto', role: 'group', 'aria-label': label });
+  const trigger = button(label, null, { glyph: 'more', variant: 'action-trigger', iconOnly: true });
+  trigger.setAttribute('popovertarget', popup.id);
+  trigger.setAttribute('aria-controls', popup.id);
+  trigger.setAttribute('aria-expanded', 'false');
+  if (focusKey) trigger.dataset.focusKey = focusKey;
+  function position() {
+    if (!popup.matches(':popover-open')) return;
+    const { top, right, bottom } = trigger.getBoundingClientRect();
+    const { width, height } = popup.getBoundingClientRect();
+    const viewport = document.documentElement;
+    const y = bottom + height + 12 <= viewport.clientHeight ? bottom + 6 : top - height - 6;
+    popup.style.left = Math.max(8, Math.min(right - width, viewport.clientWidth - width - 8)) + 'px';
+    popup.style.top = Math.max(8, y) + 'px';
+  }
+  popup.addEventListener('beforetoggle', (event) => {
+    trigger.setAttribute('aria-expanded', String(event.newState === 'open'));
+    if (event.newState === 'open') requestAnimationFrame(position);
+  });
+  popup.addEventListener('click', (event) => {
+    if (event.target.closest('button:not(:disabled), a[href]')) {
+      popup.hidePopover();
+      trigger.focus({ preventScroll: true });
+    }
+  }, { capture: true });
+  popup.append(...choices);
+  popup.querySelector('button:not(:disabled), a[href]')?.setAttribute('autofocus', '');
+  return el('div', { class: 'action-menu-control' }, trigger, popup);
 }
 
 let fieldId = 0;
@@ -85,6 +126,11 @@ export function notify(message) {
 
 export function confirmAction({ title, description, code = 'УДАЛИТЬ', submitLabel = 'Удалить', onSubmit }) {
   return openDialog({ title, description, confirmation: code, submitLabel, onSubmit });
+}
+
+export function closeDialogs() {
+  for (const picker of document.querySelectorAll('.picker-dialog[open]')) picker.close();
+  document.getElementById('dialog').close();
 }
 
 export function openDialog({ title, description, fields, onSubmit, submitLabel = 'Сохранить', onDelete,

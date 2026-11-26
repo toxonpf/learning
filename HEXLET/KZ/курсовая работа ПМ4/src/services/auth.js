@@ -22,7 +22,7 @@ export async function register(db, secret, { email, name, password }) {
 }
 
 export async function login(db, secret, { email, password }) {
-  const stored = await db.user.findUnique({ where: { email } });
+  const stored = await db.user.findUnique({ where: { email, deletedAt: null } });
   if (!await verifyPassword(password, stored?.passwordHash)) {
     throw new HttpError(401, 'Неверная почта или пароль');
   }

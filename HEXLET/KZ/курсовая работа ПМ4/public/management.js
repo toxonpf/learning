@@ -1,6 +1,7 @@
-import { button, confirmAction, el, empty, field, input, mark, openDialog, pageHeader, select } from './dom.js';
+import { actionMenu, button, confirmAction, el, empty, field, input, mark, openDialog, pageHeader, select } from './dom.js';
 import { activeAt, dateInput, displayDate, roleLabel } from './format.js';
 import { sortable, sortableTable as dataTable } from './table.js';
+import { datePicker } from './pickers.js';
 
 function toggle(name, label, checked) {
   return el('label', { class: 'toggle' }, input(name, 'yes', { type: 'checkbox', checked }), el('span', {}, label));
@@ -31,10 +32,11 @@ export function renderGroups(context) {
   const groupRows = groups.map((item) => [
     el('span', { class: 'inline-code' }, item.code), item.name,
     el('span', { class: item.archived ? 'muted' : 'row-active' }, item.archived ? 'В архиве' : 'Действует'),
-    el('div', { class: 'row-actions' },
-      button('Состав', () => selectManageGroup(item.id), { variant: item.id === manageGroupId ? 'selected' : '' }),
-      button('Изменить', () => groupEditor(context, item), { variant: 'quiet' }),
-      button('Дублировать', () => groupEditor(context, null, item), { variant: 'quiet' })),
+    actionMenu(`Действия группы ${item.code}`, [
+      button('Состав', () => selectManageGroup(item.id), { glyph: 'users', variant: item.id === manageGroupId ? 'selected' : '' }),
+      button('Изменить', () => groupEditor(context, item), { glyph: 'edit' }),
+      button('Дублировать', () => groupEditor(context, null, item), { glyph: 'copy' }),
+    ], `group-actions-${item.id}`),
   ]);
 
   const roster = el('div', {});
@@ -43,13 +45,14 @@ export function renderGroups(context) {
     const visible = members?.filter((item) => history.checked || !item.leftOn || dateInput(item.leftOn) > day);
     roster.replaceChildren(visible?.length ? dataTable(['Участник', 'Роль', 'Период', 'Состояние', 'Действия'],
       visible.map((member) => [
-        sortable(el('div', { class: 'table-person' }, member.user.name, el('small', { class: 'muted' }, member.user.email)), member.user.name),
+        sortable(el('div', { class: 'table-person' }, member.user.name,
+          el('small', { class: 'muted' }, member.user.deletedAt ? 'Аккаунт удалён' : member.user.email)), member.user.name),
         roleLabel[member.user.role],
         sortable(`${displayDate(member.joinedOn)} — ${member.leftOn ? displayDate(member.leftOn) : 'по настоящее время'}`, dateInput(member.joinedOn)),
         activeAt(member, day) ? member.leftOn ? `До ${displayDate(member.leftOn)}` : 'В группе'
           : dateInput(member.joinedOn) > day ? 'Ожидает вступления' : 'Выбыл',
-        el('div', { class: 'row-actions' },
-          button('Изменить период', () => memberEditor(context, group, member), { variant: 'quiet' }),
+        !member.user.deletedAt && actionMenu(`Действия участника ${member.user.name}`, [
+          button('Изменить период', () => memberEditor(context, group, member), { glyph: 'edit' }),
           (!member.leftOn || dateInput(member.leftOn) > day) && button('Удалить из группы', () => confirmAction({
             title: 'Удалить участника из группы?',
             description: `${member.user.name} · ${group.code}. Отметки сохранятся. Если уже есть отметка за сегодня, выход будет оформлен со следующего дня.`,
@@ -57,7 +60,8 @@ export function renderGroups(context) {
             onSubmit: () => context.mutate(`/groups/${group.id}/members/${member.id}`, 'DELETE', null,
               (result) => result.leftOn && dateInput(result.leftOn) > day
                 ? `Выход оформлен с ${displayDate(result.leftOn)}` : 'Участник удалён из текущего состава'),
-          }), { variant: 'danger' })),
+          }), { glyph: 'trash', variant: 'danger' }),
+        ], `member-actions-${member.id}`),
       ])) : empty(members ? 'Участников пока нет' : 'Загрузка состава',
       members && 'Добавьте зарегистрированных студентов и преподавателей'));
   }
@@ -68,8 +72,10 @@ export function renderGroups(context) {
       el('p', { class: 'muted' }, 'Дата выхода — первый день вне группы')),
     el('div', { class: 'row-actions' },
       el('label', { class: 'toggle' }, history, 'Показать выбывших'),
-      button('Открыть журнал', () => openJournal(group.id), { variant: 'quiet' }),
-      !group.archived && button('Добавить участника', () => memberEditor(context, group), { glyph: 'plus' }))),
+      actionMenu('Действия с составом группы', [
+        !group.archived && button('Добавить участника', () => memberEditor(context, group), { glyph: 'plus' }),
+        button('Открыть журнал', () => openJournal(group.id), { glyph: 'journal' }),
+      ], 'roster-actions'))),
     roster);
 
   return el('section', { class: 'page management-page' },
@@ -82,8 +88,8 @@ export function renderGroups(context) {
 }
 
 function memberEditor({ api, day, mutate }, group, member) {
-  const leftOn = field('Дата выхода', input('leftOn', dateInput(member?.leftOn), { type: 'date' }),
-    'Первый день вне группы. Можно оставить пустым');
+  const leftOn = datePicker('Дата выхода', 'leftOn', dateInput(member?.leftOn),
+    { required: false, currentDay: day, hint: 'Первый день вне группы. Можно оставить пустым' });
   if (member) {
     openDialog({
       title: 'Изменить период участия',
@@ -126,7 +132,7 @@ function memberEditor({ api, day, mutate }, group, member) {
       el('div', { class: 'search-line' }, lookup, button('Найти', search, { glyph: 'search' })),
       feedback,
       field('Аккаунт', account),
-      field('Дата вступления', input('joinedOn', day, { type: 'date', required: true })),
+      datePicker('Дата вступления', 'joinedOn', day, { currentDay: day }),
       leftOn,
     ],
     submitLabel: 'Добавить',
@@ -182,8 +188,10 @@ export function renderStatuses(context) {
         statuses.map((status) => [
           status.name, mark(status, { large: true }), status.countsAsPresent ? 'Да' : 'Нет',
           status.archived ? 'В архиве' : el('span', { class: 'row-active' }, 'Действует'),
-          el('div', { class: 'row-actions' }, button('Изменить', () => statusEditor(context, status), { variant: 'quiet' }),
-            button('Дублировать', () => statusEditor(context, null, status), { variant: 'quiet' })),
+          actionMenu(`Действия статуса ${status.name}`, [
+            button('Изменить', () => statusEditor(context, status), { glyph: 'edit' }),
+            button('Дублировать', () => statusEditor(context, null, status), { glyph: 'copy' }),
+          ], `status-actions-${status.id}`),
         ])) : empty(statuses ? 'Статусов пока нет' : 'Загрузка статусов')));
 }
 
@@ -205,13 +213,22 @@ export function renderUsers(context) {
         users?.length === 30 && el('small', { class: 'muted' }, 'Первые 30 аккаунтов')),
       users?.length ? dataTable(['Имя', 'Электронная почта', 'Роль', 'Действия'], users.map((person) => [
         person.name, person.email, roleLabel[person.role],
-        button('Изменить роль', () => openDialog({
-          title: 'Изменить роль',
-          description: person.name,
-          fields: [field('Роль', select('role', [['user', 'Студент'], ['teacher', 'Преподаватель']], person.role),
-            'Роль можно изменить до добавления в первую группу')],
-          onSubmit: (body) => mutate(`/users/${person.id}/role`, 'PATCH', body, 'Роль обновлена'),
-        }), { variant: 'quiet' }),
+        actionMenu(`Действия пользователя ${person.name}`, [
+          button('Изменить роль', () => openDialog({
+            title: 'Изменить роль',
+            description: person.name,
+            fields: [field('Роль', select('role', [['user', 'Студент'], ['teacher', 'Преподаватель']], person.role),
+              'Роль можно изменить до добавления в первую группу')],
+            onSubmit: (body) => mutate(`/users/${person.id}/role`, 'PATCH', body, 'Роль обновлена'),
+          }), { glyph: 'edit' }),
+          button('Удалить пользователя', () => confirmAction({
+            title: 'Удалить пользователя?',
+            description: `${person.name} потеряет доступ к аккаунту. Отметки останутся в журнале.`,
+            code: person.email,
+            submitLabel: 'Удалить пользователя',
+            onSubmit: ({ confirmation }) => mutate(`/users/${person.id}`, 'DELETE', { confirmation }, 'Пользователь удалён'),
+          }), { glyph: 'trash', variant: 'danger' }),
+        ], `user-actions-${person.id}`),
       ])) : empty(users ? 'Пользователи не найдены' : 'Загрузка пользователей',
         users && 'Аккаунты появляются после регистрации')));
 }

@@ -23,6 +23,7 @@ model User {
   patronymic       String?            @db.VarChar(80)
   role             Role               @default(user)
   passwordHash     String
+  deletedAt        DateTime?          @db.Timestamptz(3)
   memberships      GroupMembership[]
   editedMarks      Attendance[]       @relation("MarkedBy")
   scheduledLessons ScheduledSession[]
@@ -61,9 +62,16 @@ model Lesson {
   startTime String       @db.Char(5)
   group     Group        @relation(fields: [groupId], references: [id])
   marks     Attendance[]
+  scheduledSessionId String? @db.Uuid
+  scheduleTeacherId  String? @db.Uuid
+  scheduleAudience   String? @db.VarChar(220)
+  scheduledStudentIds String[] @default([]) @db.Uuid
+  scheduledSession ScheduledSession? @relation(fields: [scheduledSessionId], references: [id], onDelete: SetNull)
 
   @@unique([id, groupId])
-  @@unique([groupId, date, startTime])
+  @@unique([groupId, date, startTime, title, scheduleTeacherId, scheduleAudience], name: "scheduleIdentity", map: "Lesson_schedule_identity")
+  @@index([scheduledSessionId])
+  @@index([scheduleTeacherId, groupId])
 }
 
 model AttendanceStatus {
@@ -130,6 +138,7 @@ model ScheduledSession {
   room        String       @db.VarChar(120)
   plan        SchedulePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
   teacher     User         @relation(fields: [teacherId], references: [id])
+  journalLessons Lesson[]
 
   @@index([date])
   @@index([teacherId, date])

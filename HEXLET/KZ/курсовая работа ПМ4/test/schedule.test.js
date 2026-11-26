@@ -78,6 +78,14 @@ test('generation checks actual roster, resource availability and shared students
   assert.ok(result.events[0].endMinute <= result.events[1].startMinute);
   assert.deepEqual(result.events.map(({ studentIds }) => studentIds), [[shared], [shared]]);
 
+  config.requirements[0].totalHours = 4;
+  config.teachers[0].maxWeeklyMinutes = 120;
+  assert.match(solveSchedule(input).diagnostics[0], /Анна.*180 мин.*120 мин.*90 мин/);
+  config.teachers[0].maxWeeklyMinutes = 360;
+  config.requirements[0].maxPerWeek = 1;
+  assert.match(solveSchedule(input).diagnostics[0], /2 занятий.*максимум 1/);
+  config.requirements[0].totalHours = 2;
+  config.requirements[0].maxPerWeek = null;
   config.requirements[0].features[0].quantity = 99;
   const blocked = solveSchedule(input);
   assert.equal(blocked.state, 'infeasible');
@@ -117,18 +125,22 @@ test('REST publishing makes the authoritative schedule visible only to its audie
   const plans = [];
   const groupIds = [];
   const userIds = [];
+  const statusIds = [];
   const app = createApp({ db, config: { APP_TIME_ZONE: 'Asia/Almaty', JWT_SECRET: secret } });
   const server = app.listen(0, '127.0.0.1');
   t.after(async () => {
     await new Promise((resolve) => server.close(resolve));
     await db.schedulePlan.deleteMany({ where: { id: { in: plans } } });
+    await db.attendance.deleteMany({ where: { groupId: { in: groupIds } } });
+    await db.lesson.deleteMany({ where: { groupId: { in: groupIds } } });
     await db.groupMembership.deleteMany({ where: { groupId: { in: groupIds } } });
     await db.group.deleteMany({ where: { id: { in: groupIds } } });
     await db.user.deleteMany({ where: { id: { in: userIds } } });
+    await db.attendanceStatus.deleteMany({ where: { id: { in: statusIds } } });
     await db.$disconnect();
   });
   await once(server, 'listening');
-  const origin = `http://127.0.0.1:${server.address().port}/api/schedule`;
+  const origin = `http://127.0.0.1:${server.address().port}/api`;
   async function account(label, role) {
     const user = await db.user.create({ data: {
       email: `${label}-${tag}@planner.example.test`, name: label, role, passwordHash: 'access tested using issued test tokens',
@@ -139,7 +151,7 @@ test('REST publishing makes the authoritative schedule visible only to its audie
     });
     return { ...user, token };
   }
-  async function request(path, expected, user, method = 'GET', data) {
+  async function api(path, expected, user, method = 'GET', data) {
     const response = await fetch(origin + path, {
       method, headers: { ...(user && { Authorization: `Bearer ${user.token}` }), ...(data && { 'Content-Type': 'application/json' }) },
       ...(data && { body: JSON.stringify(data) }),
@@ -148,15 +160,18 @@ test('REST publishing makes the authoritative schedule visible only to its audie
     assert.equal(response.status, expected, JSON.stringify(result));
     return result.data;
   }
+  const request = (path, ...args) => api('/schedule' + path, ...args);
 
   const [admin, teacher, student, unrelated] = await Promise.all([
     account('admin', 'admin'), account('teacher', 'teacher'), account('student', 'user'), account('another', 'user'),
   ]);
   const group = await db.group.create({ data: { code: `ПЛАН-${tag}`, name: 'Группа планировщика' } });
   groupIds.push(group.id);
-  await db.groupMembership.create({ data: { groupId: group.id, userId: student.id, joinedOn: asDate(start) } });
+  const joinedOn = asDate('2020-01-01');
+  const membership = await db.groupMembership.create({ data: { groupId: group.id, userId: student.id, joinedOn } });
   const window = `?from=${start}&to=${end}`;
   const config = sample([group], [teacher]);
+  config.requirements[0].teacherId = teacher.id;
   await request(window, 401);
   await request('/planner', 403, teacher);
   await request('/people', 403, student);
@@ -185,12 +200,55 @@ test('REST publishing makes the authoritative schedule visible only to its audie
   assert.deepEqual(await request(window, 200, unrelated), []);
   await request(path + '/publish', 200, admin, 'POST', { revision: saved.revision, draftId: draft.id });
   assert.deepEqual(await request(window, 200, student), first);
+  const groupJournal = `/groups/${group.id}/journal${window}`;
+  const journal = await api(groupJournal, 200, teacher);
+  assert.equal(journal.manualWritable, false);
+  assert.equal(journal.lessons.length, 1);
+  const lesson = journal.lessons[0];
+  assert.equal(lesson.scheduledSessionId, first[0].id);
+  assert.equal(lesson.scheduleTeacherId, teacher.id);
+  const status = await db.attendanceStatus.create({ data: { name: `План ${tag}`, code: tag.slice(0, 6), color: '#667777' } });
+  statusIds.push(status.id);
+  const attendance = { lessonId: lesson.id, studentId: student.id, statusId: status.id };
+  const mark = await api('/attendance', 201, teacher, 'POST', attendance);
+  assert.equal(mark.membership.user.id, student.id);
+  assert.deepEqual((await api(groupJournal, 200, student)).marks.map(({ id }) => id), [mark.id]);
+  await api(`/lessons/${lesson.id}`, 409, admin, 'DELETE');
+  await api(`/lessons/${lesson.id}`, 409, teacher, 'PATCH', { title: 'Изменённый' });
+  const { id: newDraftId } = await request(path + '/generate', 200, admin, 'POST', { revision: saved.revision });
+  await request(path + '/publish', 200, admin, 'POST', { revision: saved.revision, draftId: newDraftId });
+  const current = await request(window, 200, teacher);
+  assert.notEqual(current[0].id, first[0].id);
+  const reloaded = await api(groupJournal, 200, teacher);
+  assert.equal(reloaded.lessons[0].id, lesson.id);
+  assert.equal(reloaded.marks[0].id, mark.id);
+  await db.groupMembership.create({ data: { groupId: group.id, userId: unrelated.id, joinedOn } });
+  await api('/attendance', 409, teacher, 'POST', { ...attendance, studentId: unrelated.id });
+  assert.deepEqual((await api(groupJournal, 200, unrelated)).lessons, []);
+  assert.deepEqual(await api(`/lessons/${lesson.id}/fill`, 200, teacher, 'POST', { statusId: status.id }), { count: 0 });
   await db.groupMembership.updateMany({
     where: { groupId: group.id, userId: student.id },
-    data: { joinedOn: asDate('2031-01-05'), leftOn: asDate(first[0].date) },
+    data: { leftOn: asDate(first[0].date) },
   });
   assert.deepEqual(await request(window, 200, student), []);
-  assert.deepEqual(await request(window, 200, teacher), first);
+  assert.deepEqual(await request(window, 200, teacher), current);
+  await db.groupMembership.update({ where: { id: membership.id }, data: { leftOn: null } });
   await request(path + '/unpublish', 200, admin, 'POST', { revision: saved.revision });
   assert.deepEqual(await request(window, 200, student), []);
+  const history = await api(groupJournal, 200, teacher);
+  assert.equal(history.lessons[0].scheduledSessionId, null);
+  assert.equal(history.marks[0].id, mark.id);
+  await api('/attendance', 409, teacher, 'POST', attendance);
+
+  const updatedDraft = await request(path + '/generate', 200, admin, 'POST', { revision: saved.revision });
+  await request(path + '/publish', 200, admin, 'POST', { revision: saved.revision, draftId: updatedDraft.id });
+  assert.equal((await request(window, 200, unrelated)).length, 1);
+  await api(`/users/${teacher.id}`, 200, admin, 'DELETE', { confirmation: teacher.email });
+  await api('/auth/me', 401, teacher);
+  assert.deepEqual(await request(window, 200, unrelated), []);
+  const afterTeacherRemoval = await api(groupJournal, 200, admin);
+  assert.deepEqual(afterTeacherRemoval.marks.map(({ id }) => id), [mark.id]);
+  const cleaned = (await request(`/planner?id=${created.id}`, 200, admin)).plan;
+  assert.deepEqual(cleaned.config.teachers, []);
+  assert.equal(cleaned.config.requirements[0].teacherId, null);
 });

@@ -1,0 +1,21 @@
+{
+  "source": "https://docs.google.com/spreadsheets/d/1npukvL21-AwCslBHEdKsKP_ONHE4weJ5FZ7e-gger_s/edit?gid=515931292",
+  "sourceMonth": "ноябрь 2026",
+  "requirements": [
+    {"group":"7 ТИС/23","subject":"ПМ 7 ТИС-23-9кл","teacher":"Турман Н.Р.","meetings":21,"rooms":["203"]},
+    {"group":"7 ТИС/23","subject":"ПМ 7 ТИС-23-9кл-УП","teacher":"Турман Н.Р.","meetings":24,"rooms":["203","Онлайн","401"]},
+    {"group":"7 ТИС/23","subject":"ПМ 8 ТИС-23-9кл","teacher":"Турман Н.Р.","meetings":31,"rooms":["203","401","302","301"]},
+    {"group":"25 РПО/26","subject":"ООМ 2","teacher":"Калиаскаров Д.А.","meetings":4,"rooms":["304","306"]},
+    {"group":"25 РПО/26","subject":"ООМ 4","teacher":"Галяпина А.И.","meetings":4,"rooms":["304","306"]},
+    {"group":"25 РПО/26","subject":"ООМ 3","teacher":"Абдрахманов М.Д.","meetings":3,"rooms":["304","306"]},
+    {"group":"25 РПО/26","subject":"ООМ 1","teacher":"Достанбаев С.С.","meetings":4,"rooms":["304","203","301","306"]},
+    {"group":"25 РПО/26","subject":"ПМ 1 РПО-26-11кл","teacher":"Молдабаев М.Ж.","meetings":22,"rooms":["301"]},
+    {"group":"25 РПО/26","subject":"ПМ 1 РПО-26-11кл-УП","teacher":"Молдабаев М.Ж.","meetings":35,"rooms":["306","302","301","203","201","Онлайн"]},
+    {"group":"26 ВД/26","subject":"ООМ 1","teacher":"Достанбаев С.С.","meetings":5,"rooms":["205","304"]},
+    {"group":"26 ВД/26","subject":"ООМ 4","teacher":"Галяпина А.И.","meetings":4,"rooms":["304","306"]},
+    {"group":"26 ВД/26","subject":"ПМ 1 ВД-26-11кл","teacher":"Мельник И.И.","meetings":51,"rooms":["205"]},
+    {"group":"26 ВД/26","subject":"ООМ 2","teacher":"Калиаскаров Д.А.","meetings":5,"rooms":["304","205"]},
+    {"group":"26 ВД/26","subject":"ООМ 3","teacher":"Абдрахманов М.Д.","meetings":4,"rooms":["304"]},
+    {"group":"26 ВД/26","subject":"ПМ 1 ВД-26-11кл-УП","teacher":"Мельник И.И.","meetings":3,"rooms":["Онлайн"]}
+  ]
+}

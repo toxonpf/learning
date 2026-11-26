@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { Router } from 'express';
 import { HttpError, send } from '../lib/http.js';
+import { writeTransaction } from '../lib/transaction.js';
 import { requireAuth } from '../middleware/auth.js';
 import { publishedScheduleRows } from './service.js';
 
@@ -148,9 +149,12 @@ export function createGoogleCalendar(db, config, request = fetch) {
 
   router.get('/', async (req, res) => {
     const record = enabled && await db.googleCalendarConnection.findUnique({
-      where: { userId: req.user.id }, select: { lastSynced: true, failed: true },
+      where: { userId: req.user.id }, select: { calendarId: true, lastSynced: true, failed: true },
     });
-    send(res, { enabled, connected: Boolean(record), lastSynced: record?.lastSynced, failed: record?.failed });
+    const embed = record && new URL('https://calendar.google.com/calendar/embed');
+    if (embed) embed.search = new URLSearchParams({ src: record.calendarId, ctz: timeZone });
+    send(res, { enabled, connected: Boolean(record), lastSynced: record?.lastSynced, failed: record?.failed,
+      embedUrl: embed ? embed.href : undefined });
   });
   router.post('/connect', (req, res) => {
     if (!enabled) throw new HttpError(503, 'Google OAuth не настроен');
@@ -159,7 +163,7 @@ export function createGoogleCalendar(db, config, request = fetch) {
     if (pending.size >= 1024) throw new HttpError(429, 'Слишком много подключений. Повторите позже');
     const state = randomBytes(32).toString('base64url');
     const verifier = randomBytes(32).toString('base64url');
-    pending.set(state, { userId: req.user.id, verifier, expires: now + 600_000 });
+    pending.set(state, { userId: req.user.id, verifier, popup: req.body?.popup === true, expires: now + 600_000 });
     const query = new URLSearchParams({
       client_id: clientId, redirect_uri: redirect, response_type: 'code', scope, state,
       access_type: 'offline', prompt: 'consent', code_challenge_method: 'S256',
@@ -186,14 +190,18 @@ export function createGoogleCalendar(db, config, request = fetch) {
       .find((value) => value.startsWith(cookie + '='))?.slice(cookie.length + 1);
     res.clearCookie(cookie, opts);
     res.setHeader('Cache-Control', 'no-store');
-    const failure = () => res.redirect('/?googleCalendar=error');
+    const entry = typeof state === 'string' && pending.get(state);
+    const finish = (result) => res.redirect(entry?.popup
+      ? '/google-calendar-result.html?' + new URLSearchParams({ result, flow: state })
+      : '/?googleCalendar=' + result);
+    const failure = () => finish('error');
     if (!enabled || typeof state !== 'string' || state !== match) return failure();
-    const entry = pending.get(state);
     pending.delete(state);
     if (!entry || entry.expires <= Date.now() || typeof code !== 'string') return failure();
     if (busy.has(entry.userId)) return failure();
     busy.add(entry.userId);
     try {
+      if (!await db.user.findUnique({ where: { id: entry.userId, deletedAt: null }, select: { id: true } })) return failure();
       const { refresh_token: refresh, access_token: token } = await getTokens({
         code, code_verifier: entry.verifier, redirect_uri: redirect, grant_type: 'authorization_code',
       });
@@ -207,10 +215,16 @@ export function createGoogleCalendar(db, config, request = fetch) {
       });
       const data = { calendarId, credential: credentials.seal(refresh), sourceHash: null,
         lastChecked: null, lastSynced: null, failed: false };
-      await db.googleCalendarConnection.upsert({
-        where: { userId: entry.userId }, create: { userId: entry.userId, ...data }, update: data,
+      const saved = await writeTransaction(db, async (tx) => {
+        if (!await tx.user.findUnique({ where: { id: entry.userId, deletedAt: null }, select: { id: true } })) return false;
+        await tx.googleCalendarConnection.upsert({
+          where: { userId: entry.userId }, create: { userId: entry.userId, ...data }, update: data,
+        });
+        return true;
       });
-      return res.redirect('/?googleCalendar=connected');
+      if (!saved) return failure();
+      if (entry.popup) setImmediate(() => { void reconcile(entry.userId).catch(() => {}); });
+      return finish('connected');
     } catch {
       return failure();
     } finally {

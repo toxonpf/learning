@@ -223,6 +223,35 @@ function serialize(events) {
     .sort((a, b) => a.date.localeCompare(b.date) || a.startMinute - b.startMinute || a.audience.localeCompare(b.audience));
 }
 
+function capacityWarnings(tasks) {
+  const warnings = [];
+  const fixedTeachers = new Map();
+  for (const task of tasks) {
+    const { candidates, count, maxPerWeek, label } = task;
+    if (maxPerWeek) {
+      const weeks = new Set(candidates.map(({ week }) => week)).size;
+      if (weeks * maxPerWeek < count) warnings.push(
+        `${label}. Нужно ${count} занятий, а лимит ${maxPerWeek} в неделю вмещает максимум ${weeks * maxPerWeek}.`);
+    }
+    const first = candidates[0];
+    if (first.teacher.maxWeeklyMinutes && candidates.every(({ teacherId }) => teacherId === first.teacherId)) {
+      if (!fixedTeachers.has(first.teacherId)) fixedTeachers.set(first.teacherId, []);
+      fixedTeachers.get(first.teacherId).push(task);
+    }
+  }
+  for (const fixed of fixedTeachers.values()) {
+    const { teacher, teacherName } = fixed[0].candidates[0];
+    const minutes = fixed.reduce((sum, task) => sum + task.count * task.hours, 0);
+    const weeks = new Set(fixed.flatMap(({ candidates }) => candidates.map(({ week }) => week))).size;
+    const weekly = teacher.maxWeeklyMinutes;
+    const step = fixed.every(({ hours }) => hours === fixed[0].hours) ? fixed[0].hours : 1;
+    const capacity = weeks * (weekly - weekly % step);
+    if (minutes > capacity) warnings.push(
+      `${teacherName}. Нужно ${minutes} мин нагрузки, а недельный лимит ${weekly} мин позволяет разместить максимум ${capacity} мин за доступные недели.`);
+  }
+  return warnings;
+}
+
 export function solveSchedule(input, { milliseconds = 2200, branchLimit = 65_000 } = {}) {
   if (!input.config.requirements.length) return { state: 'invalid', diagnostics: ['Добавьте строки учебного плана'], meetings: 0, events: [] };
   let model;
@@ -236,6 +265,8 @@ export function solveSchedule(input, { milliseconds = 2200, branchLimit = 65_000
   const diagnostics = tasks.filter(({ candidates }) => !candidates.length)
     .slice(0, 20).map(({ label, failure }) => `${label}. ${failure}`);
   if (diagnostics.length) return { state: 'infeasible', diagnostics, meetings, events: [] };
+  const capacity = capacityWarnings(tasks);
+  if (capacity.length) return { state: 'infeasible', diagnostics: capacity.slice(0, 20), meetings, events: [] };
   const sorted = tasks.sort((a, b) => a.candidates.length / a.count - b.candidates.length / b.count || a.id.localeCompare(b.id));
   const deadline = performance.now() + milliseconds;
   const answer = (events) => ({ state: 'feasible', diagnostics: [], meetings, events: serialize(events) });
@@ -282,7 +313,7 @@ export function solveSchedule(input, { milliseconds = 2200, branchLimit = 65_000
   if (search(0, 0, 0)) return answer(exact.selected);
   return {
     state: limited ? 'limit' : 'infeasible', meetings, events: [],
-    diagnostics: [limited ? 'Поиск достиг лимита. Сузьте период или добавьте доступные слоты и кабинеты.' :
+    diagnostics: [limited ? 'Поиск достиг лимита. Проверьте недельные лимиты, доступность преподавателей и требования к кабинетам.' :
       'Нельзя разместить все занятия одновременно. Проверьте лимиты нагрузки, доступность преподавателей и кабинетов.'],
   };
 }

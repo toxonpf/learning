@@ -1,7 +1,7 @@
 import { confirmAction, el, field, openDialog, select } from './dom.js';
 import { sortable } from './table.js';
 import {
-  actions, addButton, checklist, checkbox, copyName, dateField, duplicate, editButton, editItem, featureFields, featureValues,
+  actions, addButton, checklist, checkbox, copyName, dateField, deleteButton, duplicate, editButton, editItem, featureFields, featureValues,
   gridFields, isChecked, names, number, numberField, optionalSelect, panel, picked, rangeTitle,
   removeItem, resourceTable, saveChanges, textField, timeField, weekdays,
 } from './planner-controls.js';
@@ -92,12 +92,12 @@ export function calendarPanels(context) {
       el('dl', { class: 'planner-facts' },
         el('div', {}, el('dt', {}, 'Дни занятий'), el('dd', {}, days)),
         el('div', {}, el('dt', {}, 'Академический час'), el('dd', {}, `${config.academicMinutes} мин`))),
-      editButton(() => basicCalendar(context))),
+      actions(editButton(() => basicCalendar(context)))),
     panel('Временные слоты', 'Добавьте интервалы занятий. Промежутки между ними остаются свободными.',
       resourceTable(['Начало', 'Конец', 'Действия'], [...config.slots].sort((a, b) => a.start.localeCompare(b.start)).map((slot) => [
         slot.start, slot.end,
         actions(editButton(() => slotEditor(context, slot)), duplicate(() => slotEditor(context, null, slot)),
-          config.slots.length > 1 && editButton(() => confirmAction({
+          config.slots.length > 1 && deleteButton(() => confirmAction({
             title: 'Удалить слот?',
             description: `${slot.start} – ${slot.end}`,
             code: slot.start,
@@ -105,19 +105,19 @@ export function calendarPanels(context) {
             onSubmit: () => saveChanges(context, ({ config: work }) => {
               work.slots = work.slots.filter((item) => item.start !== slot.start);
             }),
-          }), 'Удалить')),
+          }))),
       ])), addButton('Добавить слот', () => slotEditor(context))),
     panel('Модули периода', 'Строку учебного плана можно ограничить датами одного модуля.',
       config.periods.length ? resourceTable(['Модуль', 'Даты', 'Действия'], config.periods.map((item) => [
         item.name, sortable(rangeTitle(item.from, item.to), item.from), actions(editButton(() => periodEditor(context, item)), duplicate(() => periodEditor(context, null, item)),
-          editButton(() => removeItem(context, 'periods', item, item.name), 'Удалить')),
+          deleteButton(() => removeItem(context, 'periods', item, item.name))),
       ])) : null, addButton('Добавить модуль', () => periodEditor(context))),
     panel('Выходные и исключения', 'Каникулы, праздники и интервалы недоступности преподавателей или кабинетов.',
       config.exceptions.length ? resourceTable(['Причина', 'Даты', 'Время', 'Кого касается', 'Действия'], config.exceptions.map((item) => [
         item.name, sortable(rangeTitle(item.from, item.to), item.from), item.start ? `${item.start} – ${item.end}` : 'Весь день',
         item.scope === 'school' ? 'Всё учреждение' : refs.get(item.resourceId) ?? 'Ресурс недоступен',
         actions(editButton(() => exceptionEditor(context, item)), duplicate(() => exceptionEditor(context, null, item)),
-          editButton(() => removeItem(context, 'exceptions', item, item.name), 'Удалить')),
+          deleteButton(() => removeItem(context, 'exceptions', item, item.name))),
       ])) : null, addButton('Добавить исключение', () => exceptionEditor(context))));
 }
 
@@ -136,7 +136,7 @@ export function dictionaryPanel(context, collection, title, label, description, 
     item.name,
     actions(editButton(() => dictionaryEditor(context, collection, label, item)),
       duplicate(() => dictionaryEditor(context, collection, label, null, item)),
-      editButton(() => removeItem(context, collection, item, item.name), 'Удалить')),
+      deleteButton(() => removeItem(context, collection, item, item.name))),
   ])) : null, addButton(addLabel, () => dictionaryEditor(context, collection, label)));
 }
 
@@ -184,13 +184,13 @@ export function roomPanels(context) {
       rooms.length ? resourceTable(['Кабинет', 'Тип', 'Места', 'Оснащение', 'Действия'], rooms.map((item) => [
         item.name, types.get(item.typeId) ?? '—', item.capacity, quantitySummary(item.features, features),
         actions(editButton(() => roomEditor(context, item)), duplicate(() => roomEditor(context, null, item)),
-          editButton(() => removeItem(context, 'rooms', item, item.name), 'Удалить')),
+          deleteButton(() => removeItem(context, 'rooms', item, item.name))),
       ])) : null, addButton('Добавить кабинет', () => roomEditor(context))),
     panel('Типы кабинетов', 'Оснащение типа используется по умолчанию. Для отдельного кабинета можно задать своё количество.',
       roomTypes.length ? resourceTable(['Тип', 'Стандартное оснащение', 'Действия'], roomTypes.map((item) => [
         item.name, quantitySummary(item.features, features),
         actions(editButton(() => roomTypeEditor(context, item)), duplicate(() => roomTypeEditor(context, null, item)),
-          editButton(() => removeItem(context, 'roomTypes', item, item.name), 'Удалить')),
+          deleteButton(() => removeItem(context, 'roomTypes', item, item.name))),
       ])) : null, addButton('Добавить тип', () => roomTypeEditor(context))),
     dictionaryPanel(context, 'features', 'Виды оснащения', 'оснащение', null, 'Добавить оснащение'));
 }

@@ -5,6 +5,7 @@ import { HttpError } from '../lib/http.js';
 import { asDate, DAY } from '../lib/dates.js';
 import { writeTransaction } from '../lib/transaction.js';
 import { asDay, newConfig, validateConfig, validateRange } from './config.js';
+import { detachScheduledLessons, discardUnmarkedLessons, openScheduledLessons } from './journal-sync.js';
 
 const activeJobs = new Set();
 const summary = {
@@ -37,7 +38,7 @@ function expectRevision(plan, revision) {
 async function catalog(db) {
   const [groups, teachers] = await Promise.all([
     db.group.findMany({ where: { archived: false }, select: groupSelect, orderBy: { code: 'asc' } }),
-    db.user.findMany({ where: { role: 'teacher' }, select: personSelect, orderBy: [{ name: 'asc' }, { id: 'asc' }] }),
+    db.user.findMany({ where: { role: 'teacher', deletedAt: null }, select: personSelect, orderBy: [{ name: 'asc' }, { id: 'asc' }] }),
   ]);
   return { groups, teachers };
 }
@@ -55,7 +56,7 @@ export async function getPlanner(db, id) {
 export async function listPeople(db, { query, groupId }) {
   return db.user.findMany({
     where: {
-      role: { in: ['teacher', 'user'] },
+      role: { in: ['teacher', 'user'] }, deletedAt: null,
       ...(groupId && { memberships: { some: { groupId } } }),
       ...(query && { OR: ['name', 'firstName', 'lastName', 'patronymic', 'email'].map(
         (field) => ({ [field]: { contains: query, mode: 'insensitive' } }),
@@ -69,7 +70,7 @@ export async function listPeople(db, { query, groupId }) {
 
 export function updateProfile(db, id, data) {
   return db.user.update({
-    where: { id, role: { in: ['teacher', 'user'] } }, data, select: personSelect,
+    where: { id, role: { in: ['teacher', 'user'] }, deletedAt: null }, data, select: personSelect,
   });
 }
 
@@ -122,7 +123,7 @@ async function snapshot(db, plan) {
       groupId: { in: [...groupIds] },
       joinedOn: { lte: plan.endsOn },
       OR: [{ leftOn: null }, { leftOn: { gt: plan.startsOn } }],
-      user: { role: 'user' },
+      user: { role: 'user', deletedAt: null },
     },
     select: { groupId: true, joinedOn: true, leftOn: true, user: { select: personSelect } },
     orderBy: { id: 'asc' },
@@ -192,24 +193,27 @@ export function publishPlan(db, id, { revision, draftId }) {
     if (overlap) throw new HttpError(409, `Период пересекается с опубликованным расписанием «${overlap.name}»`);
     const result = await snapshot(tx, plan);
     if (result.sourceKey !== draft.sourceKey) throw new HttpError(409, 'Состав групп или преподавателей изменился. Сгенерируйте расписание заново');
-    await tx.scheduledSession.deleteMany({ where: { planId: id } });
-    const { count } = await tx.scheduledSession.createMany({
+    const detached = await detachScheduledLessons(tx, { planId: id });
+    const sessions = await tx.scheduledSession.createManyAndReturn({
       data: draft.events.map((event) => ({ ...event, planId: id, date: asDate(event.date) })),
     });
+    await openScheduledLessons(tx, sessions, plan.startsOn, plan.endsOn);
+    await discardUnmarkedLessons(tx, detached.lessonIds);
     await tx.schedulePlan.update({
       where: { id }, data: {
         publishedAt: new Date(), publishedRevision: revision, publishedDraftId: draftId,
         publishedStartsOn: plan.startsOn, publishedEndsOn: plan.endsOn,
       },
     });
-    return { count };
+    return { count: sessions.length };
   });
 }
 
 export function unpublishPlan(db, id, revision) {
   return writeTransaction(db, async (tx) => {
     expectRevision(await getPlan(tx, id), revision);
-    const { count } = await tx.scheduledSession.deleteMany({ where: { planId: id } });
+    const { count, lessonIds } = await detachScheduledLessons(tx, { planId: id });
+    await discardUnmarkedLessons(tx, lessonIds);
     await tx.schedulePlan.update({
       where: { id }, data: {
         publishedAt: null, publishedRevision: null, publishedDraftId: null, publishedStartsOn: null, publishedEndsOn: null,

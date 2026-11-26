@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "node prisma/seed.js",
     "demo:defense": "node scripts/defense-demo.js",
+    "demo:schedule": "node scripts/schedule-example.js",
     "test": "node --test"
   },
   "dependencies": {

@@ -44,6 +44,7 @@ export function apiRoutes(db, config) {
   router.delete('/groups/:id/members/:memberId', admin, groups.removeMember);
   router.get('/users', admin, groups.users);
   router.patch('/users/:id/role', admin, groups.updateRole);
+  router.delete('/users/:id', admin, groups.removeUser);
 
   router.post('/groups/:id/lessons', staff, attendance.createLesson);
   router.get('/lessons/:id', attendance.lesson);

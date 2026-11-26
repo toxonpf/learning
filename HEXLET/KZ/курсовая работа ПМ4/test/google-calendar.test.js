@@ -21,6 +21,7 @@ test('Google connection requires its browser state and reconciles only managed c
   let calendarCalls = 0;
   const events = new Map([['personal', { id: 'personal', summary: 'Личная встреча' }]]);
   const db = {
+    $transaction: (operation) => operation(db),
     user: { findUnique: async () => user },
     scheduledSession: { findMany: async ({ where }) => {
       assert.deepEqual(where, { studentIds: { has: user.id } });
@@ -43,7 +44,9 @@ test('Google connection requires its browser state and reconciles only managed c
     calendarCalls++;
     assert.equal(options.headers.Authorization, 'Bearer test-access');
     const path = new URL(url).pathname;
-    if (path.endsWith('/calendars')) return Response.json({ id: 'school@example.test' });
+    if (path.endsWith('/calendars') || path.endsWith('/calendars/school%40example.test')) {
+      return Response.json({ id: 'school@example.test' });
+    }
     if (options.method === 'GET') return Response.json({ items: [...events.values()] });
     if (options.method === 'POST') {
       const body = JSON.parse(options.body);
@@ -57,7 +60,7 @@ test('Google connection requires its browser state and reconciles only managed c
     return new Response(null, { status: 204 });
   });
   const app = express();
-  app.use('/google', google.router);
+  app.use('/google', express.json({ limit: '2kb' }), google.router);
   app.get(google.callback, google.authorize);
   app.use(handleError({ error() {} }));
   const server = app.listen(0, '127.0.0.1');
@@ -68,6 +71,8 @@ test('Google connection requires its browser state and reconciles only managed c
     subject: user.id, issuer: 'attendance-journal', audience: 'attendance-api',
   });
   const headers = { Authorization: `Bearer ${token}` };
+  const status = async () => (await (await fetch(origin + '/google', { headers })).json()).data;
+  assert.deepEqual(await status(), { enabled: true, connected: false });
   const start = await fetch(origin + '/google/connect', { method: 'POST', headers });
   const authorization = new URL((await start.json()).data.url);
   assert.equal(authorization.searchParams.get('scope'), 'https://www.googleapis.com/auth/calendar.app.created');
@@ -78,6 +83,10 @@ test('Google connection requires its browser state and reconciles only managed c
   assert.equal(accepted.headers.get('location'), '/?googleCalendar=connected');
   assert.ok(record.credential);
   assert.notEqual(record.credential, 'refresh-fixture');
+  const connected = await status();
+  assert.equal(connected.connected, true);
+  assert.equal(connected.embedUrl, 'https://calendar.google.com/calendar/embed?src=school%40example.test&ctz=Asia%2FAlmaty');
+  assert.equal(connected.credential, undefined);
   await google.refreshLinked();
   assert.deepEqual([...events.values()].map((event) => event.summary), ['Личная встреча', 'Алгоритмы']);
   const again = await fetch(origin + '/google/sync', { method: 'POST', headers });
@@ -86,4 +95,12 @@ test('Google connection requires its browser state and reconciles only managed c
   leftOn = new Date('2026-11-24');
   await google.refreshLinked();
   assert.deepEqual([...events.keys()], ['personal']);
+  const popup = await fetch(origin + '/google/connect', {
+    method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ popup: true }),
+  });
+  const flow = new URL((await popup.json()).data.url).searchParams.get('state');
+  const result = await fetch(origin + google.callback + '?' + new URLSearchParams({ state: flow, code: 'demo' }), {
+    redirect: 'manual', headers: { Cookie: popup.headers.get('set-cookie').split(';')[0] },
+  });
+  assert.equal(result.headers.get('location'), `/google-calendar-result.html?result=connected&flow=${flow}`);
 });

@@ -222,4 +222,21 @@ test('REST API writes attendance in PostgreSQL and enforces membership and roles
     const removedLesson = await request('DELETE', `/lessons/${otherLesson.id}`, 200, null, a);
     assert.equal(removedLesson.deleted, true);
   });
+
+  await t.test('account deletion requires admin and confirmation and keeps the journal history', async () => {
+    const a = admin.accessToken;
+    const p = teacher.accessToken;
+    const { id, email } = second.user;
+    await request('DELETE', `/users/${id}`, 403, { confirmation: email }, p);
+    await request('DELETE', `/users/${admin.user.id}`, 403, { confirmation: admin.user.email }, a);
+    await request('DELETE', `/users/${id}`, 400, { confirmation: 'wrong@example.test' }, a);
+    assert.equal((await request('DELETE', `/users/${id}`, 200, { confirmation: email }, a)).deleted, true);
+    await request('GET', '/auth/me', 401, null, second.accessToken);
+    await request('POST', '/auth/login', 401, { email, password });
+    assert.deepEqual(await request('GET', `/users?q=${encodeURIComponent(email)}`, 200, null, a), []);
+    const marks = await request('GET', `/attendance?lessonId=${lesson.id}`, 200, null, a);
+    assert.ok(marks.some(({ membership }) => membership.user.id === id));
+    const account = await request('POST', '/auth/register', 201, { name: 'Новый студент', email, password });
+    assert.notEqual(account.user.id, id);
+  });
 });

@@ -1,5 +1,8 @@
-import { button, confirmAction, el, empty, field, icon, input, mark, openDialog, pageHeader, select } from './dom.js';
-import { activeAt, columnDate, dateInput, dayLabel, displayDate, initials, weekTitle } from './format.js';
+import { actionMenu, button, confirmAction, el, empty, field, input, mark, openDialog, pageHeader, select } from './dom.js';
+import { activeAt, columnDate, dateInput, dayLabel, displayDate, initials } from './format.js';
+import { dateNavigation } from './date-navigation.js';
+import { horizontalScroll } from './horizontal-scroll.js';
+import { datePicker, timePicker } from './pickers.js';
 
 function roster(members) {
   const rows = new Map();
@@ -17,9 +20,10 @@ function makeGrid({ members, lessons, statuses, marks }) {
   const rows = roster(members).map(({ person, memberships }) => ({
     person,
     cells: lessons.map((lesson) => {
-      const member = memberships.find((item) => activeAt(item, dateInput(lesson.date)));
+      const member = memberships.find((item) => activeAt(item, dateInput(lesson.date)) &&
+        (!lesson.scheduleTeacherId || lesson.scheduledStudentIds.includes(person.id)));
       const value = member && recorded.get(`${lesson.id}/${member.id}`);
-      return { lesson, member, value, status: statusMap.get(value?.statusId) };
+      return { lesson, member: !person.deletedAt || value ? member : null, value, status: statusMap.get(value?.statusId) };
     }),
   }));
   const cells = rows.flatMap((row) => row.cells);
@@ -36,11 +40,11 @@ const stat = (label, value, detail) => el('div', { class: 'stat' },
   el('span', { class: 'stat-number' }, value, detail && el('small', {}, detail)));
 
 export function renderJournal(context) {
-  const { journal, groups, groupId, week, user, loadJournal, goTo } = context;
+  const { journal, groups, groupId, week, selectedDate, day, user, moveDate, pickDate, showToday, goTo } = context;
   const staff = user.role !== 'user';
   const group = journal?.group ?? groups.find((item) => item.id === groupId);
   const canWrite = staff && group && !group.archived;
-  const add = canWrite && button('Добавить занятие', () => editLesson(context, group), { glyph: 'plus', variant: 'primary' });
+  const add = canWrite && (journal?.manualWritable ?? user.role === 'admin') && addLessonButton(context, group);
   const title = pageHeader('Посещаемость', 'Журналы учебных групп', add);
 
   if (!group) return el('section', { class: 'page' }, title, el('div', { class: 'panel' },
@@ -49,11 +53,8 @@ export function renderJournal(context) {
         button('Открыть группы', () => goTo('groups'), { variant: 'primary', glyph: 'groups' }))
       : empty('У вас пока нет групп', 'Журнал появится, когда администратор добавит вас в учебную группу')));
 
-  const options = el('div', { class: 'period' },
-    button('Предыдущая неделя', () => loadJournal(-1), { glyph: 'left', iconOnly: true }),
-    el('span', { class: 'period-label' }, icon('calendar'), weekTitle(week)),
-    button('Следующая неделя', () => loadJournal(1), { glyph: 'right', iconOnly: true }),
-    button('Текущая неделя', () => loadJournal(0, true), { variant: 'quiet current-week' }));
+  const options = dateNavigation({ date: selectedDate, week, move: (offset) => moveDate(offset * 7),
+    pick: pickDate, today: showToday, currentDay: day });
   if (!journal) return el('section', { class: 'page' }, title, el('div', { class: 'toolbar' }, options),
     el('div', { class: 'panel' }, empty('Загрузка журнала')));
 
@@ -73,7 +74,7 @@ export function renderJournal(context) {
     ? journalTable(context, grid.rows, canWrite)
     : empty(journal.lessons.length ? 'В журнале пока нет студентов' : 'На этой неделе нет занятий',
       journal.lessons.length ? 'Студент появится в журнале с даты вступления в группу' : 'Выберите другую неделю или добавьте занятие',
-      !journal.lessons.length && canWrite && addLessonButton(context, group));
+      !journal.lessons.length && canWrite && journal.manualWritable && addLessonButton(context, group));
   const visibleStatuses = journal.statuses.filter((item) => !item.archived || journal.marks.some((entry) => entry.statusId === item.id));
   const legend = el('div', { class: 'legend', 'aria-label': 'Обозначения' },
     visibleStatuses.map((status) => el('span', {}, mark(status), status.name)),
@@ -119,16 +120,13 @@ function journalTable(context, rows, canWrite) {
   }, el('span', { class: 'day-short' }, dayLabel(key)), displayDate(key).split(' ').slice(0, 2).join(' ')));
   const lessonHeaders = journal.lessons.map((lesson, index) => {
     const newDay = dateInput(lesson.date) !== dateInput(journal.lessons[index - 1]?.date);
-    const info = [el('span', { class: 'lesson-time' }, lesson.startTime), el('span', { class: 'lesson-title', title: lesson.title }, lesson.title)];
-    const content = canWrite
-      ? el('button', {
-        class: 'lesson-button',
-        type: 'button',
-        'data-focus-key': `lesson-${lesson.id}`,
-        'aria-label': `${lesson.title}, ${columnDate(lesson.date)}, ${lesson.startTime}. Действия занятия`,
-        onclick: () => lessonActions(context, journal.group, lesson),
-      }, info, icon('more'))
-      : el('div', { class: 'lesson-button' }, info);
+    const fromSchedule = Boolean(lesson.scheduleTeacherId);
+    const writable = canWrite && (!fromSchedule || !!lesson.scheduledSessionId);
+    const info = [el('span', { class: 'lesson-time' }, lesson.startTime), el('span', { class: 'lesson-title', title: lesson.title }, lesson.title),
+      fromSchedule && el('span', { class: 'lesson-source', title: lesson.scheduleAudience },
+        lesson.scheduledSessionId ? lesson.scheduleAudience : 'История')];
+    const menu = writable && lessonActions(context, journal.group, lesson);
+    const content = el('div', { class: `lesson-heading ${menu ? 'has-actions' : ''}` }, info, menu);
     const heading = el('th', { scope: 'col', class: newDay ? 'day-start' : '' }, content);
     heading.append(sortButton(heading, '', (row) => row.cells[index].status?.name ?? '',
       `Сортировать по отметкам: ${lesson.title}, ${lesson.startTime}`));
@@ -150,18 +148,19 @@ function journalTable(context, rows, canWrite) {
         el('span', { class: 'avatar', 'aria-hidden': 'true' }, initials(person.name)), el('span', {}, person.name))),
       cells.map((cell, index) => {
         const dayStart = dateInput(cell.lesson.date) !== dateInput(cells[index - 1]?.lesson.date);
-        return el('td', { class: `journal-cell ${dayStart ? 'day-start' : ''}` }, cellView(context, person, cell, canWrite));
+        const writable = canWrite && (!cell.lesson.scheduleTeacherId || !!cell.lesson.scheduledSessionId);
+        return el('td', { class: `journal-cell ${dayStart ? 'day-start' : ''}` }, cellView(context, person, cell, writable));
       }),
       el('td', { class: 'row-total' }, el('span', { class: 'text-number' }, taken), el('span', { class: 'muted' }, ` / ${possible}`)));
   });
   const body = el('tbody', {}, rendered);
-  return el('div', { class: 'journal-scroll', tabindex: '0', role: 'region', 'aria-label': 'Таблица посещаемости' },
-    el('table', { class: 'journal-table' }, head, body));
+  return horizontalScroll(el('table', { class: 'journal-table' }, head, body),
+    { className: 'journal-scroll', label: 'Таблица посещаемости' });
 }
 
 function cellView(context, person, cell, canWrite) {
   const { member, status, lesson, value } = cell;
-  if (!member) return el('span', { class: 'unmarked-sign', title: 'Студент не состоял в группе' }, '—');
+  if (!member) return el('span', { class: 'unmarked-sign', title: 'Студент не назначен на занятие' }, '—');
   const badge = status ? mark(status) : el('span', { class: 'unmarked-sign', 'aria-hidden': 'true' }, '·');
   if (!canWrite && !status) return el('span', { class: 'cell-static', 'aria-label': 'Нет отметки' }, badge);
   const label = `${person.name}, ${lesson.title}, ${columnDate(lesson.date)}, ${lesson.startTime}: ${status?.name ?? 'нет отметки'}`;
@@ -202,16 +201,16 @@ function editMark({ journal, mutate }, person, { lesson, value, status }, canWri
   });
 }
 
-function editLesson({ day, week, mutate, jumpToWeek }, group, existing, copy) {
-  const date = copy ? dateInput(copy.date) : day >= week.from && day <= week.to ? day : week.from;
+function editLesson({ day, selectedDate, mutate, jumpToWeek }, group, existing, copy) {
+  const date = copy ? dateInput(copy.date) : selectedDate;
   openDialog({
     title: existing ? 'Редактировать занятие' : copy ? 'Дублировать занятие' : 'Добавить занятие',
     json: !existing,
     description: existing ? `${group.code} · ${displayDate(existing.date)}` : group.code,
     fields: [
       field('Название занятия', input('title', (existing ?? copy)?.title, { placeholder: 'Например, Базы данных', required: true, maxlength: 120 })),
-      !existing && field('Дата занятия', input('date', date, { type: 'date', required: true })),
-      field('Время начала', input('startTime', existing?.startTime ?? copy?.startTime ?? '09:00', { type: 'time', required: true })),
+      !existing && datePicker('Дата занятия', 'date', date, { currentDay: day }),
+      timePicker('Время начала', 'startTime', existing?.startTime ?? copy?.startTime ?? '09:00'),
     ],
     submitLabel: existing ? 'Сохранить' : 'Добавить занятие',
     onSubmit: async (values) => {
@@ -225,29 +224,23 @@ function editLesson({ day, week, mutate, jumpToWeek }, group, existing, copy) {
 
 function lessonActions(context, group, lesson) {
   const { journal, mutate } = context;
-  const dialog = document.getElementById('dialog');
-  const switchTo = (action) => {
-    dialog.close();
-    action();
-  };
   const activeStatuses = journal.statuses.filter((status) => !status.archived);
   const hasMarks = journal.marks.some((item) => item.lessonId === lesson.id);
-  openDialog({
-    title: lesson.title,
-    description: `${displayDate(lesson.date)} · ${lesson.startTime}`,
-    fields: el('div', { class: 'dialog-menu' },
-      button('Редактировать занятие', () => switchTo(() => editLesson(context, group, lesson))),
-      button('Дублировать', () => switchTo(() => editLesson(context, group, null, lesson))),
-      button('Заполнить пустые отметки', () => switchTo(() => fillLesson(context, lesson, activeStatuses)), { disabled: !activeStatuses.length }),
-      button('Удалить занятие', () => switchTo(() => confirmAction({
-        title: 'Удалить занятие?',
-        description: lesson.title,
-        code: group.code,
-        submitLabel: 'Удалить',
-        onSubmit: () => mutate(`/lessons/${lesson.id}`, 'DELETE', null, 'Занятие удалено'),
-      })), { variant: 'danger', disabled: hasMarks }),
-      hasMarks && el('small', { class: 'muted' }, 'Удалить занятие можно после удаления всех отметок')),
-  });
+  const label = `${lesson.title}, ${columnDate(lesson.date)}, ${lesson.startTime}. Действия занятия`;
+  const manual = !lesson.scheduleTeacherId;
+  return actionMenu(label, [
+    manual && button('Редактировать занятие', () => editLesson(context, group, lesson), { glyph: 'edit' }),
+    manual && button('Дублировать', () => editLesson(context, group, null, lesson), { glyph: 'copy' }),
+    button('Заполнить пустые отметки', () => fillLesson(context, lesson, activeStatuses), { glyph: 'check', disabled: !activeStatuses.length }),
+    manual && button('Удалить занятие', () => confirmAction({
+      title: 'Удалить занятие?',
+      description: lesson.title,
+      code: group.code,
+      submitLabel: 'Удалить',
+      onSubmit: () => mutate(`/lessons/${lesson.id}`, 'DELETE', null, 'Занятие удалено'),
+    }), { glyph: 'trash', variant: 'danger', disabled: hasMarks }),
+    manual && hasMarks && el('small', { class: 'muted' }, 'Удалить занятие можно после удаления всех отметок'),
+  ], `lesson-${lesson.id}`);
 }
 
 function fillLesson({ mutate }, lesson, statuses) {

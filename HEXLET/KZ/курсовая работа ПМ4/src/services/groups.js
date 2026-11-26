@@ -3,18 +3,21 @@ import { HttpError } from '../lib/http.js';
 import { writeTransaction } from '../lib/transaction.js';
 import { publicUser } from './auth.js';
 
-const person = { id: true, name: true, role: true };
-const membersWithUser = { user: { select: publicUser } };
+const person = { id: true, name: true, role: true, deletedAt: true };
+const membersWithUser = { user: { select: { ...publicUser, deletedAt: true } } };
 const groupOrder = [{ archived: 'asc' }, { code: 'asc' }];
 
-function groupVisibility(user, today) {
+function groupVisibility(user, today, manual = false) {
   if (user.role === 'admin') return {};
   const period = user.role === 'teacher' ? activeOn(today) : { joinedOn: { lte: today } };
-  return { memberships: { some: { userId: user.id, ...period } } };
+  const member = { memberships: { some: { userId: user.id, ...period } } };
+  return user.role === 'teacher' && !manual
+    ? { OR: [member, { lessons: { some: { scheduleTeacherId: user.id } } }] }
+    : member;
 }
 
-export async function requireGroup(db, id, user, today, { writable = false } = {}) {
-  const group = await db.group.findUnique({ where: { id, ...groupVisibility(user, today) } });
+export async function requireGroup(db, id, user, today, { writable = false, manual = false } = {}) {
+  const group = await db.group.findUnique({ where: { id, ...groupVisibility(user, today, manual) } });
   if (!group) throw new HttpError(404, 'Группа не найдена');
   if (writable && group.archived) throw new HttpError(409, 'Группа находится в архиве');
   return group;
@@ -30,7 +33,7 @@ export const updateGroup = (db, id, data) => db.group.update({ where: { id }, da
 export async function listUsers(db, { q, role }) {
   return db.user.findMany({
     where: {
-      role: role ?? { in: ['teacher', 'user'] },
+      role: role ?? { in: ['teacher', 'user'] }, deletedAt: null,
       OR: [
         { name: { contains: q, mode: 'insensitive' } },
         { email: { contains: q, mode: 'insensitive' } },
@@ -44,7 +47,7 @@ export async function listUsers(db, { q, role }) {
 
 export function updateUserRole(db, id, role) {
   return writeTransaction(db, async (tx) => {
-    const account = await tx.user.findUnique({ where: { id }, select: publicUser });
+    const account = await tx.user.findUnique({ where: { id, deletedAt: null }, select: publicUser });
     if (!account) throw new HttpError(404, 'Пользователь не найден');
     if (account.role === 'admin') throw new HttpError(403, 'Роль администратора защищена');
     if (account.role === role) return account;
@@ -79,7 +82,7 @@ async function checkOverlap(tx, { groupId, userId, joinedOn, leftOn, id }) {
 export function addMember(db, groupId, user, today, body) {
   return writeTransaction(db, async (tx) => {
     await requireGroup(tx, groupId, user, today, { writable: true });
-    const account = await tx.user.findUnique({ where: { id: body.userId }, select: publicUser });
+    const account = await tx.user.findUnique({ where: { id: body.userId, deletedAt: null }, select: publicUser });
     if (!account || account.role === 'admin') {
       throw new HttpError(404, 'Укажите аккаунт студента или преподавателя');
     }
@@ -95,7 +98,7 @@ export function addMember(db, groupId, user, today, body) {
 export function updateMember(db, groupId, id, user, today, { leftOn }) {
   return writeTransaction(db, async (tx) => {
     await requireGroup(tx, groupId, user, today);
-    const member = await tx.groupMembership.findUnique({ where: { id, groupId } });
+    const member = await tx.groupMembership.findUnique({ where: { id, groupId, user: { deletedAt: null } } });
     if (!member) throw new HttpError(404, 'Участник группы не найден');
     const end = leftOn ? asDate(leftOn) : null;
     if (end && end <= member.joinedOn) {
@@ -118,26 +121,32 @@ export function removeMember(db, groupId, id, user, today) {
     await requireGroup(tx, groupId, user, today);
     const member = await tx.groupMembership.findUnique({ where: { id, groupId } });
     if (!member) throw new HttpError(404, 'Участник группы не найден');
-    const latest = await tx.attendance.findFirst({
-      where: { membershipId: id },
-      orderBy: { lesson: { date: 'desc' } },
-      select: { lesson: { select: { date: true } } },
-    });
-    if (!latest && member.joinedOn >= today) {
-      await tx.groupMembership.delete({ where: { id } });
-      return { deleted: true, leftOn: null };
-    }
-    const firstDayOutside = latest ? new Date(Math.max(+today, +latest.lesson.date + DAY)) : today;
-    const leftOn = member.leftOn && member.leftOn <= firstDayOutside ? member.leftOn : firstDayOutside;
-    if (+leftOn !== +member.leftOn) {
-      await tx.groupMembership.update({ where: { id }, data: { leftOn } });
-    }
-    return { deleted: false, leftOn };
+    return endMembership(tx, member, today);
   });
 }
 
+export async function endMembership(tx, member, today) {
+  const { id } = member;
+  const latest = await tx.attendance.findFirst({
+    where: { membershipId: id },
+    orderBy: { lesson: { date: 'desc' } },
+    select: { lesson: { select: { date: true } } },
+  });
+  if (!latest && member.joinedOn >= today) {
+    await tx.groupMembership.delete({ where: { id } });
+    return { deleted: true, leftOn: null };
+  }
+  const firstDayOutside = latest ? new Date(Math.max(+today, +latest.lesson.date + DAY)) : today;
+  const leftOn = member.leftOn && member.leftOn <= firstDayOutside ? member.leftOn : firstDayOutside;
+  if (+leftOn !== +member.leftOn) {
+    await tx.groupMembership.update({ where: { id }, data: { leftOn } });
+  }
+  return { deleted: false, leftOn };
+}
+
 function attends(member, lesson) {
-  return member.joinedOn <= lesson.date && (!member.leftOn || member.leftOn > lesson.date);
+  return member.joinedOn <= lesson.date && (!member.leftOn || member.leftOn > lesson.date) &&
+    (!lesson.scheduleTeacherId || lesson.scheduledStudentIds.includes(member.user.id));
 }
 
 export async function getJournal(db, groupId, user, today, from, to) {
@@ -150,6 +159,11 @@ export async function getJournal(db, groupId, user, today, from, to) {
 async function readJournal(db, groupId, user, today, from, to) {
   const group = await requireGroup(db, groupId, user, today);
   const student = user.role === 'user';
+  const teacher = user.role === 'teacher';
+  const manualVisible = !teacher || Boolean(await db.groupMembership.findFirst({
+    where: { groupId, userId: user.id, ...activeOn(today) }, select: { id: true },
+  }));
+  const manualWritable = !student && !group.archived && manualVisible;
   const endsAt = new Date(to.getTime() + DAY);
   const [members, lessons, statuses, teachers] = await Promise.all([
     db.groupMembership.findMany({
@@ -164,12 +178,19 @@ async function readJournal(db, groupId, user, today, from, to) {
       orderBy: [{ user: { name: 'asc' } }, { joinedOn: 'asc' }],
     }),
     db.lesson.findMany({
-      where: { groupId, date: { gte: from, lte: to } },
-      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+      where: { groupId, date: { gte: from, lte: to },
+        ...(teacher && { OR: [
+          { scheduleTeacherId: user.id }, ...(manualVisible ? [{ scheduleTeacherId: null }] : []),
+        ] }),
+      },
+      orderBy: [{ date: 'asc' }, { startTime: 'asc' }, { scheduleAudience: 'asc' }, { id: 'asc' }],
     }),
     db.attendanceStatus.findMany({ orderBy: [{ archived: 'asc' }, { name: 'asc' }] }),
     db.user.findMany({
-      where: { role: 'teacher', memberships: { some: { groupId, ...activeOn(today) } } },
+      where: { role: 'teacher', deletedAt: null, OR: [
+        { memberships: { some: { groupId, ...activeOn(today) } } },
+        { scheduledLessons: { some: { groupIds: { has: groupId }, date: { gte: from, lte: to } } } },
+      ] },
       select: person,
       orderBy: { name: 'asc' },
     }),
@@ -183,5 +204,10 @@ async function readJournal(db, groupId, user, today, from, to) {
     },
     select: { id: true, lessonId: true, membershipId: true, statusId: true, note: true },
   });
-  return { group, members, lessons: visibleLessons, statuses, marks, teachers };
+  const participants = teacher && !manualVisible
+    ? members.filter((member) => lessons.some((lesson) => attends(member, lesson)))
+    : members;
+  return { group, members: participants, manualWritable, lessons: student
+    ? visibleLessons.map((lesson) => ({ ...lesson, scheduledStudentIds: lesson.scheduleTeacherId ? [user.id] : [] }))
+    : visibleLessons, statuses, marks, teachers };
 }
